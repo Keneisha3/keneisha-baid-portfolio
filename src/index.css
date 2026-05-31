@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: #FFF7FA;
+  color: #5A3149;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #FFEDF3;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFC4DA;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #EC4899;
+}
+
+::selection {
+  background: #FFC4DA;
+  color: #3A1E32;
+}
+
+@layer components {
+  .section-pad {
+    @apply px-6 py-24 md:px-12 lg:px-20;
+  }
+  .section-title {
+    @apply font-display text-3xl font-semibold tracking-tight text-plum-900 sm:text-4xl md:text-5xl;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full border border-pink-200/70 bg-white px-3.5 py-1.5 text-sm font-medium text-plum-700 shadow-sm transition-colors;
+  }
+  .pill-glow {
+    @apply hover:border-pink-400 hover:bg-blush-100 hover:text-pink-600;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(110deg, #F472B6 0%, #EC4899 45%, #FB7185 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Recharts tooltip on light bg */
+.recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border: 1px solid #FFC4DA !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.12) !important;
+}
