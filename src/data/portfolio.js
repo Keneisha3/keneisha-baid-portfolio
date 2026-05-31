@@ -158,6 +158,14 @@ export const PROJECTS = [
     tech: ["Python"],
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/MarkovChainModelling.git" }],
   },
+  {
+    title: "Patent Landscape Intelligence App",
+    description:
+      "Currently building an app that maps patent landscapes to surface technology trends and competitive whitespace, while training and testing AI models to classify and analyze large patent datasets.",
+    tech: ["Python", "Machine Learning", "AI Models"],
+    comingSoon: true,
+    links: [],
+  },
 ];
 
 // === A few of my favourite things ===
