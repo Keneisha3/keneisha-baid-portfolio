@@ -10,13 +10,22 @@ function ProjectCard({ project, index }) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
       whileHover={{ y: -6 }}
-      className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-md shadow-pink-500/10 transition-colors ${
+      className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-md transition-colors ${
         project.comingSoon
-          ? "border-dashed border-pink-300 hover:border-pink-400"
-          : "border-pink-100 hover:border-pink-300"
+          ? "border-dashed border-pink-300 shadow-pink-500/10 hover:border-pink-400"
+          : project.featured
+          ? "border-pink-300 shadow-lg shadow-pink-500/20 ring-1 ring-pink-200 hover:border-pink-400"
+          : "border-pink-100 shadow-pink-500/10 hover:border-pink-300"
       }`}
     >
       <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blush-200 blur-2xl transition-opacity duration-300 group-hover:bg-blush-300" />
+
+      {project.featured && (
+        <span className="relative mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-400 px-3 py-1 text-xs font-semibold text-white">
+          <span aria-hidden>★</span>
+          Featured
+        </span>
+      )}
 
       {project.comingSoon && (
         <span className="relative mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-pink-500 px-3 py-1 text-xs font-semibold text-white">

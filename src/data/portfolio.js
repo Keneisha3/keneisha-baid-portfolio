@@ -133,6 +133,7 @@ export const PROJECTS = [
     description:
       "Event-driven stock alert system using ATR volatility + RSS news feeds across 50+ equities with backtesting, walk-forward validation, and automated research reports.",
     tech: ["Python", "yfinance", "RSS"],
+    featured: true,
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/ATR-Based-News-Triggered-Stock-System.git" }],
   },
   {
