@@ -121,6 +121,14 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
+    title: "Patent Landscape Intelligence App",
+    description:
+      "Currently building an app that maps patent landscapes to surface technology trends and competitive whitespace, while training and testing AI models to classify and analyze large patent datasets.",
+    tech: ["Python", "Machine Learning", "AI Models"],
+    comingSoon: true,
+    links: [],
+  },
+  {
     title: "ATR News Signal System",
     description:
       "Event-driven stock alert system using ATR volatility + RSS news feeds across 50+ equities with backtesting, walk-forward validation, and automated research reports.",
@@ -164,14 +172,6 @@ export const PROJECTS = [
       "A Java recreation of the classic game show, built with a Swing GUI and structured object-oriented logic for case selection, banker offers, and game state. An early project from when I was learning to program, kept here to show my Java fundamentals.",
     tech: ["Java", "OOP", "Swing GUI"],
     badge: "Legacy project",
-    links: [],
-  },
-  {
-    title: "Patent Landscape Intelligence App",
-    description:
-      "Currently building an app that maps patent landscapes to surface technology trends and competitive whitespace, while training and testing AI models to classify and analyze large patent datasets.",
-    tech: ["Python", "Machine Learning", "AI Models"],
-    comingSoon: true,
     links: [],
   },
 ];
