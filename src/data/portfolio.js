@@ -173,7 +173,7 @@ export const PROJECTS = [
       "A Java recreation of the classic game show, built with a Swing GUI and structured object-oriented logic for case selection, banker offers, and game state. An early project from when I was learning to program, kept here to show my Java fundamentals.",
     tech: ["Java", "OOP", "Swing GUI"],
     badge: "Legacy project",
-    links: [],
+    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/DealOrNoDeal.git" }],
   },
 ];
 
