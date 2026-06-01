@@ -224,9 +224,9 @@ export const INTERESTS = [
   },
   {
     title: "Industry",
-    blurb: "Couldn't look away and LOVED the finance aspect.",
+    blurb: "Binged it and still can’t tell whether the market swings or the character arcs are more unstable.",
     img: "/photos/IMG_9155.JPG",
-    tag: "Couldn't look away and LOVED the finance aspect.",
+    tag: "Binged it and still can’t tell whether the market swings or the character arcs are more unstable.",
   },
 ];
 
