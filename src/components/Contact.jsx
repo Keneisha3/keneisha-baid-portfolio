@@ -49,9 +49,8 @@ export default function Contact() {
             Let's build <span className="gradient-text">something</span>.
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-plum-700/80">
-            I'm always happy to talk about data, AI, product, and the craft of
-            building things people actually want to use. If something here caught
-            your eye, say hello.
+            I'm always happy to talk, and always interested in building something
+            cool! Let's connect :)
           </p>
         </Reveal>
 
