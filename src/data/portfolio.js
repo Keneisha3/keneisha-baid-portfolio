@@ -159,6 +159,14 @@ export const PROJECTS = [
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/MarkovChainModelling.git" }],
   },
   {
+    title: "Deal or No Deal",
+    description:
+      "A Java recreation of the classic game show, built with a Swing GUI and structured object-oriented logic for case selection, banker offers, and game state. An early project from when I was learning to program, kept here to show my Java fundamentals.",
+    tech: ["Java", "OOP", "Swing GUI"],
+    badge: "Legacy project",
+    links: [],
+  },
+  {
     title: "Patent Landscape Intelligence App",
     description:
       "Currently building an app that maps patent landscapes to surface technology trends and competitive whitespace, while training and testing AI models to classify and analyze large patent datasets.",

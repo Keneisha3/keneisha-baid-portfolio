@@ -25,6 +25,12 @@ function ProjectCard({ project, index }) {
         </span>
       )}
 
+      {project.badge && !project.comingSoon && (
+        <span className="relative mb-3 inline-flex w-fit items-center rounded-full border border-pink-200 bg-blush-100 px-3 py-1 text-xs font-semibold text-pink-700">
+          {project.badge}
+        </span>
+      )}
+
       <h3 className="relative font-display text-xl font-semibold text-plum-900">
         {project.title}
       </h3>
