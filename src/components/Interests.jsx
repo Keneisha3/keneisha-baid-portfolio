@@ -1,6 +1,23 @@
 import { useEffect, useRef } from "react";
 import Reveal from "./Reveal";
-import { INTERESTS } from "../data/portfolio";
+import { INTERESTS, PLAYLIST } from "../data/portfolio";
+
+// Interactive Spotify playlist embed (30s previews, no login required).
+function Playlist() {
+  const src = `https://open.spotify.com/embed/${PLAYLIST.type}/${PLAYLIST.spotifyId}?utm_source=generator&theme=0`;
+  return (
+    <iframe
+      title="Keneisha's playlist"
+      src={src}
+      width="100%"
+      height="380"
+      style={{ borderRadius: "16px", border: "0" }}
+      frameBorder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy"
+    />
+  );
+}
 
 // Interactive doodle, Keneisha's own p5.js sketch.
 // Press and drag to paint translucent ellipses; press any key to clear.
@@ -174,6 +191,18 @@ export default function Interests({ standalone = false }) {
             <span className="text-sm text-plum-700/60">click &amp; drag to look around</span>
           </div>
           <VRGallery />
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-display text-xl font-semibold text-plum-900">
+              On repeat
+            </h3>
+            <span className="text-sm text-plum-700/60">{PLAYLIST.caption}</span>
+          </div>
+          <Playlist />
         </div>
       </Reveal>
 
