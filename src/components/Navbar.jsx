@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const LINKS = [
-  { route: "skills", href: "#/skills", label: "Skills" },
-  { route: "experience", href: "#/experience", label: "Experience" },
-  { route: "work", href: "#/work", label: "Projects" },
+  { route: "home", href: "/#projects", label: "Projects" },
+  { route: "home", href: "/#experience", label: "Experience" },
+  { route: "home", href: "/#skills", label: "Skills" },
   { route: "life", href: "#/life", label: "Life" },
-  { route: "contact", href: "#/contact", label: "Contact" },
+  { route: "home", href: "/#contact", label: "Contact" },
 ];
 
 export default function Navbar({ route = "home" }) {
@@ -44,7 +44,7 @@ export default function Navbar({ route = "home" }) {
 
         <ul className="hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
-            const active = route === l.route;
+            const active = l.route === "life" && route === "life";
             return (
               <li key={l.route}>
                 <a
@@ -82,7 +82,7 @@ export default function Navbar({ route = "home" }) {
       {menuOpen && (
         <ul className="flex flex-col gap-1 px-6 pb-4 md:hidden">
           {LINKS.map((l) => {
-            const active = route === l.route;
+            const active = l.route === "life" && route === "life";
             return (
               <li key={l.route}>
                 <a

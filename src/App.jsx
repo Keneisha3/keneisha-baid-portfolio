@@ -8,7 +8,14 @@ import Interests from "./components/Interests";
 import Contact from "./components/Contact";
 import ChatWidget from "./components/ChatWidget";
 
-// Tiny hash-based router so each nav item is its own page (#/skills, #/work, ...).
+// Soft divider between sections.
+function Divider() {
+  return (
+    <div className="mx-auto h-px max-w-7xl bg-gradient-to-r from-transparent via-blush-200 to-transparent" />
+  );
+}
+
+// Tiny hash-based router: main scrolling page, plus a separate Life page.
 function useHashRoute() {
   const [hash, setHash] = useState(window.location.hash || "#/");
   useEffect(() => {
@@ -19,71 +26,37 @@ function useHashRoute() {
   return hash;
 }
 
-// Pushes page content below the fixed navbar.
-function Page({ children }) {
-  return <main className="pt-20">{children}</main>;
-}
-
 export default function App() {
   const hash = useHashRoute();
   const route = (hash.replace(/^#\/?/, "") || "home").toLowerCase();
+  const isLife = route === "life";
 
-  // Always start a freshly-loaded page at the top.
+  // Jump to top when switching between the main page and the Life page.
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (route === "life" || route === "home" || route === "") {
+      window.scrollTo(0, 0);
+    }
   }, [route]);
-
-  let page;
-  switch (route) {
-    case "skills":
-      page = (
-        <Page>
-          <Skills />
-        </Page>
-      );
-      break;
-    case "experience":
-      page = (
-        <Page>
-          <Timeline />
-        </Page>
-      );
-      break;
-    case "work":
-    case "projects":
-      page = (
-        <Page>
-          <Projects />
-        </Page>
-      );
-      break;
-    case "life":
-      page = (
-        <Page>
-          <Interests standalone />
-        </Page>
-      );
-      break;
-    case "contact":
-      page = (
-        <Page>
-          <Contact />
-        </Page>
-      );
-      break;
-    default:
-      // Home: hero + short previews that link into the dedicated pages.
-      page = (
-        <main>
-          <Hero />
-        </main>
-      );
-  }
 
   return (
     <div className="relative min-h-screen bg-blush-50 text-plum-700">
       <Navbar route={route} />
-      {page}
+      {isLife ? (
+        <main className="pt-20">
+          <Interests standalone />
+          <Contact />
+        </main>
+      ) : (
+        <main>
+          <Hero />
+          <Projects />
+          <Divider />
+          <Timeline />
+          <Divider />
+          <Skills />
+          <Contact />
+        </main>
+      )}
       <ChatWidget />
     </div>
   );

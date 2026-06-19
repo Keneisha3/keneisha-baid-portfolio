@@ -140,14 +140,14 @@ export default function Hero() {
           className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href="#/work"
+            href="#projects"
             className="group inline-flex items-center gap-2 rounded-full bg-pink-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-pink-500/30 transition-all hover:scale-105 hover:bg-pink-600"
           >
             See My Work
-            <span className="transition-transform group-hover:translate-x-0.5">→</span>
+            <span className="transition-transform group-hover:translate-y-0.5">↓</span>
           </a>
           <a
-            href="#/contact"
+            href="#contact"
             className="rounded-full border border-pink-300 bg-white/60 px-7 py-3.5 text-base font-semibold text-plum-700 backdrop-blur transition-colors hover:border-pink-500 hover:text-pink-600"
           >
             Contact
@@ -161,9 +161,9 @@ export default function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-plum-700/60"
         >
           {[
-            { href: "#/skills", label: "Skills" },
-            { href: "#/experience", label: "Experience" },
-            { href: "#/work", label: "Projects" },
+            { href: "#projects", label: "Projects" },
+            { href: "#experience", label: "Experience" },
+            { href: "#skills", label: "Skills" },
             { href: "#/life", label: "Life" },
           ].map((l, i) => (
             <span key={l.href} className="flex items-center gap-x-6">
