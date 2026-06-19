@@ -140,35 +140,41 @@ export default function Hero() {
           className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href="#projects"
-            className="group inline-flex items-center gap-2 rounded-full bg-pink-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-pink-500/30 transition-all hover:scale-105 hover:bg-pink-400"
+            href="#/work"
+            className="group inline-flex items-center gap-2 rounded-full bg-pink-500 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-pink-500/30 transition-all hover:scale-105 hover:bg-pink-600"
           >
             See My Work
-            <span className="transition-transform group-hover:translate-y-0.5">↓</span>
+            <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </a>
           <a
-            href="#contact"
+            href="#/contact"
             className="rounded-full border border-pink-300 bg-white/60 px-7 py-3.5 text-base font-semibold text-plum-700 backdrop-blur transition-colors hover:border-pink-500 hover:text-pink-600"
           >
             Contact
           </a>
         </motion.div>
-      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="flex h-10 w-6 items-start justify-center rounded-full border border-pink-300 p-1.5">
-          <motion.span
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 1.6, repeat: Infinity }}
-            className="h-2 w-1 rounded-full bg-pink-500"
-          />
-        </div>
-      </motion.div>
+        <motion.nav
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="mt-16 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-plum-700/60"
+        >
+          {[
+            { href: "#/skills", label: "Skills" },
+            { href: "#/experience", label: "Experience" },
+            { href: "#/work", label: "Projects" },
+            { href: "#/life", label: "Life" },
+          ].map((l, i) => (
+            <span key={l.href} className="flex items-center gap-x-6">
+              {i > 0 && <span className="text-pink-300">·</span>}
+              <a href={l.href} className="transition-colors hover:text-pink-600">
+                {l.label}
+              </a>
+            </span>
+          ))}
+        </motion.nav>
+      </div>
     </section>
   );
 }

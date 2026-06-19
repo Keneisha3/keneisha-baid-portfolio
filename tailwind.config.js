@@ -4,35 +4,43 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm-stone neutrals with a teal primary + coral secondary accent.
+        // Pantone-inspired palette: Blue Opal primary, Rhythmic Red secondary,
+        // warm Amberlight/Toffee neutrals, Skyway as a soft accent.
         // Token names kept (blush/pink/rose/plum) so components re-skin in place.
-        // blush = warm neutral surfaces
+
+        // blush = warm Amberlight neutral surfaces
         blush: {
-          50: "#FBFAF8",
-          100: "#F4F1EC",
-          200: "#E7E2D9",
-          300: "#D6CFC2",
-          400: "#A8A096",
+          50: "#FBF8F3",
+          100: "#F4EADD",
+          200: "#E8D6C2",
+          300: "#D9BD9F",
+          400: "#B5946F",
         },
-        // pink = PRIMARY accent (teal)
+        // pink = PRIMARY accent (Blue Opal) + Skyway lighter step
         pink: {
-          DEFAULT: "#0D9488",
-          400: "#2DD4BF",
-          500: "#0D9488",
-          600: "#0F766E",
-          700: "#115E59",
+          DEFAULT: "#1C3F5F",
+          400: "#6E92B4", // Skyway-leaning
+          500: "#1C3F5F",
+          600: "#163750",
+          700: "#10293C",
         },
-        // rose = SECONDARY accent (coral)
+        // rose = SECONDARY accent (Rhythmic Red / Syrah)
         rose: {
-          DEFAULT: "#F76C5E",
-          400: "#FB8C7E",
-          500: "#F76C5E",
+          DEFAULT: "#A4343A",
+          400: "#C0565B",
+          500: "#A4343A",
+          700: "#6E1E2E", // Syrah
         },
-        // plum = text / deep ink
+        // skyway = soft blue accent
+        skyway: {
+          DEFAULT: "#AFC7DE",
+          400: "#AFC7DE",
+        },
+        // plum = Toffee / Tawny Port deep ink for text
         plum: {
-          DEFAULT: "#3D3A36",
-          700: "#2A2723",
-          900: "#1A1815",
+          DEFAULT: "#4A3526",
+          700: "#5C2935", // Tawny Port
+          900: "#2A1D16",
         },
       },
       fontFamily: {

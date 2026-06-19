@@ -8,54 +8,82 @@ import Interests from "./components/Interests";
 import Contact from "./components/Contact";
 import ChatWidget from "./components/ChatWidget";
 
-// Soft divider between sections.
-function Divider() {
-  return (
-    <div className="mx-auto h-px max-w-7xl bg-gradient-to-r from-transparent via-pink-200 to-transparent" />
-  );
-}
-
-// Tiny hash-based router so "Life" lives on its own page (#/life).
+// Tiny hash-based router so each nav item is its own page (#/skills, #/work, ...).
 function useHashRoute() {
-  const [route, setRoute] = useState(window.location.hash);
+  const [hash, setHash] = useState(window.location.hash || "#/");
   useEffect(() => {
-    const onChange = () => setRoute(window.location.hash);
+    const onChange = () => setHash(window.location.hash || "#/");
     window.addEventListener("hashchange", onChange);
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
-  return route;
+  return hash;
+}
+
+// Pushes page content below the fixed navbar.
+function Page({ children }) {
+  return <main className="pt-20">{children}</main>;
 }
 
 export default function App() {
-  const route = useHashRoute();
-  const isLife = route.startsWith("#/life");
+  const hash = useHashRoute();
+  const route = (hash.replace(/^#\/?/, "") || "home").toLowerCase();
 
-  // Jump to top when switching between the home page and the Life page.
+  // Always start a freshly-loaded page at the top.
   useEffect(() => {
-    if (route === "#/life" || route === "#/") window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, [route]);
+
+  let page;
+  switch (route) {
+    case "skills":
+      page = (
+        <Page>
+          <Skills />
+        </Page>
+      );
+      break;
+    case "experience":
+      page = (
+        <Page>
+          <Timeline />
+        </Page>
+      );
+      break;
+    case "work":
+    case "projects":
+      page = (
+        <Page>
+          <Projects />
+        </Page>
+      );
+      break;
+    case "life":
+      page = (
+        <Page>
+          <Interests standalone />
+        </Page>
+      );
+      break;
+    case "contact":
+      page = (
+        <Page>
+          <Contact />
+        </Page>
+      );
+      break;
+    default:
+      // Home: hero + short previews that link into the dedicated pages.
+      page = (
+        <main>
+          <Hero />
+        </main>
+      );
+  }
 
   return (
     <div className="relative min-h-screen bg-blush-50 text-plum-700">
-      <Navbar />
-      {isLife ? (
-        <main>
-          <Interests standalone />
-          <Contact />
-        </main>
-      ) : (
-        <main>
-          <Hero />
-          <Skills />
-          <Divider />
-          <Timeline />
-          <Divider />
-          <Projects />
-          <Divider />
-          <Interests />
-          <Contact />
-        </main>
-      )}
+      <Navbar route={route} />
+      {page}
       <ChatWidget />
     </div>
   );
