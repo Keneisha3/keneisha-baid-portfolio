@@ -11,8 +11,10 @@ export const PROFILE = {
 export const ROLES = [
   "Management Engineer",
   "Data Scientist",
-  "Product Builder",
-  "Quant Researcher",
+  "Software Developer",
+  "Financial Analyst",
+  "Business Analyst",
+  "Project Coordinator",
 ];
 
 // Grouped so the toolkit reads cleanly instead of one long wall of pills.
