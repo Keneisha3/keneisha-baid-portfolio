@@ -2,6 +2,87 @@ import { useEffect, useRef } from "react";
 import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
 
+// Interactive mini-fretboard. Click a string/fret to pluck a note via the
+// Web Audio API (plucked-string-ish tone, no assets or libraries).
+const GUITAR_STRINGS = [
+  { label: "E", openFreq: 329.63 }, // high E (top row)
+  { label: "B", openFreq: 246.94 },
+  { label: "G", openFreq: 196.0 },
+  { label: "D", openFreq: 146.83 },
+  { label: "A", openFreq: 110.0 },
+  { label: "E", openFreq: 82.41 }, // low E (bottom row)
+];
+const FRETS = 5; // 0 (open) .. 4
+
+function Fretboard() {
+  const ctxRef = useRef(null);
+
+  const pluck = (baseFreq, fret) => {
+    // Lazily create / resume the audio context on first interaction.
+    let ctx = ctxRef.current;
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      ctxRef.current = ctx;
+    }
+    if (ctx.state === "suspended") ctx.resume();
+
+    const freq = baseFreq * Math.pow(2, fret / 12); // each fret = 1 semitone
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = freq;
+
+    // Quick attack, exponential decay for a plucked feel.
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 1.5);
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[420px] rounded-2xl bg-plum-900 p-4">
+        {GUITAR_STRINGS.map((str, si) => (
+          <div key={si} className="flex items-center gap-2 py-1.5">
+            <span className="w-5 shrink-0 text-center text-xs font-semibold text-blush-200">
+              {str.label}
+            </span>
+            <div className="flex flex-1 gap-2">
+              {Array.from({ length: FRETS }).map((_, fret) => (
+                <button
+                  key={fret}
+                  onClick={() => pluck(str.openFreq, fret)}
+                  aria-label={`${str.label} string, fret ${fret}`}
+                  className={`group relative flex h-9 flex-1 items-center justify-center rounded-md border transition-all active:scale-95 ${
+                    fret === 0
+                      ? "border-rose-500/60 bg-rose-500/10 hover:bg-rose-500/25"
+                      : "border-white/10 bg-white/5 hover:border-pink-400 hover:bg-pink-500/25"
+                  }`}
+                >
+                  <span className="h-px w-full bg-white/20 group-hover:bg-white/40" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="mt-2 flex justify-between px-7 text-[10px] uppercase tracking-wider text-blush-200/50">
+          <span>open</span>
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Interactive Spotify playlist embed (30s previews, no login required).
 function Playlist() {
   const src = `https://open.spotify.com/embed/${PLAYLIST.type}/${PLAYLIST.spotifyId}?utm_source=generator&theme=0`;
@@ -217,6 +298,20 @@ export default function Interests({ standalone = false }) {
             </span>
           </div>
           <Doodle />
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-display text-xl font-semibold text-plum-900">
+              Six strings
+            </h3>
+            <span className="text-sm text-plum-700/60">
+              click a fret to play · open strings in red
+            </span>
+          </div>
+          <Fretboard />
         </div>
       </Reveal>
     </section>

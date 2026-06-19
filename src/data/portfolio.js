@@ -166,8 +166,7 @@ export const PROJECTS = [
 // then paste just the ID (the part after /playlist/ and before any "?").
 // e.g. https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd  ->  "37i9dQZF1DX0XUsuxWHRQd"
 export const PLAYLIST = {
-  // Default: a public "This Is Drake" playlist. Swap for your own anytime.
-  spotifyId: "37i9dQZF1DZ06evO0vF6aN",
+  spotifyId: "1lHUC1MsBoolZpphjW9ine",
   type: "playlist", // "playlist" | "album" | "track" | "artist"
   caption: "What's usually playing while I work.",
 };
