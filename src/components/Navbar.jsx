@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const LINKS = [
-  { id: "interests", label: "Life" },
-  { id: "skills", label: "Skills" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "contact", label: "Contact" },
+  { href: "#/life", label: "Life" },
+  { href: "/#skills", label: "Skills" },
+  { href: "/#experience", label: "Experience" },
+  { href: "/#projects", label: "Projects" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Navbar() {
@@ -31,14 +31,14 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-12">
-        <a href="#hero" className="font-display text-xl font-semibold tracking-tight text-plum-900">
+        <a href="/#hero" className="font-display text-xl font-semibold tracking-tight text-plum-900">
           K<span className="gradient-text">B</span>
         </a>
         <ul className="hidden items-center gap-7 md:flex">
           {LINKS.map((l) => (
-            <li key={l.id}>
+            <li key={l.href}>
               <a
-                href={`#${l.id}`}
+                href={l.href}
                 className="text-sm font-medium text-plum-700/70 transition-colors hover:text-pink-600"
               >
                 {l.label}
@@ -47,7 +47,7 @@ export default function Navbar() {
           ))}
         </ul>
         <a
-          href="#contact"
+          href="/#contact"
           className="rounded-full bg-pink-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-pink-500/30 transition-transform hover:scale-105"
         >
           Say hi

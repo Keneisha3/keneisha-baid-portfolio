@@ -4,30 +4,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Light-pink theme palette
+        // Neutral, warm-stone theme with a muted slate-blue accent.
+        // Token names kept (blush/pink/rose/plum) so components re-skin in place.
         blush: {
-          50: "#FFF7FA",
-          100: "#FFEDF3",
-          200: "#FFDCE9",
-          300: "#FFC4DA",
-          400: "#FFA6C6",
+          50: "#FAFAF9",
+          100: "#F5F5F4",
+          200: "#E7E5E4",
+          300: "#D6D3D1",
+          400: "#A8A29E",
         },
         pink: {
-          DEFAULT: "#EC4899",
-          400: "#F472B6",
-          500: "#EC4899",
-          600: "#DB2777",
-          700: "#BE185D",
+          DEFAULT: "#64769B",
+          400: "#93A4C0",
+          500: "#64769B",
+          600: "#4F6080",
+          700: "#3D4D6B",
         },
         rose: {
-          DEFAULT: "#FB7185",
-          400: "#FB7185",
-          500: "#F43F5E",
+          DEFAULT: "#64769B",
+          400: "#93A4C0",
+          500: "#64769B",
         },
         plum: {
-          DEFAULT: "#5A3149",
-          700: "#4A2840",
-          900: "#3A1E32",
+          DEFAULT: "#44403C",
+          700: "#292524",
+          900: "#1C1917",
         },
       },
       fontFamily: {

@@ -10,36 +10,16 @@ function ProjectCard({ project, index }) {
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: (index % 3) * 0.08 }}
       whileHover={{ y: -6 }}
-      className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-white p-6 shadow-md transition-colors ${
-        project.comingSoon
-          ? "border-dashed border-pink-300 shadow-pink-500/10 hover:border-pink-400"
-          : project.featured
-          ? "border-pink-300 shadow-lg shadow-pink-500/20 ring-1 ring-pink-200 hover:border-pink-400"
-          : "border-pink-100 shadow-pink-500/10 hover:border-pink-300"
-      }`}
+      className="group relative flex flex-col overflow-hidden rounded-3xl border border-pink-100 bg-white p-6 shadow-md shadow-pink-500/10 transition-colors hover:border-pink-300"
     >
       <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-blush-200 blur-2xl transition-opacity duration-300 group-hover:bg-blush-300" />
 
-      {project.featured && (
-        <span className="relative mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-400 px-3 py-1 text-xs font-semibold text-white">
-          <span aria-hidden>★</span>
-          Featured
+      {project.status && (
+        <span className="relative mb-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-pink-300 bg-pink-50 px-3 py-1 text-xs font-semibold text-pink-700">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-pink-500" />
+          {project.status}
         </span>
       )}
-
-      {project.comingSoon && (
-        <span className="relative mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-pink-500 px-3 py-1 text-xs font-semibold text-white">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-          Currently building
-        </span>
-      )}
-
-      {project.badge && !project.comingSoon && (
-        <span className="relative mb-3 inline-flex w-fit items-center rounded-full border border-pink-200 bg-blush-100 px-3 py-1 text-xs font-semibold text-pink-700">
-          {project.badge}
-        </span>
-      )}
-
       <h3 className="relative font-display text-xl font-semibold text-plum-900">
         {project.title}
       </h3>

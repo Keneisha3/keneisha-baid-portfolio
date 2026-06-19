@@ -15,17 +15,6 @@ export const ROLES = [
   "Quant Researcher",
 ];
 
-export const SKILLS_RADAR = [
-  { skill: "Python", value: 90 },
-  { skill: "Data Analysis", value: 88 },
-  { skill: "Machine Learning", value: 85 },
-  { skill: "Statistics", value: 84 },
-  { skill: "Product / BA", value: 82 },
-  { skill: "Web Dev", value: 80 },
-  { skill: "Power Platform", value: 78 },
-  { skill: "SQL", value: 75 },
-];
-
 // Grouped so the toolkit reads cleanly instead of one long wall of pills.
 export const TOOLKIT = [
   {
@@ -121,11 +110,11 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
-    title: "Patent Landscape Intelligence App",
+    title: "Patent Landscape Intelligence",
+    status: "In the works",
     description:
-      "Currently building an app that maps patent landscapes to surface technology trends and competitive whitespace, while training and testing AI models to classify and analyze large patent datasets.",
-    tech: ["Python", "Machine Learning", "AI Models"],
-    comingSoon: true,
+      "A tool I'm currently building to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets.",
+    tech: ["Python", "NLP", "Machine Learning", "Data Visualization"],
     links: [],
   },
   {
@@ -133,7 +122,6 @@ export const PROJECTS = [
     description:
       "Event-driven stock alert system using ATR volatility + RSS news feeds across 50+ equities with backtesting, walk-forward validation, and automated research reports.",
     tech: ["Python", "yfinance", "RSS"],
-    featured: true,
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/ATR-Based-News-Triggered-Stock-System.git" }],
   },
   {
@@ -166,14 +154,6 @@ export const PROJECTS = [
       "Operations research model determining truck rental vs 3PL efficiency.",
     tech: ["Python"],
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/MarkovChainModelling.git" }],
-  },
-  {
-    title: "Deal or No Deal",
-    description:
-      "A Java recreation of the classic game show, built with a Swing GUI and structured object-oriented logic for case selection, banker offers, and game state. An early project from when I was learning to program, kept here to show my Java fundamentals.",
-    tech: ["Java", "OOP", "Swing GUI"],
-    badge: "Legacy project",
-    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/DealOrNoDeal.git" }],
   },
 ];
 
@@ -224,9 +204,9 @@ export const INTERESTS = [
   },
   {
     title: "Industry",
-    blurb: "Binged it and still can’t tell whether the market swings or the character arcs are more unstable.",
+    blurb: "Couldn't look away and LOVED the finance aspect.",
     img: "/photos/IMG_9155.JPG",
-    tag: "Binged it and still can’t tell whether the market swings or the character arcs are more unstable.",
+    tag: "Couldn't look away and LOVED the finance aspect.",
   },
 ];
 

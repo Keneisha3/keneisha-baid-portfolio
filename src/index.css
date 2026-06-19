@@ -12,8 +12,8 @@ html {
 
 body {
   margin: 0;
-  background-color: #FFF7FA;
-  color: #5A3149;
+  background-color: #FAFAF9;
+  color: #44403C;
   font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -25,19 +25,19 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #FFEDF3;
+  background: #F5F5F4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #FFC4DA;
+  background: #D6D3D1;
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #EC4899;
+  background: #64769B;
 }
 
 ::selection {
-  background: #FFC4DA;
-  color: #3A1E32;
+  background: #D6D3D1;
+  color: #1C1917;
 }
 
 @layer components {
@@ -56,7 +56,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(110deg, #F472B6 0%, #EC4899 45%, #FB7185 100%);
+  background: linear-gradient(110deg, #93A4C0 0%, #64769B 45%, #4F6080 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -73,7 +73,7 @@ body {
 /* Recharts tooltip on light bg */
 .recharts-default-tooltip {
   background-color: #ffffff !important;
-  border: 1px solid #FFC4DA !important;
+  border: 1px solid #D6D3D1 !important;
   border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.12) !important;
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.08) !important;
 }

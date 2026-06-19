@@ -40,7 +40,7 @@ function ParticleField() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(236, 72, 153, 0.45)";
+        ctx.fillStyle = "rgba(100, 118, 155, 0.40)";
         ctx.fill();
 
         for (let j = i + 1; j < particles.length; j++) {
@@ -52,7 +52,7 @@ function ParticleField() {
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = `rgba(251, 113, 133, ${0.16 * (1 - dist / 120)})`;
+            ctx.strokeStyle = `rgba(147, 164, 192, ${0.18 * (1 - dist / 120)})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -89,9 +89,9 @@ export default function Hero() {
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
     >
       <div className="absolute inset-0 bg-blush-50" />
-      <div className="absolute inset-0 animate-gradient-shift bg-[radial-gradient(55%_50%_at_20%_15%,rgba(255,182,213,0.55),transparent_60%),radial-gradient(50%_50%_at_85%_25%,rgba(251,113,133,0.30),transparent_60%),radial-gradient(60%_60%_at_50%_100%,rgba(236,72,153,0.18),transparent_60%)] bg-[length:200%_200%]" />
+      <div className="absolute inset-0 animate-gradient-shift bg-[radial-gradient(55%_50%_at_20%_15%,rgba(147,164,192,0.32),transparent_60%),radial-gradient(50%_50%_at_85%_25%,rgba(100,118,155,0.20),transparent_60%),radial-gradient(60%_60%_at_50%_100%,rgba(168,162,158,0.18),transparent_60%)] bg-[length:200%_200%]" />
       <ParticleField />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_55%,#FFF7FA)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_55%,#FAFAF9)]" />
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
         <motion.p
