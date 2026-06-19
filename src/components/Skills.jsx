@@ -16,22 +16,28 @@ export default function Skills() {
         </p>
       </Reveal>
 
-      <div className="mt-12 space-y-8">
+      <div className="mt-12 grid gap-5 sm:grid-cols-2">
         {TOOLKIT.map((cat, ci) => (
           <Reveal key={cat.group} delay={ci * 0.05}>
-            <div className="grid gap-3 border-t border-blush-200 pt-6 sm:grid-cols-[200px,1fr]">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-plum-700/60">
-                {cat.group}
-              </h3>
-              <div className="flex flex-wrap gap-2.5">
+            <div className="h-full rounded-2xl border border-blush-200 bg-white p-6 shadow-sm transition-colors hover:border-pink-300">
+              <div className="mb-4 flex items-center gap-2.5">
+                <span className="h-2 w-2 rounded-full bg-pink-500" />
+                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-plum-700/70">
+                  {cat.group}
+                </h3>
+                <span className="ml-auto text-xs font-medium text-plum-700/40">
+                  {cat.items.length}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
                 {cat.items.map((tool, i) => (
                   <motion.span
                     key={tool}
                     initial={{ opacity: 0, y: 8 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: i * 0.025, ease: "easeOut" }}
-                    className="pill"
+                    transition={{ delay: i * 0.02, ease: "easeOut" }}
+                    className="rounded-lg bg-blush-100 px-3 py-1.5 text-sm font-medium text-plum-700"
                   >
                     {tool}
                   </motion.span>
