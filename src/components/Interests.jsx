@@ -143,18 +143,25 @@ export default function Interests({ standalone = false }) {
       className={`section-pad mx-auto max-w-7xl ${standalone ? "pt-32" : ""}`}
     >
       <Reveal>
-        {standalone && (
+        {standalone ? (
           <a
             href="#/"
             className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-plum-700/70 transition-colors hover:text-pink-600"
           >
             <span aria-hidden>←</span> Back home
           </a>
+        ) : (
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-pink-600">
+            Beyond the code
+          </p>
         )}
-        <h2 className="section-title">A few of my favourite things</h2>
+        <h2 className="section-title">
+          {standalone ? "A few of my favourite things" : "A more creative side"}
+        </h2>
         <p className="mt-4 max-w-2xl text-lg text-plum-700/80">
-          A look at what I get up to when I step away from the screen. Drag the
-          scene around to wander through it.
+          {standalone
+            ? "A look at what I get up to when I step away from the screen. Drag the scene around to wander through it."
+            : "A peek at what I build for fun. Step into the 3D scene, or leave a doodle below."}
         </p>
       </Reveal>
 

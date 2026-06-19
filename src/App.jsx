@@ -51,6 +51,8 @@ export default function App() {
           <Timeline />
           <Divider />
           <Projects />
+          <Divider />
+          <Interests />
           <Contact />
         </main>
       )}

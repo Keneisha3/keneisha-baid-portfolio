@@ -4,31 +4,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Neutral, warm-stone theme with a muted slate-blue accent.
+        // Warm-stone neutrals with a teal primary + coral secondary accent.
         // Token names kept (blush/pink/rose/plum) so components re-skin in place.
+        // blush = warm neutral surfaces
         blush: {
-          50: "#FAFAF9",
-          100: "#F5F5F4",
-          200: "#E7E5E4",
-          300: "#D6D3D1",
-          400: "#A8A29E",
+          50: "#FBFAF8",
+          100: "#F4F1EC",
+          200: "#E7E2D9",
+          300: "#D6CFC2",
+          400: "#A8A096",
         },
+        // pink = PRIMARY accent (teal)
         pink: {
-          DEFAULT: "#64769B",
-          400: "#93A4C0",
-          500: "#64769B",
-          600: "#4F6080",
-          700: "#3D4D6B",
+          DEFAULT: "#0D9488",
+          400: "#2DD4BF",
+          500: "#0D9488",
+          600: "#0F766E",
+          700: "#115E59",
         },
+        // rose = SECONDARY accent (coral)
         rose: {
-          DEFAULT: "#64769B",
-          400: "#93A4C0",
-          500: "#64769B",
+          DEFAULT: "#F76C5E",
+          400: "#FB8C7E",
+          500: "#F76C5E",
         },
+        // plum = text / deep ink
         plum: {
-          DEFAULT: "#44403C",
-          700: "#292524",
-          900: "#1C1917",
+          DEFAULT: "#3D3A36",
+          700: "#2A2723",
+          900: "#1A1815",
         },
       },
       fontFamily: {

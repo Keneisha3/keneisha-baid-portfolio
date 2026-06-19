@@ -21,7 +21,7 @@ export default function Skills() {
           <Reveal key={cat.group} delay={ci * 0.05}>
             <div className="h-full rounded-2xl border border-blush-200 bg-white p-6 shadow-sm transition-colors hover:border-pink-300">
               <div className="mb-4 flex items-center gap-2.5">
-                <span className="h-2 w-2 rounded-full bg-pink-500" />
+                <span className={`h-2 w-2 rounded-full ${ci % 2 === 0 ? "bg-pink-500" : "bg-rose-500"}`} />
                 <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-plum-700/70">
                   {cat.group}
                 </h3>

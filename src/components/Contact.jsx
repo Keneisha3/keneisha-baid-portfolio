@@ -30,7 +30,7 @@ const BUTTONS = [
 export default function Contact() {
   return (
     <section id="contact" className="relative overflow-hidden px-6 py-32 md:px-12">
-      <div className="absolute inset-0 animate-gradient-shift bg-[radial-gradient(50%_50%_at_50%_50%,rgba(147,164,192,0.30),transparent_70%),radial-gradient(40%_40%_at_80%_20%,rgba(100,118,155,0.20),transparent_70%)] bg-[length:200%_200%]" />
+      <div className="absolute inset-0 animate-gradient-shift bg-[radial-gradient(50%_50%_at_50%_50%,rgba(45,212,191,0.28),transparent_70%),radial-gradient(40%_40%_at_80%_20%,rgba(247,108,94,0.20),transparent_70%)] bg-[length:200%_200%]" />
       <div className="pointer-events-none absolute inset-0">
         {[...Array(6)].map((_, i) => (
           <motion.span
