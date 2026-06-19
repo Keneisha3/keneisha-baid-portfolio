@@ -164,7 +164,7 @@ export default function Hero() {
             { href: "#projects", label: "Projects" },
             { href: "#experience", label: "Experience" },
             { href: "#skills", label: "Skills" },
-            { href: "#/life", label: "Life" },
+            { href: "#/life", label: "Playground" },
           ].map((l, i) => (
             <span key={l.href} className="flex items-center gap-x-6">
               {i > 0 && <span className="text-pink-300">·</span>}

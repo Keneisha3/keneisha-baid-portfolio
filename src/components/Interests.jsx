@@ -2,6 +2,113 @@ import { useEffect, useRef } from "react";
 import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
 
+// Small inline guitar glyph for the header.
+function GuitarIcon() {
+  return (
+    <svg
+      className="h-6 w-6 text-blush-200"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19.5 3.5l1 1-2 2-1-1z" />
+      <path d="M17.5 5.5l-3.2 3.2" />
+      <path d="M14.3 8.7a3.5 3.5 0 0 0-4 4c.3 1.6-.4 2.8-1.7 3.6a3 3 0 1 0 1.4 1.4c.8-1.3 2-2 3.6-1.7a3.5 3.5 0 0 0 4-4" />
+      <circle cx="11" cy="13" r="1.1" />
+    </svg>
+  );
+}
+
+// Interactive travel map (Leaflet, loaded from CDN). Pan, zoom, click pins.
+const TRAVEL_PINS = [
+  { name: "Paris, France", coords: [48.8566, 2.3522], note: "Pastries & the Eiffel Tower." },
+  { name: "Venice, Italy", coords: [45.4408, 12.3155], note: "Best pasta of my life." },
+  { name: "Waterloo, Canada", coords: [43.4643, -80.5204], note: "Home base." },
+];
+
+function TravelMap() {
+  const elRef = useRef(null);
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const start = () => {
+      if (cancelled || !elRef.current || !window.L || mapRef.current) return;
+      const L = window.L;
+      const map = L.map(elRef.current, {
+        scrollWheelZoom: false,
+        attributionControl: true,
+      }).setView([46.5, -20], 3);
+      mapRef.current = map;
+
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+          maxZoom: 18,
+        }
+      ).addTo(map);
+
+      const icon = L.divIcon({
+        className: "",
+        html: '<div style="width:16px;height:16px;border-radius:50% 50% 50% 0;background:#A4343A;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 16],
+        popupAnchor: [0, -14],
+      });
+
+      const group = [];
+      TRAVEL_PINS.forEach((p) => {
+        const m = L.marker(p.coords, { icon })
+          .addTo(map)
+          .bindPopup(`<strong>${p.name}</strong><br/>${p.note}`);
+        group.push(m.getLatLng());
+      });
+      if (group.length > 1) map.fitBounds(group, { padding: [40, 40] });
+    };
+
+    // Wait for the Leaflet CDN script to be ready.
+    if (window.L) start();
+    else {
+      const id = setInterval(() => {
+        if (window.L) {
+          clearInterval(id);
+          start();
+        }
+      }, 120);
+      setTimeout(() => clearInterval(id), 6000);
+      return () => {
+        cancelled = true;
+        clearInterval(id);
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+      };
+    }
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div
+      ref={elRef}
+      className="h-[360px] w-full overflow-hidden rounded-2xl border border-pink-100"
+    />
+  );
+}
+
 // Interactive mini-fretboard. Click a string/fret to pluck a note via the
 // Web Audio API (plucked-string-ish tone, no assets or libraries).
 const GUITAR_STRINGS = [
@@ -254,11 +361,11 @@ export default function Interests({ standalone = false }) {
           </p>
         )}
         <h2 className="section-title">
-          {standalone ? "A few of my favourite things" : "A more creative side"}
+          {standalone ? "Step into my playground" : "A more creative side"}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-plum-700/80">
           {standalone
-            ? "A look at what I get up to when I step away from the screen. Drag the scene around to wander through it."
+            ? "A hands-on corner of things I love. Explore the 3D scene, map my travels, strum a guitar, doodle, and hear what's on repeat. Everything here is interactive, go ahead and play."
             : "A peek at what I build for fun. Step into the 3D scene, or leave a doodle below."}
         </p>
       </Reveal>
@@ -278,12 +385,36 @@ export default function Interests({ standalone = false }) {
       <Reveal delay={0.1}>
         <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-display text-xl font-semibold text-plum-900">
-              On repeat
+            <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-plum-900">
+              <span aria-hidden>🗺️</span> Where I've wandered
             </h3>
-            <span className="text-sm text-plum-700/60">{PLAYLIST.caption}</span>
+            <span className="text-sm text-plum-700/60">drag to pan · click a pin</span>
           </div>
-          <Playlist />
+          <TravelMap />
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <div className="mt-6 overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-md shadow-pink-500/10">
+          {/* Guitar-style header band with fret inlays */}
+          <div className="relative flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-plum-900 to-pink-700 px-5 py-4 sm:px-7">
+            <h3 className="flex items-center gap-2.5 font-display text-xl font-semibold text-white">
+              <GuitarIcon />
+              Guitar
+            </h3>
+            <span className="text-sm text-blush-200/80">
+              click a fret to play · open strings in red
+            </span>
+            {/* fret-inlay dots */}
+            <div className="pointer-events-none absolute bottom-1.5 left-0 flex w-full justify-around px-10 opacity-40">
+              {[...Array(5)].map((_, i) => (
+                <span key={i} className="h-1.5 w-1.5 rounded-full bg-blush-200" />
+              ))}
+            </div>
+          </div>
+          <div className="p-5 sm:p-7">
+            <Fretboard />
+          </div>
         </div>
       </Reveal>
 
@@ -291,10 +422,10 @@ export default function Interests({ standalone = false }) {
         <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-display text-xl font-semibold text-plum-900">
-              Doodle with me
+              Stained glass, sort of
             </h3>
             <span className="text-sm text-plum-700/60">
-              my tribute to the stained-glass windows I could never recreate · drag to paint, any key to wipe the evidence
+              my tribute to the windows I could never recreate · drag to paint, any key to wipe the evidence
             </span>
           </div>
           <Doodle />
@@ -305,13 +436,11 @@ export default function Interests({ standalone = false }) {
         <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-display text-xl font-semibold text-plum-900">
-              Six strings
+              On repeat
             </h3>
-            <span className="text-sm text-plum-700/60">
-              click a fret to play · open strings in red
-            </span>
+            <span className="text-sm text-plum-700/60">{PLAYLIST.caption}</span>
           </div>
-          <Fretboard />
+          <Playlist />
         </div>
       </Reveal>
     </section>

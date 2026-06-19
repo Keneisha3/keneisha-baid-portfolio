@@ -5,7 +5,7 @@ const LINKS = [
   { route: "home", href: "/#projects", label: "Projects" },
   { route: "home", href: "/#experience", label: "Experience" },
   { route: "home", href: "/#skills", label: "Skills" },
-  { route: "life", href: "#/life", label: "Life" },
+  { route: "life", href: "#/life", label: "Playground" },
   { route: "home", href: "/#contact", label: "Contact" },
 ];
 
