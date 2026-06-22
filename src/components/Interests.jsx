@@ -25,9 +25,27 @@ function GuitarIcon() {
 
 // Interactive travel map (Leaflet, loaded from CDN). Pan, zoom, click pins.
 const TRAVEL_PINS = [
-  { name: "Paris, France", coords: [48.8566, 2.3522], note: "Pastries & the Eiffel Tower." },
-  { name: "Venice, Italy", coords: [45.4408, 12.3155], note: "Best pasta of my life." },
-  { name: "Waterloo, Canada", coords: [43.4643, -80.5204], note: "Home base." },
+  { name: "Paris, France", coords: [48.8566, 2.3522] },
+  { name: "Nice, France", coords: [43.7102, 7.262] },
+  { name: "Monaco", coords: [43.7384, 7.4246] },
+  { name: "Barcelona, Spain", coords: [41.3874, 2.1686] },
+  { name: "Rome, Italy", coords: [41.9028, 12.4964] },
+  { name: "Naples, Italy", coords: [40.8518, 14.2681] },
+  { name: "London, England", coords: [51.5072, -0.1276] },
+  { name: "Cardiff, Wales", coords: [51.4816, -3.1791] },
+  { name: "Edinburgh, Scotland", coords: [55.9533, -3.1883] },
+  { name: "Isle of Skye, Scotland", coords: [57.27, -6.215] },
+  { name: "Scottish Highlands", coords: [57.12, -4.71] },
+  { name: "Dubai, UAE", coords: [25.2048, 55.2708] },
+  { name: "New Delhi, India", coords: [28.6139, 77.209] },
+  { name: "Mumbai, India", coords: [19.076, 72.8777] },
+  { name: "New York, USA", coords: [40.7128, -74.006] },
+  { name: "Los Angeles, USA", coords: [34.0522, -118.2437] },
+  { name: "Palm Springs, USA", coords: [33.8303, -116.5453] },
+  { name: "Detroit, USA", coords: [42.3314, -83.0458] },
+  { name: "Chicago, USA", coords: [41.8781, -87.6298] },
+  { name: "Montreal, Canada", coords: [45.5019, -73.5674] },
+  { name: "Toronto, Canada", coords: [43.6532, -79.3832] },
 ];
 
 function TravelMap() {
