@@ -2,177 +2,218 @@ import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
 
-// Interactive disco ball: click to spin + play a looping disco groove built
-// live with the Web Audio API (no audio files). Click again to stop.
-function DiscoBall() {
-  const ctxRef = useRef(null);
-  const timerRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
+// Interactive 2-deck DJ mixer. Two synthesized tracks (no audio files); play
+// either deck and use the crossfader to blend between them. All Web Audio.
+const TRACKS = {
+  A: {
+    name: "Deck A — Sunset House",
+    tempo: 0.26, // seconds per step
+    accent: "#1C3F5F",
+    bass: [55, 55, 82.41, 55, 73.42, 55, 65.41, 98],
+    chord: [220, 277.18, 329.63], // A minor-ish
+    swing: false,
+  },
+  B: {
+    name: "Deck B — Midnight Funk",
+    tempo: 0.22,
+    accent: "#A4343A",
+    bass: [49, 73.42, 49, 98, 65.41, 49, 87.31, 49],
+    chord: [261.63, 311.13, 392.0], // C minor-ish
+    swing: true,
+  },
+};
 
-  // A simple four-on-the-floor disco loop with a walking bass + hats.
-  const startGroove = () => {
+function DJMixer() {
+  const ctxRef = useRef(null);
+  const masterRef = useRef(null);
+  const gainsRef = useRef({}); // per-deck GainNode
+  const timersRef = useRef({}); // per-deck interval id
+  const [playing, setPlaying] = useState({ A: false, B: false });
+  const [mix, setMix] = useState(50); // 0 = full A, 100 = full B
+
+  const ensureCtx = () => {
     let ctx = ctxRef.current;
     if (!ctx) {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       ctxRef.current = ctx;
+      masterRef.current = ctx.createGain();
+      masterRef.current.gain.value = 0.9;
+      masterRef.current.connect(ctx.destination);
+      ["A", "B"].forEach((d) => {
+        const g = ctx.createGain();
+        g.connect(masterRef.current);
+        gainsRef.current[d] = g;
+      });
+      applyMix(50);
     }
     if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  };
 
-    const bass = [55, 55, 82.41, 55, 73.42, 55, 65.41, 98]; // A-based disco walk
-    const tempo = 0.26; // seconds per step
+  // Equal-power crossfade between the two deck gains.
+  const applyMix = (value) => {
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    const x = value / 100;
+    const gA = Math.cos((x * Math.PI) / 2);
+    const gB = Math.cos(((1 - x) * Math.PI) / 2);
+    gainsRef.current.A?.gain.setTargetAtTime(gA, ctx.currentTime, 0.02);
+    gainsRef.current.B?.gain.setTargetAtTime(gB, ctx.currentTime, 0.02);
+  };
+
+  const tone = (ctx, dest, freq, t, dur, type, vol) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g);
+    g.connect(dest);
+    osc.start(t);
+    osc.stop(t + dur + 0.02);
+  };
+
+  const hat = (ctx, dest, t, vol) => {
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 7000;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+    src.connect(hp);
+    hp.connect(g);
+    g.connect(dest);
+    src.start(t);
+    src.stop(t + 0.05);
+  };
+
+  const startDeck = (deck) => {
+    const ctx = ensureCtx();
+    const dest = gainsRef.current[deck];
+    const cfg = TRACKS[deck];
     let step = 0;
-
-    const tone = (freq, t, dur, type, vol) => {
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = type;
-      osc.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      osc.connect(g);
-      g.connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + dur + 0.02);
-    };
-
-    const noiseHat = (t, vol) => {
-      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const hp = ctx.createBiquadFilter();
-      hp.type = "highpass";
-      hp.frequency.value = 7000;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(vol, t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
-      src.connect(hp);
-      hp.connect(g);
-      g.connect(ctx.destination);
-      src.start(t);
-      src.stop(t + 0.05);
-    };
-
     const tick = () => {
       const t = ctx.currentTime + 0.02;
-      // four-on-the-floor kick
-      tone(48, t, 0.18, "sine", 0.5);
-      // bassline
-      tone(bass[step % bass.length], t, tempo * 0.9, "sawtooth", 0.22);
-      // off-beat open hat
-      if (step % 2 === 1) noiseHat(t, 0.15);
-      // sparkly chord stab every 4 steps
-      if (step % 4 === 0) {
-        [440, 554.37, 659.25].forEach((f) => tone(f, t, 0.18, "triangle", 0.08));
-      }
+      tone(ctx, dest, 48, t, 0.18, "sine", 0.5); // kick
+      tone(ctx, dest, cfg.bass[step % cfg.bass.length], t, cfg.tempo * 0.9, "sawtooth", 0.22);
+      if (step % 2 === 1) hat(ctx, dest, t, cfg.swing ? 0.18 : 0.13);
+      if (step % 4 === 0) cfg.chord.forEach((f) => tone(ctx, dest, f, t, 0.2, "triangle", 0.07));
       step++;
     };
-
     tick();
-    timerRef.current = setInterval(tick, tempo * 1000);
+    timersRef.current[deck] = setInterval(tick, cfg.tempo * 1000);
   };
 
-  const stopGroove = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  const stopDeck = (deck) => {
+    if (timersRef.current[deck]) {
+      clearInterval(timersRef.current[deck]);
+      timersRef.current[deck] = null;
     }
   };
 
-  const toggle = () => {
-    if (playing) {
-      stopGroove();
-      setPlaying(false);
-    } else {
-      startGroove();
-      setPlaying(true);
-    }
+  const toggleDeck = (deck) => {
+    setPlaying((p) => {
+      const next = !p[deck];
+      if (next) startDeck(deck);
+      else stopDeck(deck);
+      return { ...p, [deck]: next };
+    });
   };
 
-  useEffect(() => () => stopGroove(), []);
+  const onMix = (e) => {
+    const v = Number(e.target.value);
+    setMix(v);
+    applyMix(v);
+  };
 
-  // Build a grid of mirror tiles for the ball.
-  const tiles = [];
-  const rows = 9;
-  for (let r = 0; r < rows; r++) {
-    const cols = 14;
-    for (let c = 0; c < cols; c++) {
-      tiles.push({ r, c, key: `${r}-${c}` });
-    }
-  }
+  useEffect(() => {
+    return () => {
+      stopDeck("A");
+      stopDeck("B");
+      if (ctxRef.current) ctxRef.current.close();
+    };
+  }, []);
+
+  const Deck = ({ id }) => {
+    const cfg = TRACKS[id];
+    const on = playing[id];
+    return (
+      <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-wider text-blush-200/80">
+            {cfg.name}
+          </span>
+          <span
+            className={`h-2 w-2 rounded-full ${on ? "animate-pulse" : ""}`}
+            style={{ background: on ? cfg.accent : "rgba(255,255,255,0.25)" }}
+          />
+        </div>
+
+        {/* spinning vinyl */}
+        <div className="mx-auto mb-4 h-28 w-28">
+          <div
+            className="relative h-full w-full rounded-full"
+            style={{
+              background: `radial-gradient(circle at 50% 50%, ${cfg.accent} 0 18%, #15131a 19% 100%)`,
+              boxShadow: "inset -4px -4px 12px rgba(0,0,0,.6)",
+              animation: on ? "spin 1.6s linear infinite" : "none",
+            }}
+          >
+            <div className="absolute inset-0 rounded-full border border-white/10" />
+            <div className="absolute inset-[30%] rounded-full border border-white/10" />
+            <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
+            <div className="absolute right-2 top-2 h-1 w-6 origin-right rotate-[35deg] rounded-full bg-blush-200/70" />
+          </div>
+        </div>
+
+        <button
+          onClick={() => toggleDeck(id)}
+          className="w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+          style={{ background: cfg.accent }}
+        >
+          {on ? "⏸ Stop" : "▶ Play"}
+        </button>
+      </div>
+    );
+  };
 
   return (
-    <div className="relative flex h-[340px] flex-col items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-plum-900 to-pink-700">
-      {/* sweeping light beams */}
-      <div
-        className={`pointer-events-none absolute inset-0 ${playing ? "opacity-100" : "opacity-40"}`}
-        style={{
-          background:
-            "conic-gradient(from 0deg at 50% 0%, transparent 0deg, rgba(175,199,222,0.25) 20deg, transparent 40deg, rgba(164,52,58,0.22) 70deg, transparent 95deg, rgba(255,255,255,0.18) 130deg, transparent 160deg)",
-          animation: playing ? "spin 6s linear infinite" : "none",
-        }}
-      />
+    <div className="rounded-2xl bg-gradient-to-b from-plum-900 to-[#15131a] p-5">
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <Deck id="A" />
+        <Deck id="B" />
+      </div>
 
-      {/* hanging cord */}
-      <div className="absolute top-0 h-10 w-px bg-white/40" />
-
-      {/* the ball */}
-      <button
-        onClick={toggle}
-        aria-label={playing ? "Stop the music" : "Play the music"}
-        className="group relative mt-6"
-        style={{ perspective: "600px" }}
-      >
-        <div
-          className="relative h-40 w-40 rounded-full"
-          style={{
-            background:
-              "radial-gradient(circle at 32% 28%, #fdfdfd 0%, #cdd7e6 22%, #8aa0bd 55%, #41506b 100%)",
-            boxShadow:
-              "0 0 40px rgba(175,199,222,0.6), inset -10px -10px 30px rgba(0,0,0,0.5)",
-            animation: playing ? "spin 2.4s linear infinite" : "spin 14s linear infinite",
-            transformStyle: "preserve-3d",
-          }}
-        >
-          {/* mirror tiles */}
-          <div className="absolute inset-0 overflow-hidden rounded-full">
-            <div
-              className="grid h-full w-full"
-              style={{
-                gridTemplateRows: `repeat(${rows}, 1fr)`,
-              }}
-            >
-              {Array.from({ length: rows }).map((_, r) => (
-                <div key={r} className="grid" style={{ gridTemplateColumns: "repeat(14, 1fr)" }}>
-                  {Array.from({ length: 14 }).map((_, c) => {
-                    const shade = (r + c) % 3;
-                    const bg =
-                      shade === 0 ? "rgba(255,255,255,0.45)" : shade === 1 ? "rgba(138,160,189,0.5)" : "rgba(65,80,107,0.55)";
-                    return (
-                      <span
-                        key={c}
-                        className="border border-plum-900/30"
-                        style={{ background: bg }}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* highlight */}
-          <div className="pointer-events-none absolute left-6 top-5 h-8 w-8 rounded-full bg-white/70 blur-md" />
+      {/* crossfader */}
+      <div className="mt-6">
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-blush-200/70">
+          <span>A</span>
+          <span>Crossfader</span>
+          <span>B</span>
         </div>
-      </button>
-
-      <button
-        onClick={toggle}
-        className="z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/25"
-      >
-        {playing ? "⏸ Stop the groove" : "▶ Hit play"}
-      </button>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={mix}
+          onChange={onMix}
+          className="h-2 w-full cursor-pointer appearance-none rounded-full"
+          style={{
+            background: `linear-gradient(90deg, #1C3F5F 0%, #6E92B4 ${mix}%, #C0565B ${mix}%, #A4343A 100%)`,
+          }}
+          aria-label="Crossfader between deck A and deck B"
+        />
+        <p className="mt-3 text-center text-xs text-blush-200/60">
+          Play both decks, then slide to blend the mix.
+        </p>
+      </div>
     </div>
   );
 }
@@ -616,11 +657,11 @@ export default function Interests({ standalone = false }) {
         <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-plum-900">
-              <span aria-hidden>🪩</span> Disco ball
+              <span aria-hidden>🎧</span> Mini DJ booth
             </h3>
-            <span className="text-sm text-plum-700/60">click the ball to start the party</span>
+            <span className="text-sm text-plum-700/60">play both decks, then crossfade</span>
           </div>
-          <DiscoBall />
+          <DJMixer />
         </div>
       </Reveal>
 
