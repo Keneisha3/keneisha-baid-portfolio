@@ -4,21 +4,27 @@ import { INTERESTS, PLAYLIST } from "../data/portfolio";
 
 // Interactive 2-deck DJ mixer. Two synthesized tracks (no audio files); play
 // either deck and use the crossfader to blend between them. All Web Audio.
+// Both decks are original synth loops *inspired by* these tracks (not the real
+// recordings) so they're fully playable and copyright-safe.
 const TRACKS = {
   A: {
-    name: "Deck A — Sunset House",
-    tempo: 0.26, // seconds per step
+    name: "Deck A — Break My Love",
+    note: "inspired by RÜFÜS DU SOL",
+    tempo: 0.205, // ~122 BPM driving deep house
     accent: "#1C3F5F",
-    bass: [55, 55, 82.41, 55, 73.42, 55, 65.41, 98],
-    chord: [220, 277.18, 329.63], // A minor-ish
+    // F# minor pulse: F#1 walk with octave lift
+    bass: [46.25, 46.25, 69.3, 46.25, 61.74, 46.25, 55.0, 92.5],
+    chord: [185.0, 220.0, 277.18], // F#m-ish airy stab
     swing: false,
   },
   B: {
-    name: "Deck B — Midnight Funk",
-    tempo: 0.22,
+    name: "Deck B — Hold On, We're Going Home",
+    note: "inspired by Drake",
+    tempo: 0.30, // ~100 BPM warm bounce
     accent: "#A4343A",
-    bass: [49, 73.42, 49, 98, 65.41, 49, 87.31, 49],
-    chord: [261.63, 311.13, 392.0], // C minor-ish
+    // Eb major warmth: Eb walk
+    bass: [77.78, 77.78, 51.91, 77.78, 58.27, 77.78, 51.91, 69.3],
+    chord: [311.13, 392.0, 466.16], // Eb major glow
     swing: true,
   },
 };
@@ -146,12 +152,19 @@ function DJMixer() {
     const on = playing[id];
     return (
       <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-blush-200/80">
-            {cfg.name}
-          </span>
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div>
+            <span className="block text-xs font-semibold uppercase tracking-wider text-blush-200/80">
+              {cfg.name}
+            </span>
+            {cfg.note && (
+              <span className="block text-[10px] italic text-blush-200/50">
+                {cfg.note}
+              </span>
+            )}
+          </div>
           <span
-            className={`h-2 w-2 rounded-full ${on ? "animate-pulse" : ""}`}
+            className={`mt-1 h-2 w-2 shrink-0 rounded-full ${on ? "animate-pulse" : ""}`}
             style={{ background: on ? cfg.accent : "rgba(255,255,255,0.25)" }}
           />
         </div>
