@@ -161,6 +161,16 @@ export const PROJECTS = [
 
 // === A few of my favourite things ===
 
+// Shared backend for visitor travel recommendations (Supabase REST).
+// Leave both blank to keep pins local-only (saved in each visitor's browser).
+// Fill these in after creating a free Supabase project + table (see README):
+//   url     = your project URL,   e.g. "https://abcdxyz.supabase.co"
+//   anonKey = the public "anon" API key from Project Settings -> API
+export const SUPABASE = {
+  url: "",
+  anonKey: "",
+};
+
 // Interactive playlist shown on the Life page (Spotify embed).
 // To use your own: open a playlist in Spotify -> Share -> Copy link,
 // then paste just the ID (the part after /playlist/ and before any "?").

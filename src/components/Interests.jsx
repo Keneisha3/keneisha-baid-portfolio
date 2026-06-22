@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
+import { fetchRecs, addRec, clearLocal, isShared } from "../data/recsStore";
 
 // Interactive 2-deck DJ mixer. Two synthesized tracks (no audio files); play
 // either deck and use the crossfader to blend between them. All Web Audio.
@@ -310,18 +311,6 @@ const TRAVEL_PINS = [
   { name: "Toronto, Canada", coords: [43.6532, -79.3832] },
 ];
 
-const RECS_KEY = "kb-travel-recs";
-
-function loadRecs() {
-  try {
-    const raw = localStorage.getItem(RECS_KEY);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.slice(0, 100) : [];
-  } catch {
-    return [];
-  }
-}
-
 function TravelMap() {
   const elRef = useRef(null);
   const mapRef = useRef(null);
@@ -359,13 +348,8 @@ function TravelMap() {
     });
   };
 
-  const saveRecs = (list) => {
+  const showRecs = (list) => {
     setRecs(list);
-    try {
-      localStorage.setItem(RECS_KEY, JSON.stringify(list));
-    } catch {
-      /* storage full / unavailable — pins just won't persist */
-    }
     drawRecs(list);
   };
 
@@ -413,24 +397,25 @@ function TravelMap() {
       });
       if (group.length > 1) map.fitBounds(group, { padding: [50, 50] });
 
-      // Load any recommendation pins this visitor saved before.
-      const saved = loadRecs();
-      setRecs(saved);
-      drawRecs(saved);
+      // Load existing recommendation pins (shared if backend configured).
+      fetchRecs().then((saved) => {
+        if (!cancelled) showRecs(saved);
+      });
 
       // Click to drop a recommendation pin (only in add mode).
-      map.on("click", (e) => {
+      map.on("click", async (e) => {
         if (!addModeRef.current) return;
         const name = window.prompt(
           "Recommend this spot! What is it? (e.g. 'Best gelato — Rome')"
         );
-        if (!name || !name.trim()) return;
-        const next = [
-          ...loadRecs(),
-          { name: name.trim().slice(0, 80), lat: e.latlng.lat, lng: e.latlng.lng },
-        ].slice(0, 100);
-        saveRecs(next);
         setAddMode(false);
+        if (!name || !name.trim()) return;
+        const next = await addRec({
+          name: name.trim(),
+          lat: e.latlng.lat,
+          lng: e.latlng.lng,
+        });
+        if (!cancelled) showRecs(next);
       });
     };
 
@@ -470,7 +455,7 @@ function TravelMap() {
 
   const clearRecs = () => {
     if (recs.length && window.confirm("Remove the recommendation pins you added?")) {
-      saveRecs([]);
+      showRecs(clearLocal());
     }
   };
 
@@ -508,20 +493,20 @@ function TravelMap() {
           {addMode ? "✕ Cancel" : "★ Recommend a place"}
         </button>
         {recs.length > 0 && (
-          <>
-            <span className="text-sm text-plum-700/60">
-              {recs.length} of your pick{recs.length === 1 ? "" : "s"}
-            </span>
-            <button
-              onClick={clearRecs}
-              className="text-sm font-medium text-plum-700/60 underline-offset-2 hover:text-rose-500 hover:underline"
-            >
-              clear mine
-            </button>
-          </>
+          <span className="text-sm text-plum-700/60">
+            {recs.length} recommendation{recs.length === 1 ? "" : "s"} so far
+          </span>
+        )}
+        {!isShared && recs.length > 0 && (
+          <button
+            onClick={clearRecs}
+            className="text-sm font-medium text-plum-700/60 underline-offset-2 hover:text-rose-500 hover:underline"
+          >
+            clear mine
+          </button>
         )}
         <span className="ml-auto text-xs text-plum-700/40">
-          your pins save in this browser
+          {isShared ? "shared with everyone" : "saved in your browser"}
         </span>
       </div>
     </div>
