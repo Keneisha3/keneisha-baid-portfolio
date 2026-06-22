@@ -207,6 +207,7 @@ const TRAVEL_PINS = [
   { name: "Rome, Italy", coords: [41.9028, 12.4964] },
   { name: "Naples, Italy", coords: [40.8518, 14.2681] },
   { name: "London, England", coords: [51.5072, -0.1276] },
+  { name: "Wales", coords: [52.6, -3.8] },
   { name: "Cardiff, Wales", coords: [51.4816, -3.1791] },
   { name: "Edinburgh, Scotland", coords: [55.9533, -3.1883] },
   { name: "Isle of Skye, Scotland", coords: [57.27, -6.215] },
