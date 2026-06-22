@@ -1,6 +1,181 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
+
+// Interactive disco ball: click to spin + play a looping disco groove built
+// live with the Web Audio API (no audio files). Click again to stop.
+function DiscoBall() {
+  const ctxRef = useRef(null);
+  const timerRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+
+  // A simple four-on-the-floor disco loop with a walking bass + hats.
+  const startGroove = () => {
+    let ctx = ctxRef.current;
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      ctxRef.current = ctx;
+    }
+    if (ctx.state === "suspended") ctx.resume();
+
+    const bass = [55, 55, 82.41, 55, 73.42, 55, 65.41, 98]; // A-based disco walk
+    const tempo = 0.26; // seconds per step
+    let step = 0;
+
+    const tone = (freq, t, dur, type, vol) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g);
+      g.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+    };
+
+    const noiseHat = (t, vol) => {
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 7000;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      src.connect(hp);
+      hp.connect(g);
+      g.connect(ctx.destination);
+      src.start(t);
+      src.stop(t + 0.05);
+    };
+
+    const tick = () => {
+      const t = ctx.currentTime + 0.02;
+      // four-on-the-floor kick
+      tone(48, t, 0.18, "sine", 0.5);
+      // bassline
+      tone(bass[step % bass.length], t, tempo * 0.9, "sawtooth", 0.22);
+      // off-beat open hat
+      if (step % 2 === 1) noiseHat(t, 0.15);
+      // sparkly chord stab every 4 steps
+      if (step % 4 === 0) {
+        [440, 554.37, 659.25].forEach((f) => tone(f, t, 0.18, "triangle", 0.08));
+      }
+      step++;
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, tempo * 1000);
+  };
+
+  const stopGroove = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const toggle = () => {
+    if (playing) {
+      stopGroove();
+      setPlaying(false);
+    } else {
+      startGroove();
+      setPlaying(true);
+    }
+  };
+
+  useEffect(() => () => stopGroove(), []);
+
+  // Build a grid of mirror tiles for the ball.
+  const tiles = [];
+  const rows = 9;
+  for (let r = 0; r < rows; r++) {
+    const cols = 14;
+    for (let c = 0; c < cols; c++) {
+      tiles.push({ r, c, key: `${r}-${c}` });
+    }
+  }
+
+  return (
+    <div className="relative flex h-[340px] flex-col items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-plum-900 to-pink-700">
+      {/* sweeping light beams */}
+      <div
+        className={`pointer-events-none absolute inset-0 ${playing ? "opacity-100" : "opacity-40"}`}
+        style={{
+          background:
+            "conic-gradient(from 0deg at 50% 0%, transparent 0deg, rgba(175,199,222,0.25) 20deg, transparent 40deg, rgba(164,52,58,0.22) 70deg, transparent 95deg, rgba(255,255,255,0.18) 130deg, transparent 160deg)",
+          animation: playing ? "spin 6s linear infinite" : "none",
+        }}
+      />
+
+      {/* hanging cord */}
+      <div className="absolute top-0 h-10 w-px bg-white/40" />
+
+      {/* the ball */}
+      <button
+        onClick={toggle}
+        aria-label={playing ? "Stop the music" : "Play the music"}
+        className="group relative mt-6"
+        style={{ perspective: "600px" }}
+      >
+        <div
+          className="relative h-40 w-40 rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 32% 28%, #fdfdfd 0%, #cdd7e6 22%, #8aa0bd 55%, #41506b 100%)",
+            boxShadow:
+              "0 0 40px rgba(175,199,222,0.6), inset -10px -10px 30px rgba(0,0,0,0.5)",
+            animation: playing ? "spin 2.4s linear infinite" : "spin 14s linear infinite",
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {/* mirror tiles */}
+          <div className="absolute inset-0 overflow-hidden rounded-full">
+            <div
+              className="grid h-full w-full"
+              style={{
+                gridTemplateRows: `repeat(${rows}, 1fr)`,
+              }}
+            >
+              {Array.from({ length: rows }).map((_, r) => (
+                <div key={r} className="grid" style={{ gridTemplateColumns: "repeat(14, 1fr)" }}>
+                  {Array.from({ length: 14 }).map((_, c) => {
+                    const shade = (r + c) % 3;
+                    const bg =
+                      shade === 0 ? "rgba(255,255,255,0.45)" : shade === 1 ? "rgba(138,160,189,0.5)" : "rgba(65,80,107,0.55)";
+                    return (
+                      <span
+                        key={c}
+                        className="border border-plum-900/30"
+                        style={{ background: bg }}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* highlight */}
+          <div className="pointer-events-none absolute left-6 top-5 h-8 w-8 rounded-full bg-white/70 blur-md" />
+        </div>
+      </button>
+
+      <button
+        onClick={toggle}
+        className="z-10 mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2 text-sm font-semibold text-white backdrop-blur transition-colors hover:bg-white/25"
+      >
+        {playing ? "⏸ Stop the groove" : "▶ Hit play"}
+      </button>
+    </div>
+  );
+}
 
 // Small inline guitar glyph for the header.
 function GuitarIcon() {
@@ -433,6 +608,18 @@ export default function Interests({ standalone = false }) {
           <div className="p-5 sm:p-7">
             <Fretboard />
           </div>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <div className="mt-6 rounded-3xl border border-pink-100 bg-white p-5 shadow-md shadow-pink-500/10 sm:p-7">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-plum-900">
+              <span aria-hidden>🪩</span> Disco ball
+            </h3>
+            <span className="text-sm text-plum-700/60">click the ball to start the party</span>
+          </div>
+          <DiscoBall />
         </div>
       </Reveal>
 
