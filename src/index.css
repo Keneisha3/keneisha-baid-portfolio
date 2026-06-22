@@ -118,6 +118,12 @@ body {
     opacity: 0;
   }
 }
+/* Visitor recommendation pins (distinct from Keneisha's own) */
+.kb-pin-dot--rec {
+  background: #e0b341 !important;
+  border-color: #fff !important;
+}
+
 .leaflet-popup-content-wrapper,
 .leaflet-tooltip {
   border-radius: 10px !important;

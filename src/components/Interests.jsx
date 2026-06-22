@@ -310,9 +310,64 @@ const TRAVEL_PINS = [
   { name: "Toronto, Canada", coords: [43.6532, -79.3832] },
 ];
 
+const RECS_KEY = "kb-travel-recs";
+
+function loadRecs() {
+  try {
+    const raw = localStorage.getItem(RECS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.slice(0, 100) : [];
+  } catch {
+    return [];
+  }
+}
+
 function TravelMap() {
   const elRef = useRef(null);
   const mapRef = useRef(null);
+  const recLayerRef = useRef(null); // Leaflet layer group for visitor pins
+  const addModeRef = useRef(false);
+  const [addMode, setAddMode] = useState(false);
+  const [recs, setRecs] = useState([]);
+
+  // Keep a ref in sync so the Leaflet click handler reads the latest value.
+  useEffect(() => {
+    addModeRef.current = addMode;
+  }, [addMode]);
+
+  // Render visitor recommendation pins from current `recs`.
+  const drawRecs = (list) => {
+    const L = window.L;
+    const map = mapRef.current;
+    if (!L || !map) return;
+    if (!recLayerRef.current) {
+      recLayerRef.current = L.layerGroup().addTo(map);
+    }
+    recLayerRef.current.clearLayers();
+    const recIcon = L.divIcon({
+      className: "kb-pin kb-pin--rec",
+      html: '<span class="kb-pin-dot kb-pin-dot--rec"></span>',
+      iconSize: [18, 18],
+      iconAnchor: [9, 18],
+      popupAnchor: [0, -16],
+    });
+    list.forEach((r) => {
+      L.marker([r.lat, r.lng], { icon: recIcon, riseOnHover: true })
+        .addTo(recLayerRef.current)
+        .bindTooltip(`★ ${r.name}`, { direction: "top", offset: [0, -14] })
+        .bindPopup(`<strong>★ ${r.name}</strong><br/><span style="color:#6E1E2E">visitor pick</span>`);
+    });
+  };
+
+  const saveRecs = (list) => {
+    setRecs(list);
+    try {
+      localStorage.setItem(RECS_KEY, JSON.stringify(list));
+    } catch {
+      /* storage full / unavailable — pins just won't persist */
+    }
+    drawRecs(list);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -326,7 +381,6 @@ function TravelMap() {
       }).setView([46.5, -20], 3);
       mapRef.current = map;
 
-      // Decorative "voyager" tiles (warmer, more colour than the plain light theme).
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
@@ -336,18 +390,11 @@ function TravelMap() {
         }
       ).addTo(map);
 
-      // Dashed "journey" line linking the places in order.
       L.polyline(
         TRAVEL_PINS.map((p) => p.coords),
-        {
-          color: "#A4343A",
-          weight: 1.5,
-          opacity: 0.5,
-          dashArray: "5 7",
-        }
+        { color: "#A4343A", weight: 1.5, opacity: 0.5, dashArray: "5 7" }
       ).addTo(map);
 
-      // Pulsing teardrop pin with a hover tooltip + click popup.
       const icon = L.divIcon({
         className: "kb-pin",
         html: '<span class="kb-pin-pulse"></span><span class="kb-pin-dot"></span>',
@@ -358,16 +405,35 @@ function TravelMap() {
 
       const group = [];
       TRAVEL_PINS.forEach((p) => {
-        const m = L.marker(p.coords, { icon, riseOnHover: true })
+        L.marker(p.coords, { icon, riseOnHover: true })
           .addTo(map)
           .bindTooltip(p.name, { direction: "top", offset: [0, -14] })
           .bindPopup(`<strong>${p.name}</strong>`);
-        group.push(m.getLatLng());
+        group.push(p.coords);
       });
       if (group.length > 1) map.fitBounds(group, { padding: [50, 50] });
+
+      // Load any recommendation pins this visitor saved before.
+      const saved = loadRecs();
+      setRecs(saved);
+      drawRecs(saved);
+
+      // Click to drop a recommendation pin (only in add mode).
+      map.on("click", (e) => {
+        if (!addModeRef.current) return;
+        const name = window.prompt(
+          "Recommend this spot! What is it? (e.g. 'Best gelato — Rome')"
+        );
+        if (!name || !name.trim()) return;
+        const next = [
+          ...loadRecs(),
+          { name: name.trim().slice(0, 80), lat: e.latlng.lat, lng: e.latlng.lng },
+        ].slice(0, 100);
+        saveRecs(next);
+        setAddMode(false);
+      });
     };
 
-    // Wait for the Leaflet CDN script to be ready.
     if (window.L) start();
     else {
       const id = setInterval(() => {
@@ -396,15 +462,67 @@ function TravelMap() {
     };
   }, []);
 
+  // Reflect add-mode on the map container (cursor + subtle ring).
+  useEffect(() => {
+    const c = elRef.current;
+    if (c) c.style.cursor = addMode ? "crosshair" : "";
+  }, [addMode]);
+
+  const clearRecs = () => {
+    if (recs.length && window.confirm("Remove the recommendation pins you added?")) {
+      saveRecs([]);
+    }
+  };
+
   return (
-    <div className="relative">
-      <div
-        ref={elRef}
-        className="h-[380px] w-full overflow-hidden rounded-2xl border-4 border-blush-200 shadow-inner"
-      />
-      {/* places-count badge */}
-      <div className="pointer-events-none absolute left-3 top-3 z-[500] rounded-full border border-blush-200 bg-white/90 px-3 py-1 text-xs font-semibold text-pink-700 shadow-sm backdrop-blur">
-        ✈️ {TRAVEL_PINS.length} places &amp; counting
+    <div>
+      <div className="relative">
+        <div
+          ref={elRef}
+          className={`h-[380px] w-full overflow-hidden rounded-2xl border-4 shadow-inner transition-colors ${
+            addMode ? "border-rose-400" : "border-blush-200"
+          }`}
+        />
+        <div className="pointer-events-none absolute left-3 top-3 z-[500] rounded-full border border-blush-200 bg-white/90 px-3 py-1 text-xs font-semibold text-pink-700 shadow-sm backdrop-blur">
+          ✈️ {TRAVEL_PINS.length} places &amp; counting
+        </div>
+        {addMode && (
+          <div className="pointer-events-none absolute inset-x-0 top-3 z-[500] flex justify-center">
+            <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold text-white shadow">
+              Click anywhere to drop your recommendation
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* controls */}
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button
+          onClick={() => setAddMode((m) => !m)}
+          className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+            addMode
+              ? "bg-rose-500 text-white hover:bg-rose-600"
+              : "bg-pink-500 text-white hover:bg-pink-600"
+          }`}
+        >
+          {addMode ? "✕ Cancel" : "★ Recommend a place"}
+        </button>
+        {recs.length > 0 && (
+          <>
+            <span className="text-sm text-plum-700/60">
+              {recs.length} of your pick{recs.length === 1 ? "" : "s"}
+            </span>
+            <button
+              onClick={clearRecs}
+              className="text-sm font-medium text-plum-700/60 underline-offset-2 hover:text-rose-500 hover:underline"
+            >
+              clear mine
+            </button>
+          </>
+        )}
+        <span className="ml-auto text-xs text-plum-700/40">
+          your pins save in this browser
+        </span>
       </div>
     </div>
   );
@@ -739,7 +857,9 @@ export default function Interests({ standalone = false }) {
             <h3 className="flex items-center gap-2 font-display text-xl font-semibold text-plum-900">
               <span aria-hidden>🗺️</span> Where I've wandered
             </h3>
-            <span className="text-sm text-plum-700/60">drag to pan · click a pin</span>
+            <span className="text-sm text-plum-700/60">
+              red = my stops · gold = your recs
+            </span>
           </div>
           <TravelMap />
         </div>
