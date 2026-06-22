@@ -169,20 +169,52 @@ function DJMixer() {
           />
         </div>
 
-        {/* spinning vinyl */}
-        <div className="mx-auto mb-4 h-28 w-28">
+        {/* realistic turntable: platter, grooved vinyl, label, tonearm */}
+        <div className="relative mx-auto mb-4 h-32 w-32">
+          {/* spinning record */}
           <div
-            className="relative h-full w-full rounded-full"
+            className="absolute inset-0 rounded-full"
             style={{
-              background: `radial-gradient(circle at 50% 50%, ${cfg.accent} 0 18%, #15131a 19% 100%)`,
-              boxShadow: "inset -4px -4px 12px rgba(0,0,0,.6)",
+              background: `
+                repeating-radial-gradient(circle at 50% 50%, #0c0b0f 0px, #0c0b0f 1px, #1b1a20 2px, #0c0b0f 3px) ,
+                radial-gradient(circle at 38% 32%, rgba(255,255,255,0.18), transparent 45%)`,
+              boxShadow:
+                "inset -6px -6px 16px rgba(0,0,0,.7), 0 6px 16px rgba(0,0,0,.5)",
               animation: on ? "spin 1.6s linear infinite" : "none",
             }}
           >
-            <div className="absolute inset-0 rounded-full border border-white/10" />
-            <div className="absolute inset-[30%] rounded-full border border-white/10" />
-            <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
-            <div className="absolute right-2 top-2 h-1 w-6 origin-right rotate-[35deg] rounded-full bg-blush-200/70" />
+            {/* sheen sweep */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background:
+                  "conic-gradient(from 210deg, transparent 0deg, rgba(255,255,255,0.12) 25deg, transparent 60deg)",
+              }}
+            />
+            {/* colored center label */}
+            <div
+              className="absolute left-1/2 top-1/2 flex h-[42%] w-[42%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+              style={{
+                background: `radial-gradient(circle at 40% 35%, ${cfg.accent}, ${cfg.accent}cc 60%, ${cfg.accent}99)`,
+                boxShadow: "inset 0 0 6px rgba(0,0,0,.4)",
+              }}
+            >
+              <span className="text-[8px] font-bold uppercase tracking-wider text-white/85">
+                {id}
+              </span>
+            </div>
+            {/* spindle hole */}
+            <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0c0b0f] ring-1 ring-white/30" />
+          </div>
+
+          {/* tonearm (tilts onto the record when playing) */}
+          <div
+            className="absolute -right-1 top-1 h-[58%] w-[10%] origin-top transition-transform duration-500"
+            style={{ transform: on ? "rotate(18deg)" : "rotate(-6deg)" }}
+          >
+            <div className="mx-auto h-full w-1 rounded-full bg-gradient-to-b from-blush-200 to-blush-400" />
+            <div className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-blush-300 ring-2 ring-plum-900" />
+            <div className="absolute bottom-0 left-1/2 h-2 w-3 -translate-x-1/2 rounded-sm bg-blush-200" />
           </div>
         </div>
 
@@ -290,11 +322,13 @@ function TravelMap() {
       const map = L.map(elRef.current, {
         scrollWheelZoom: false,
         attributionControl: true,
+        zoomControl: true,
       }).setView([46.5, -20], 3);
       mapRef.current = map;
 
+      // Decorative "voyager" tiles (warmer, more colour than the plain light theme).
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -302,22 +336,35 @@ function TravelMap() {
         }
       ).addTo(map);
 
+      // Dashed "journey" line linking the places in order.
+      L.polyline(
+        TRAVEL_PINS.map((p) => p.coords),
+        {
+          color: "#A4343A",
+          weight: 1.5,
+          opacity: 0.5,
+          dashArray: "5 7",
+        }
+      ).addTo(map);
+
+      // Pulsing teardrop pin with a hover tooltip + click popup.
       const icon = L.divIcon({
-        className: "",
-        html: '<div style="width:16px;height:16px;border-radius:50% 50% 50% 0;background:#A4343A;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
-        iconSize: [16, 16],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -14],
+        className: "kb-pin",
+        html: '<span class="kb-pin-pulse"></span><span class="kb-pin-dot"></span>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 18],
+        popupAnchor: [0, -16],
       });
 
       const group = [];
       TRAVEL_PINS.forEach((p) => {
-        const m = L.marker(p.coords, { icon })
+        const m = L.marker(p.coords, { icon, riseOnHover: true })
           .addTo(map)
-          .bindPopup(`<strong>${p.name}</strong><br/>${p.note}`);
+          .bindTooltip(p.name, { direction: "top", offset: [0, -14] })
+          .bindPopup(`<strong>${p.name}</strong>`);
         group.push(m.getLatLng());
       });
-      if (group.length > 1) map.fitBounds(group, { padding: [40, 40] });
+      if (group.length > 1) map.fitBounds(group, { padding: [50, 50] });
     };
 
     // Wait for the Leaflet CDN script to be ready.
@@ -350,10 +397,16 @@ function TravelMap() {
   }, []);
 
   return (
-    <div
-      ref={elRef}
-      className="h-[360px] w-full overflow-hidden rounded-2xl border border-pink-100"
-    />
+    <div className="relative">
+      <div
+        ref={elRef}
+        className="h-[380px] w-full overflow-hidden rounded-2xl border-4 border-blush-200 shadow-inner"
+      />
+      {/* places-count badge */}
+      <div className="pointer-events-none absolute left-3 top-3 z-[500] rounded-full border border-blush-200 bg-white/90 px-3 py-1 text-xs font-semibold text-pink-700 shadow-sm backdrop-blur">
+        ✈️ {TRAVEL_PINS.length} places &amp; counting
+      </div>
+    </div>
   );
 }
 
@@ -402,31 +455,81 @@ function Fretboard() {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[420px] rounded-2xl bg-plum-900 p-4">
+      {/* rosewood fretboard */}
+      <div
+        className="relative min-w-[440px] rounded-xl p-4 pl-9"
+        style={{
+          background:
+            "repeating-linear-gradient(90deg, #3b2415 0px, #4a2e1a 18px, #3a2313 40px), linear-gradient(180deg, #4a2e1a, #2e1c10)",
+          boxShadow: "inset 0 2px 6px rgba(0,0,0,.45)",
+        }}
+      >
+        {/* nut at the far left */}
+        <div className="absolute left-7 top-3 bottom-3 w-1 rounded bg-gradient-to-b from-[#f3e9d8] to-[#d8c6a8]" />
+
+        {/* metal fret wires */}
+        {Array.from({ length: FRETS }).map((_, f) => (
+          <div
+            key={`wire-${f}`}
+            className="pointer-events-none absolute top-3 bottom-3 w-[2px] rounded"
+            style={{
+              left: `calc(2.25rem + ${((f + 1) / FRETS) * 100}% - ${((f + 1) / FRETS) * 2.25}rem)`,
+              background: "linear-gradient(180deg,#e8e8ec,#9a9aa2)",
+              opacity: 0.8,
+            }}
+          />
+        ))}
+
         {GUITAR_STRINGS.map((str, si) => (
-          <div key={si} className="flex items-center gap-2 py-1.5">
-            <span className="w-5 shrink-0 text-center text-xs font-semibold text-blush-200">
+          <div key={si} className="relative flex items-center gap-2 py-1">
+            <span className="z-10 w-4 shrink-0 text-center text-xs font-semibold text-blush-100/90">
               {str.label}
             </span>
-            <div className="flex flex-1 gap-2">
+            <div className="relative flex flex-1 gap-2">
+              {/* the string line, thicker for lower strings */}
+              <span
+                className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 rounded"
+                style={{
+                  height: `${1 + si * 0.4}px`,
+                  background:
+                    "linear-gradient(180deg,#fff,#c9c9cf 40%,#8d8d94)",
+                  opacity: 0.85,
+                }}
+              />
               {Array.from({ length: FRETS }).map((_, fret) => (
                 <button
                   key={fret}
                   onClick={() => pluck(str.openFreq, fret)}
                   aria-label={`${str.label} string, fret ${fret}`}
-                  className={`group relative flex h-9 flex-1 items-center justify-center rounded-md border transition-all active:scale-95 ${
+                  className={`group relative z-10 flex h-7 flex-1 items-center justify-center rounded-sm transition-all active:scale-95 ${
                     fret === 0
-                      ? "border-rose-500/60 bg-rose-500/10 hover:bg-rose-500/25"
-                      : "border-white/10 bg-white/5 hover:border-pink-400 hover:bg-pink-500/25"
+                      ? "hover:bg-rose-400/25"
+                      : "hover:bg-blush-100/15"
                   }`}
                 >
-                  <span className="h-px w-full bg-white/20 group-hover:bg-white/40" />
+                  {/* finger dot on press-feedback */}
+                  <span
+                    className={`h-3.5 w-3.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 ${
+                      fret === 0 ? "bg-rose-400" : "bg-blush-100"
+                    }`}
+                    style={{ boxShadow: "0 0 6px rgba(0,0,0,.4)" }}
+                  />
                 </button>
               ))}
             </div>
           </div>
         ))}
-        <div className="mt-2 flex justify-between px-7 text-[10px] uppercase tracking-wider text-blush-200/50">
+
+        {/* position-marker inlays (between strings, at frets 3) */}
+        <div className="pointer-events-none absolute left-9 right-4 top-1/2 flex -translate-y-1/2 justify-around opacity-70">
+          <span />
+          <span />
+          <span className="h-2.5 w-2.5 rounded-full bg-blush-100/70" />
+          <span />
+          <span />
+        </div>
+
+        <div className="mt-2 flex justify-between pl-5 pr-1 text-[10px] uppercase tracking-wider text-blush-100/60">
           <span>open</span>
           <span>1</span>
           <span>2</span>
