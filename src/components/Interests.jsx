@@ -166,6 +166,7 @@ function DJMixer() {
     const ctx = ensureCtx();
     const dest = gainsRef.current[deck];
     const cfg = TRACKS[deck];
+    if (timersRef.current[deck]) return; // already running, don't double up
     let step = 0;
     const tick = () => {
       const t = ctx.currentTime + 0.02;
@@ -186,13 +187,13 @@ function DJMixer() {
     }
   };
 
+  // Side-effects run directly in the click handler (a real user gesture, which
+  // browsers require to start audio) — not inside the state updater.
   const toggleDeck = (deck) => {
-    setPlaying((p) => {
-      const next = !p[deck];
-      if (next) startDeck(deck);
-      else stopDeck(deck);
-      return { ...p, [deck]: next };
-    });
+    const willPlay = !playing[deck];
+    if (willPlay) startDeck(deck);
+    else stopDeck(deck);
+    setPlaying((p) => ({ ...p, [deck]: willPlay }));
   };
 
   const onMix = (e) => {
@@ -201,11 +202,12 @@ function DJMixer() {
     applyMix(v);
   };
 
+  // Stop timers on unmount (but keep the AudioContext — closing it during
+  // React's mount/unmount cycles can silence later playback).
   useEffect(() => {
     return () => {
       stopDeck("A");
       stopDeck("B");
-      if (ctxRef.current) ctxRef.current.close();
     };
   }, []);
 
@@ -379,16 +381,21 @@ function TravelMap() {
         scrollWheelZoom: false,
         attributionControl: true,
         zoomControl: true,
-      }).setView([46.5, -20], 3);
+        worldCopyJump: true,
+      }).setView([44, 6], 4); // zoomed into Europe (most pins) by default
       mapRef.current = map;
 
+      // Decorative satellite-style imagery with place labels on top.
       L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+          attribution: "Tiles &copy; Esri",
           maxZoom: 18,
         }
+      ).addTo(map);
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png",
+        { maxZoom: 18, opacity: 0.9 }
       ).addTo(map);
 
       L.polyline(
@@ -404,15 +411,13 @@ function TravelMap() {
         popupAnchor: [0, -16],
       });
 
-      const group = [];
       TRAVEL_PINS.forEach((p) => {
         L.marker(p.coords, { icon, riseOnHover: true })
           .addTo(map)
           .bindTooltip(p.name, { direction: "top", offset: [0, -14] })
           .bindPopup(`<strong>${p.name}</strong>`);
-        group.push(p.coords);
       });
-      if (group.length > 1) map.fitBounds(group, { padding: [50, 50] });
+      // Stay zoomed into Europe; users can zoom out to see the rest.
 
       // Load existing recommendation pins (shared if backend configured).
       fetchRecs().then((saved) => {
@@ -464,16 +469,31 @@ function TravelMap() {
     };
   }, []);
 
-  // Reflect add-mode on the map container (cursor + subtle ring).
+  // Reflect add-mode on the map container (cursor) and keep Leaflet sized
+  // correctly across re-renders so tiles never blank out.
   useEffect(() => {
     const c = elRef.current;
     if (c) c.style.cursor = addMode ? "crosshair" : "";
+    if (mapRef.current) {
+      mapRef.current.invalidateSize();
+      const t = setTimeout(() => mapRef.current && mapRef.current.invalidateSize(), 250);
+      return () => clearTimeout(t);
+    }
   }, [addMode]);
 
   const clearRecs = () => {
     if (recs.length && window.confirm("Remove the recommendation pins you added?")) {
       showRecs(clearLocal());
     }
+  };
+
+  const viewAll = () => {
+    const map = mapRef.current;
+    if (map) map.flyToBounds(TRAVEL_PINS.map((p) => p.coords), { padding: [40, 40] });
+  };
+  const viewEurope = () => {
+    const map = mapRef.current;
+    if (map) map.flyTo([44, 6], 4);
   };
 
   return (
@@ -509,6 +529,18 @@ function TravelMap() {
         >
           {addMode ? "✕ Cancel" : "★ Recommend a place"}
         </button>
+        <button
+          onClick={viewAll}
+          className="rounded-full border border-blush-300 px-3 py-2 text-sm font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:text-pink-600"
+        >
+          🌍 View all
+        </button>
+        <button
+          onClick={viewEurope}
+          className="rounded-full border border-blush-300 px-3 py-2 text-sm font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:text-pink-600"
+        >
+          ↺ Europe
+        </button>
         {recs.length > 0 && (
           <span className="text-sm text-plum-700/60">
             {recs.length} recommendation{recs.length === 1 ? "" : "s"} so far
@@ -530,7 +562,7 @@ function TravelMap() {
   );
 }
 
-// Interactive mini-fretboard. Click a string/fret to pluck a note via the
+// Interactive fretboard. Click a string/fret to pluck a note via the
 // Web Audio API (plucked-string-ish tone, no assets or libraries).
 const GUITAR_STRINGS = [
   { label: "E", openFreq: 329.63 }, // high E (top row)
@@ -540,13 +572,38 @@ const GUITAR_STRINGS = [
   { label: "A", openFreq: 110.0 },
   { label: "E", openFreq: 82.41 }, // low E (bottom row)
 ];
-const FRETS = 5; // 0 (open) .. 4
+const FRETS = 8; // 0 (open) .. 7 — a longer, fuller neck
+const INLAY_FRETS = [3, 5, 7]; // position markers
+
+// "Hot Cross Buns" mapped onto the high-E string (string index 0).
+// Notes: E (open), F (fret 1), G (fret 3)  ->  G F E, G F E, E E E E, F F F F, G F E
+const HCB = [
+  { s: 0, f: 3, n: "G" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 3, n: "G" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 0, n: "E" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 3, n: "G" },
+  { s: 0, f: 1, n: "F" },
+  { s: 0, f: 0, n: "E" },
+];
 
 function Fretboard() {
   const ctxRef = useRef(null);
+  const [tutorial, setTutorial] = useState(false);
+  const [step, setStep] = useState(0);
+  const [flash, setFlash] = useState(null); // "good" | "oops"
 
   const pluck = (baseFreq, fret) => {
-    // Lazily create / resume the audio context on first interaction.
     let ctx = ctxRef.current;
     if (!ctx) {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -554,122 +611,200 @@ function Fretboard() {
     }
     if (ctx.state === "suspended") ctx.resume();
 
-    const freq = baseFreq * Math.pow(2, fret / 12); // each fret = 1 semitone
+    const freq = baseFreq * Math.pow(2, fret / 12);
     const now = ctx.currentTime;
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = "triangle";
     osc.frequency.value = freq;
-
-    // Quick attack, exponential decay for a plucked feel.
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 1.5);
   };
 
+  const target = tutorial ? HCB[step] : null;
+
+  const handleHit = (si, fret) => {
+    pluck(GUITAR_STRINGS[si].openFreq, fret);
+    if (!tutorial) return;
+    if (si === target.s && fret === target.f) {
+      setFlash("good");
+      const next = step + 1;
+      if (next >= HCB.length) {
+        setTimeout(() => {
+          setFlash(null);
+          setTutorial(false);
+          setStep(0);
+        }, 700);
+      } else {
+        setStep(next);
+        setTimeout(() => setFlash(null), 180);
+      }
+    } else {
+      setFlash("oops");
+      setTimeout(() => setFlash(null), 180);
+    }
+  };
+
+  const startTutorial = () => {
+    setTutorial(true);
+    setStep(0);
+    setFlash(null);
+  };
+
   return (
-    <div className="overflow-x-auto">
-      {/* rosewood fretboard */}
-      <div
-        className="relative min-w-[440px] overflow-hidden rounded-xl p-4 pl-9"
-        style={{
-          background:
-            "repeating-linear-gradient(91deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0) 3px, rgba(120,70,40,0.12) 9px, rgba(0,0,0,0.18) 16px)," +
-            "repeating-linear-gradient(88deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0) 24px)," +
-            "radial-gradient(140% 90% at 30% 20%, #5a3a22 0%, #43291788 40%, transparent 70%)," +
-            "linear-gradient(180deg, #4a2e1a, #2c1a0f)",
-          boxShadow:
-            "inset 0 2px 8px rgba(0,0,0,.5), inset 0 -6px 14px rgba(0,0,0,.4)",
-        }}
-      >
-        {/* soft top gloss so the board catches light */}
+    <div>
+      {/* tutorial banner */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blush-200 bg-blush-50 px-4 py-2.5">
+        {tutorial ? (
+          <>
+            <div className="text-sm text-plum-700">
+              🎵 <strong>Hot Cross Buns</strong> — play the glowing note
+              <span className="ml-2 rounded-full bg-pink-500 px-2 py-0.5 text-xs font-bold text-white">
+                {target.n}
+              </span>
+              <span className="ml-2 text-plum-700/50">
+                {step + 1} / {HCB.length}
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setTutorial(false);
+                setStep(0);
+              }}
+              className="text-sm font-medium text-plum-700/60 hover:text-rose-500"
+            >
+              exit
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="text-sm text-plum-700/70">
+              New to guitar? Try a guided song.
+            </span>
+            <button
+              onClick={startTutorial}
+              className="rounded-full bg-pink-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-pink-600"
+            >
+              ▶ Learn “Hot Cross Buns”
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="overflow-x-auto">
+        {/* rosewood fretboard */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl"
+          className={`relative min-w-[560px] overflow-hidden rounded-xl p-4 pl-9 transition-shadow ${
+            flash === "good"
+              ? "ring-2 ring-emerald-400"
+              : flash === "oops"
+              ? "ring-2 ring-rose-500"
+              : ""
+          }`}
           style={{
             background:
-              "linear-gradient(180deg, rgba(255,240,220,0.12), transparent)",
+              "repeating-linear-gradient(91deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0) 3px, rgba(120,70,40,0.12) 9px, rgba(0,0,0,0.18) 16px)," +
+              "repeating-linear-gradient(88deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0) 24px)," +
+              "radial-gradient(140% 90% at 30% 20%, #5a3a22 0%, #43291788 40%, transparent 70%)," +
+              "linear-gradient(180deg, #4a2e1a, #2c1a0f)",
+            boxShadow:
+              "inset 0 2px 8px rgba(0,0,0,.5), inset 0 -6px 14px rgba(0,0,0,.4)",
           }}
-        />
-
-        {/* nut at the far left */}
-        <div className="absolute left-7 top-3 bottom-3 w-1.5 rounded bg-gradient-to-r from-[#fbf3e4] via-[#e9d6b8] to-[#cdb792] shadow-[1px_0_3px_rgba(0,0,0,0.4)]" />
-
-        {/* metal fret wires */}
-        {Array.from({ length: FRETS }).map((_, f) => (
+        >
           <div
-            key={`wire-${f}`}
-            className="pointer-events-none absolute top-3 bottom-3 w-[3px] rounded-full"
+            className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl"
             style={{
-              left: `calc(2.25rem + ${((f + 1) / FRETS) * 100}% - ${((f + 1) / FRETS) * 2.25}rem)`,
               background:
-                "linear-gradient(90deg, rgba(0,0,0,0.5), #f4f4f7 35%, #c9c9d0 55%, rgba(0,0,0,0.45))",
-              boxShadow: "0 0 2px rgba(255,255,255,0.5)",
-              opacity: 0.9,
+                "linear-gradient(180deg, rgba(255,240,220,0.12), transparent)",
             }}
           />
-        ))}
 
-        {GUITAR_STRINGS.map((str, si) => (
-          <div key={si} className="relative flex items-center gap-2 py-1">
-            <span className="z-10 w-4 shrink-0 text-center text-xs font-semibold text-blush-100/90">
-              {str.label}
-            </span>
-            <div className="relative flex flex-1 gap-2">
-              {/* the string line, thicker for lower strings */}
-              <span
-                className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 rounded"
-                style={{
-                  height: `${1 + si * 0.4}px`,
-                  background:
-                    "linear-gradient(180deg,#fff,#c9c9cf 40%,#8d8d94)",
-                  opacity: 0.85,
-                }}
-              />
-              {Array.from({ length: FRETS }).map((_, fret) => (
-                <button
-                  key={fret}
-                  onClick={() => pluck(str.openFreq, fret)}
-                  aria-label={`${str.label} string, fret ${fret}`}
-                  className={`group relative z-10 flex h-7 flex-1 items-center justify-center rounded-sm transition-all active:scale-95 ${
-                    fret === 0
-                      ? "hover:bg-rose-400/25"
-                      : "hover:bg-blush-100/15"
-                  }`}
-                >
-                  {/* finger dot on press-feedback */}
-                  <span
-                    className={`h-3.5 w-3.5 rounded-full opacity-0 transition-opacity group-hover:opacity-100 group-active:opacity-100 ${
-                      fret === 0 ? "bg-rose-400" : "bg-blush-100"
-                    }`}
-                    style={{ boxShadow: "0 0 6px rgba(0,0,0,.4)" }}
-                  />
-                </button>
-              ))}
+          {/* nut */}
+          <div className="absolute left-7 top-3 bottom-3 w-1.5 rounded bg-gradient-to-r from-[#fbf3e4] via-[#e9d6b8] to-[#cdb792] shadow-[1px_0_3px_rgba(0,0,0,0.4)]" />
+
+          {/* fret wires */}
+          {Array.from({ length: FRETS }).map((_, f) => (
+            <div
+              key={`wire-${f}`}
+              className="pointer-events-none absolute top-3 bottom-3 w-[3px] rounded-full"
+              style={{
+                left: `calc(2.25rem + ${((f + 1) / FRETS) * 100}% - ${((f + 1) / FRETS) * 2.25}rem)`,
+                background:
+                  "linear-gradient(90deg, rgba(0,0,0,0.5), #f4f4f7 35%, #c9c9d0 55%, rgba(0,0,0,0.45))",
+                boxShadow: "0 0 2px rgba(255,255,255,0.5)",
+                opacity: 0.9,
+              }}
+            />
+          ))}
+
+          {GUITAR_STRINGS.map((str, si) => (
+            <div key={si} className="relative flex items-center gap-2 py-1">
+              <span className="z-10 w-4 shrink-0 text-center text-xs font-semibold text-blush-100/90">
+                {str.label}
+              </span>
+              <div className="relative flex flex-1 gap-2">
+                <span
+                  className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 rounded"
+                  style={{
+                    height: `${1 + si * 0.4}px`,
+                    background: "linear-gradient(180deg,#fff,#c9c9cf 40%,#8d8d94)",
+                    opacity: 0.85,
+                  }}
+                />
+                {Array.from({ length: FRETS }).map((_, fret) => {
+                  const isTarget =
+                    tutorial && target.s === si && target.f === fret;
+                  return (
+                    <button
+                      key={fret}
+                      onClick={() => handleHit(si, fret)}
+                      aria-label={`${str.label} string, fret ${fret}`}
+                      className="group relative z-10 flex h-7 flex-1 items-center justify-center rounded-sm transition-all active:scale-95 hover:bg-blush-100/15"
+                    >
+                      {/* glowing target dot during the tutorial */}
+                      {isTarget && (
+                        <span className="absolute h-4 w-4 animate-ping rounded-full bg-pink-400/70" />
+                      )}
+                      <span
+                        className={`h-3.5 w-3.5 rounded-full transition-opacity ${
+                          isTarget
+                            ? "bg-pink-400 opacity-100 shadow-[0_0_8px_rgba(236,72,153,0.9)]"
+                            : "bg-blush-100 opacity-0 group-hover:opacity-100 group-active:opacity-100"
+                        }`}
+                        style={{ boxShadow: "0 0 6px rgba(0,0,0,.4)" }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          ))}
+
+          {/* position-marker inlays at frets 3, 5, 7 */}
+          <div className="pointer-events-none absolute left-9 right-4 top-1/2 flex -translate-y-1/2 opacity-70">
+            {Array.from({ length: FRETS }).map((_, f) => (
+              <div key={f} className="flex flex-1 justify-center">
+                {INLAY_FRETS.includes(f) && (
+                  <span className="h-2.5 w-2.5 rounded-full bg-blush-100/70" />
+                )}
+              </div>
+            ))}
           </div>
-        ))}
 
-        {/* position-marker inlays (between strings, at frets 3) */}
-        <div className="pointer-events-none absolute left-9 right-4 top-1/2 flex -translate-y-1/2 justify-around opacity-70">
-          <span />
-          <span />
-          <span className="h-2.5 w-2.5 rounded-full bg-blush-100/70" />
-          <span />
-          <span />
-        </div>
-
-        <div className="mt-2 flex justify-between pl-5 pr-1 text-[10px] uppercase tracking-wider text-blush-100/60">
-          <span>open</span>
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
+          {/* fret numbers */}
+          <div className="mt-2 flex pl-5 text-[10px] uppercase tracking-wider text-blush-100/60">
+            <span className="flex-1 text-left">open</span>
+            {Array.from({ length: FRETS - 1 }).map((_, f) => (
+              <span key={f} className="flex-1 text-center">
+                {f + 1}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
