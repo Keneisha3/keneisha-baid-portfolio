@@ -575,33 +575,34 @@ const GUITAR_STRINGS = [
 const FRETS = 8; // 0 (open) .. 7 — a longer, fuller neck
 const INLAY_FRETS = [3, 5, 7]; // position markers
 
-// "Hot Cross Buns" mapped onto the high-E string (string index 0).
-// Notes: E (open), F (fret 1), G (fret 3)  ->  G F E, G F E, E E E E, F F F F, G F E
-const HCB = [
-  { s: 0, f: 3, n: "G" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 3, n: "G" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 0, n: "E" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 3, n: "G" },
-  { s: 0, f: 1, n: "F" },
-  { s: 0, f: 0, n: "E" },
-];
+// The intro riff of "Headlines" (Drake), transcribed as a melody for practice.
+// Moody F#-minor-ish motif mapped to the high-E (s:0) and B (s:1) strings.
+// `d` = beats the note lasts during the demo playback.
+const SONG = {
+  name: "Headlines",
+  credit: "intro riff · Drake",
+  notes: [
+    { s: 0, f: 2, n: "F♯", d: 1 },
+    { s: 0, f: 0, n: "E", d: 1 },
+    { s: 1, f: 2, n: "C♯", d: 1 },
+    { s: 1, f: 0, n: "B", d: 1 },
+    { s: 1, f: 2, n: "C♯", d: 1 },
+    { s: 0, f: 0, n: "E", d: 1 },
+    { s: 0, f: 2, n: "F♯", d: 2 },
+    { s: 0, f: 2, n: "F♯", d: 1 },
+    { s: 0, f: 0, n: "E", d: 1 },
+    { s: 1, f: 2, n: "C♯", d: 2 },
+  ],
+};
+const BEAT_MS = 360; // demo tempo
 
 function Fretboard() {
   const ctxRef = useRef(null);
-  const [tutorial, setTutorial] = useState(false);
-  const [step, setStep] = useState(0);
+  const demoTimers = useRef([]);
+  const [mode, setMode] = useState("idle"); // "idle" | "demo" | "practice"
+  const [step, setStep] = useState(0); // current note index (practice or demo highlight)
   const [flash, setFlash] = useState(null); // "good" | "oops"
+  const [done, setDone] = useState(false);
 
   const pluck = (baseFreq, fret) => {
     let ctx = ctxRef.current;
@@ -626,74 +627,148 @@ function Fretboard() {
     osc.stop(now + 1.5);
   };
 
-  const target = tutorial ? HCB[step] : null;
+  const clearDemo = () => {
+    demoTimers.current.forEach((t) => clearTimeout(t));
+    demoTimers.current = [];
+  };
+
+  // Play the whole riff, lighting up each note as it sounds.
+  const playDemo = () => {
+    clearDemo();
+    setMode("demo");
+    setDone(false);
+    setFlash(null);
+    let elapsed = 0;
+    SONG.notes.forEach((note, i) => {
+      const at = setTimeout(() => {
+        setStep(i);
+        pluck(GUITAR_STRINGS[note.s].openFreq, note.f);
+      }, elapsed);
+      demoTimers.current.push(at);
+      elapsed += note.d * BEAT_MS;
+    });
+    const end = setTimeout(() => {
+      setMode("idle");
+      setStep(0);
+    }, elapsed + 300);
+    demoTimers.current.push(end);
+  };
+
+  const startPractice = () => {
+    clearDemo();
+    setMode("practice");
+    setStep(0);
+    setFlash(null);
+    setDone(false);
+  };
+
+  const stop = () => {
+    clearDemo();
+    setMode("idle");
+    setStep(0);
+    setFlash(null);
+  };
+
+  useEffect(() => () => clearDemo(), []);
+
+  const practicing = mode === "practice";
+  const target = practicing ? SONG.notes[step] : mode === "demo" ? SONG.notes[step] : null;
 
   const handleHit = (si, fret) => {
     pluck(GUITAR_STRINGS[si].openFreq, fret);
-    if (!tutorial) return;
+    if (!practicing) return;
     if (si === target.s && fret === target.f) {
       setFlash("good");
       const next = step + 1;
-      if (next >= HCB.length) {
+      if (next >= SONG.notes.length) {
+        setDone(true);
         setTimeout(() => {
           setFlash(null);
-          setTutorial(false);
+          setMode("idle");
           setStep(0);
-        }, 700);
+        }, 900);
       } else {
         setStep(next);
-        setTimeout(() => setFlash(null), 180);
+        setTimeout(() => setFlash(null), 160);
       }
     } else {
       setFlash("oops");
-      setTimeout(() => setFlash(null), 180);
+      setTimeout(() => setFlash(null), 160);
     }
-  };
-
-  const startTutorial = () => {
-    setTutorial(true);
-    setStep(0);
-    setFlash(null);
   };
 
   return (
     <div>
       {/* tutorial banner */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-blush-200 bg-blush-50 px-4 py-2.5">
-        {tutorial ? (
-          <>
-            <div className="text-sm text-plum-700">
-              🎵 <strong>Hot Cross Buns</strong> — play the glowing note
+        <div className="text-sm text-plum-700">
+          {done ? (
+            <span className="font-semibold text-emerald-600">🎉 Nailed it!</span>
+          ) : practicing ? (
+            <>
+              🎸 <strong>{SONG.name}</strong> — play the glowing note
               <span className="ml-2 rounded-full bg-pink-500 px-2 py-0.5 text-xs font-bold text-white">
                 {target.n}
               </span>
               <span className="ml-2 text-plum-700/50">
-                {step + 1} / {HCB.length}
+                {step + 1} / {SONG.notes.length}
               </span>
-            </div>
+            </>
+          ) : mode === "demo" ? (
+            <>
+              🔊 Listen… <strong>{SONG.name}</strong>
+              <span className="ml-2 text-xs italic text-plum-700/50">{SONG.credit}</span>
+            </>
+          ) : (
+            <>
+              🎵 Learn the <strong>{SONG.name}</strong> riff
+              <span className="ml-2 text-xs italic text-plum-700/50">{SONG.credit}</span>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {mode === "idle" && (
+            <>
+              <button
+                onClick={playDemo}
+                className="rounded-full bg-pink-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-pink-600"
+              >
+                ▶ Play it for me
+              </button>
+              <button
+                onClick={startPractice}
+                className="rounded-full border border-pink-300 px-4 py-1.5 text-sm font-semibold text-pink-600 transition-colors hover:bg-pink-50"
+              >
+                🎯 Let me try
+              </button>
+            </>
+          )}
+          {mode === "demo" && (
             <button
-              onClick={() => {
-                setTutorial(false);
-                setStep(0);
-              }}
+              onClick={playDemo}
+              className="rounded-full border border-pink-300 px-4 py-1.5 text-sm font-semibold text-pink-600 transition-colors hover:bg-pink-50"
+            >
+              ↻ Replay
+            </button>
+          )}
+          {practicing && (
+            <button
+              onClick={playDemo}
+              className="rounded-full border border-pink-300 px-3 py-1.5 text-sm font-semibold text-pink-600 transition-colors hover:bg-pink-50"
+            >
+              ↻ Hear it
+            </button>
+          )}
+          {mode !== "idle" && (
+            <button
+              onClick={stop}
               className="text-sm font-medium text-plum-700/60 hover:text-rose-500"
             >
               exit
             </button>
-          </>
-        ) : (
-          <>
-            <span className="text-sm text-plum-700/70">
-              New to guitar? Try a guided song.
-            </span>
-            <button
-              onClick={startTutorial}
-              className="rounded-full bg-pink-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-pink-600"
-            >
-              ▶ Learn “Hot Cross Buns”
-            </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -758,7 +833,7 @@ function Fretboard() {
                 />
                 {Array.from({ length: FRETS }).map((_, fret) => {
                   const isTarget =
-                    tutorial && target.s === si && target.f === fret;
+                    target && target.s === si && target.f === fret;
                   return (
                     <button
                       key={fret}
