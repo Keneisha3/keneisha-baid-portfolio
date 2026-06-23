@@ -3,6 +3,67 @@ import Reveal from "./Reveal";
 import { INTERESTS, PLAYLIST } from "../data/portfolio";
 import { fetchRecs, addRec, clearLocal, isShared } from "../data/recsStore";
 
+// Crisp SVG turntable: vinyl with real groove rings, glossy colored label,
+// spindle, specular glint, and a tonearm that drops onto the record when playing.
+function Turntable({ id, accent, playing }) {
+  const grooves = [62, 56, 50, 44, 38]; // concentric vinyl groove radii
+  return (
+    <svg viewBox="0 0 160 160" className="h-auto w-full" role="img" aria-label="turntable">
+      <defs>
+        <radialGradient id={`vinyl-${id}`} cx="38%" cy="32%" r="75%">
+          <stop offset="0%" stopColor="#26242b" />
+          <stop offset="55%" stopColor="#141318" />
+          <stop offset="100%" stopColor="#050507" />
+        </radialGradient>
+        <radialGradient id={`label-${id}`} cx="40%" cy="35%" r="70%">
+          <stop offset="0%" stopColor={accent} stopOpacity="1" />
+          <stop offset="70%" stopColor={accent} stopOpacity="0.85" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.6" />
+        </radialGradient>
+        <linearGradient id={`arm-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e8d6c2" />
+          <stop offset="100%" stopColor="#b5946f" />
+        </linearGradient>
+      </defs>
+
+      {/* platter shadow */}
+      <circle cx="80" cy="82" r="70" fill="#000" opacity="0.35" />
+
+      {/* spinning record */}
+      <g style={{ transformOrigin: "80px 80px", animation: playing ? "spin 1.6s linear infinite" : "none" }}>
+        <circle cx="80" cy="80" r="70" fill={`url(#vinyl-${id})`} stroke="#000" strokeWidth="1" />
+        {grooves.map((r) => (
+          <circle key={r} cx="80" cy="80" r={r} fill="none" stroke="#ffffff" strokeOpacity="0.05" strokeWidth="1" />
+        ))}
+        {/* specular glint that rides with the disc */}
+        <path d="M80 12 A68 68 0 0 1 140 70 L116 70 A44 44 0 0 0 80 36 Z" fill="#ffffff" opacity="0.07" />
+        {/* colored label */}
+        <circle cx="80" cy="80" r="30" fill={`url(#label-${id})`} stroke="#000" strokeOpacity="0.25" />
+        <circle cx="80" cy="80" r="30" fill="none" stroke="#ffffff" strokeOpacity="0.15" strokeWidth="0.6" />
+        <text x="80" y="84" textAnchor="middle" fontSize="16" fontWeight="700" fill="#ffffff" fillOpacity="0.9" fontFamily="Inter, sans-serif">
+          {id}
+        </text>
+        {/* spindle */}
+        <circle cx="80" cy="80" r="2.4" fill="#050507" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="0.6" />
+      </g>
+
+      {/* tonearm – pivots onto the record when playing */}
+      <g
+        style={{
+          transformOrigin: "142px 26px",
+          transform: playing ? "rotate(20deg)" : "rotate(2deg)",
+          transition: "transform 0.5s ease",
+        }}
+      >
+        <circle cx="142" cy="26" r="6" fill="#2a2723" stroke={accent} strokeWidth="1.5" />
+        <rect x="139" y="26" width="6" height="74" rx="3" fill={`url(#arm-${id})`} />
+        <rect x="135" y="98" width="14" height="8" rx="2" fill="#2a2723" />
+        <rect x="138" y="104" width="3" height="5" fill="#e8d6c2" />
+      </g>
+    </svg>
+  );
+}
+
 // Interactive 2-deck DJ mixer. Two synthesized tracks (no audio files); play
 // either deck and use the crossfader to blend between them. All Web Audio.
 // Both decks are original synth loops *inspired by* these tracks (not the real
@@ -170,53 +231,9 @@ function DJMixer() {
           />
         </div>
 
-        {/* realistic turntable: platter, grooved vinyl, label, tonearm */}
-        <div className="relative mx-auto mb-4 h-32 w-32">
-          {/* spinning record */}
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: `
-                repeating-radial-gradient(circle at 50% 50%, #0c0b0f 0px, #0c0b0f 1px, #1b1a20 2px, #0c0b0f 3px) ,
-                radial-gradient(circle at 38% 32%, rgba(255,255,255,0.18), transparent 45%)`,
-              boxShadow:
-                "inset -6px -6px 16px rgba(0,0,0,.7), 0 6px 16px rgba(0,0,0,.5)",
-              animation: on ? "spin 1.6s linear infinite" : "none",
-            }}
-          >
-            {/* sheen sweep */}
-            <div
-              className="absolute inset-0 rounded-full"
-              style={{
-                background:
-                  "conic-gradient(from 210deg, transparent 0deg, rgba(255,255,255,0.12) 25deg, transparent 60deg)",
-              }}
-            />
-            {/* colored center label */}
-            <div
-              className="absolute left-1/2 top-1/2 flex h-[42%] w-[42%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
-              style={{
-                background: `radial-gradient(circle at 40% 35%, ${cfg.accent}, ${cfg.accent}cc 60%, ${cfg.accent}99)`,
-                boxShadow: "inset 0 0 6px rgba(0,0,0,.4)",
-              }}
-            >
-              <span className="text-[8px] font-bold uppercase tracking-wider text-white/85">
-                {id}
-              </span>
-            </div>
-            {/* spindle hole */}
-            <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0c0b0f] ring-1 ring-white/30" />
-          </div>
-
-          {/* tonearm (tilts onto the record when playing) */}
-          <div
-            className="absolute -right-1 top-1 h-[58%] w-[10%] origin-top transition-transform duration-500"
-            style={{ transform: on ? "rotate(18deg)" : "rotate(-6deg)" }}
-          >
-            <div className="mx-auto h-full w-1 rounded-full bg-gradient-to-b from-blush-200 to-blush-400" />
-            <div className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-blush-300 ring-2 ring-plum-900" />
-            <div className="absolute bottom-0 left-1/2 h-2 w-3 -translate-x-1/2 rounded-sm bg-blush-200" />
-          </div>
+        {/* SVG turntable: platter, grooved vinyl, glossy label, tonearm */}
+        <div className="mx-auto mb-4 w-36">
+          <Turntable id={id} accent={cfg.accent} playing={on} />
         </div>
 
         <button
@@ -560,25 +577,40 @@ function Fretboard() {
     <div className="overflow-x-auto">
       {/* rosewood fretboard */}
       <div
-        className="relative min-w-[440px] rounded-xl p-4 pl-9"
+        className="relative min-w-[440px] overflow-hidden rounded-xl p-4 pl-9"
         style={{
           background:
-            "repeating-linear-gradient(90deg, #3b2415 0px, #4a2e1a 18px, #3a2313 40px), linear-gradient(180deg, #4a2e1a, #2e1c10)",
-          boxShadow: "inset 0 2px 6px rgba(0,0,0,.45)",
+            "repeating-linear-gradient(91deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0) 3px, rgba(120,70,40,0.12) 9px, rgba(0,0,0,0.18) 16px)," +
+            "repeating-linear-gradient(88deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0) 24px)," +
+            "radial-gradient(140% 90% at 30% 20%, #5a3a22 0%, #43291788 40%, transparent 70%)," +
+            "linear-gradient(180deg, #4a2e1a, #2c1a0f)",
+          boxShadow:
+            "inset 0 2px 8px rgba(0,0,0,.5), inset 0 -6px 14px rgba(0,0,0,.4)",
         }}
       >
+        {/* soft top gloss so the board catches light */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-xl"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,240,220,0.12), transparent)",
+          }}
+        />
+
         {/* nut at the far left */}
-        <div className="absolute left-7 top-3 bottom-3 w-1 rounded bg-gradient-to-b from-[#f3e9d8] to-[#d8c6a8]" />
+        <div className="absolute left-7 top-3 bottom-3 w-1.5 rounded bg-gradient-to-r from-[#fbf3e4] via-[#e9d6b8] to-[#cdb792] shadow-[1px_0_3px_rgba(0,0,0,0.4)]" />
 
         {/* metal fret wires */}
         {Array.from({ length: FRETS }).map((_, f) => (
           <div
             key={`wire-${f}`}
-            className="pointer-events-none absolute top-3 bottom-3 w-[2px] rounded"
+            className="pointer-events-none absolute top-3 bottom-3 w-[3px] rounded-full"
             style={{
               left: `calc(2.25rem + ${((f + 1) / FRETS) * 100}% - ${((f + 1) / FRETS) * 2.25}rem)`,
-              background: "linear-gradient(180deg,#e8e8ec,#9a9aa2)",
-              opacity: 0.8,
+              background:
+                "linear-gradient(90deg, rgba(0,0,0,0.5), #f4f4f7 35%, #c9c9d0 55%, rgba(0,0,0,0.45))",
+              boxShadow: "0 0 2px rgba(255,255,255,0.5)",
+              opacity: 0.9,
             }}
           />
         ))}
