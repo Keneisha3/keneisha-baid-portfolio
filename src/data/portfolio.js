@@ -168,8 +168,8 @@ export const PROJECTS = [
 // enable RLS with public select + insert policies, then paste the Project URL
 // and anon public key below. Falls back to local-only if unreachable.
 export const SUPABASE = {
-  url: "",
-  anonKey: "",
+  url: "https://mgofszkmfvzzzazxeaxi.supabase.co",
+  anonKey: "sb_publishable_kx1IBqryNZqlKALc9eZrKg_bjkvxoSJ",
 };
 
 // Interactive playlist shown on the Life page (Spotify embed).
