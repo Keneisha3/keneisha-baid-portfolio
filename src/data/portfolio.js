@@ -163,9 +163,10 @@ export const PROJECTS = [
 
 // Shared backend for visitor travel recommendations (Supabase REST).
 // Leave both blank to keep pins local-only (saved in each visitor's browser).
-// Fill these in after creating a free Supabase project + table (see README):
-//   url     = your project URL,   e.g. "https://abcdxyz.supabase.co"
-//   anonKey = the public "anon" API key from Project Settings -> API
+// To enable shared pins: create a free Supabase project with a `travel_recs`
+// table (columns: name text, lat float8, lng float8, created_at timestamptz),
+// enable RLS with public select + insert policies, then paste the Project URL
+// and anon public key below. Falls back to local-only if unreachable.
 export const SUPABASE = {
   url: "",
   anonKey: "",
