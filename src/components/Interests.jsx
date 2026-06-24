@@ -109,12 +109,24 @@ function DJMixer() {
       masterRef.current.connect(ctx.destination);
       ["A", "B"].forEach((d) => {
         const g = ctx.createGain();
+        g.gain.value = 0.707; // start at equal-power 50% so first notes are audible
         g.connect(masterRef.current);
         gainsRef.current[d] = g;
       });
-      applyMix(50);
+      // iOS/Safari unlock: play a one-sample silent buffer inside the gesture.
+      try {
+        const buf = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.connect(ctx.destination);
+        src.start(0);
+      } catch {
+        /* ignore */
+      }
     }
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
     return ctx;
   };
 
@@ -169,15 +181,23 @@ function DJMixer() {
     if (timersRef.current[deck]) return; // already running, don't double up
     let step = 0;
     const tick = () => {
-      const t = ctx.currentTime + 0.02;
+      const t = ctx.currentTime + 0.05;
       tone(ctx, dest, 48, t, 0.18, "sine", 0.5); // kick
       tone(ctx, dest, cfg.bass[step % cfg.bass.length], t, cfg.tempo * 0.9, "sawtooth", 0.22);
       if (step % 2 === 1) hat(ctx, dest, t, cfg.swing ? 0.18 : 0.13);
       if (step % 4 === 0) cfg.chord.forEach((f) => tone(ctx, dest, f, t, 0.2, "triangle", 0.07));
       step++;
     };
-    tick();
-    timersRef.current[deck] = setInterval(tick, cfg.tempo * 1000);
+    const begin = () => {
+      tick();
+      timersRef.current[deck] = setInterval(tick, cfg.tempo * 1000);
+    };
+    // Resume is async on some browsers; wait for it so the first beats aren't dropped.
+    if (ctx.state === "suspended" && ctx.resume) {
+      ctx.resume().then(begin).catch(begin);
+    } else {
+      begin();
+    }
   };
 
   const stopDeck = (deck) => {
@@ -673,23 +693,29 @@ const INLAY_FRETS = [3, 5, 7]; // position markers
 // The intro riff of "Headlines" (Drake), transcribed as a melody for practice.
 // Moody F#-minor-ish motif mapped to the high-E (s:0) and B (s:1) strings.
 // `d` = beats the note lasts during the demo playback.
+// Twinkle Twinkle Little Star, first two lines, on the high-E (s:0) and B (s:1)
+// strings: C C G G A A G, F F E E D D C.  `d` = beats the note lasts in the demo.
 const SONG = {
-  name: "Headlines",
-  credit: "intro riff · Drake",
+  name: "Twinkle Twinkle",
+  credit: "Little Star",
   notes: [
-    { s: 0, f: 2, n: "F♯", d: 1 },
+    { s: 1, f: 1, n: "C", d: 1 },
+    { s: 1, f: 1, n: "C", d: 1 },
+    { s: 0, f: 3, n: "G", d: 1 },
+    { s: 0, f: 3, n: "G", d: 1 },
+    { s: 0, f: 5, n: "A", d: 1 },
+    { s: 0, f: 5, n: "A", d: 1 },
+    { s: 0, f: 3, n: "G", d: 2 },
+    { s: 0, f: 1, n: "F", d: 1 },
+    { s: 0, f: 1, n: "F", d: 1 },
     { s: 0, f: 0, n: "E", d: 1 },
-    { s: 1, f: 2, n: "C♯", d: 1 },
-    { s: 1, f: 0, n: "B", d: 1 },
-    { s: 1, f: 2, n: "C♯", d: 1 },
     { s: 0, f: 0, n: "E", d: 1 },
-    { s: 0, f: 2, n: "F♯", d: 2 },
-    { s: 0, f: 2, n: "F♯", d: 1 },
-    { s: 0, f: 0, n: "E", d: 1 },
-    { s: 1, f: 2, n: "C♯", d: 2 },
+    { s: 1, f: 3, n: "D", d: 1 },
+    { s: 1, f: 3, n: "D", d: 1 },
+    { s: 1, f: 1, n: "C", d: 2 },
   ],
 };
-const BEAT_MS = 360; // demo tempo
+const BEAT_MS = 420; // demo tempo
 
 function Fretboard() {
   const ctxRef = useRef(null);
