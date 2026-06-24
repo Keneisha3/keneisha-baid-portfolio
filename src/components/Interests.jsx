@@ -174,25 +174,41 @@ function DJMixer() {
     src.stop(t + 0.05);
   };
 
-  const startDeck = (deck) => {
-    const ctx = ensureCtx();
+  // Look-ahead scheduler: instead of one setInterval per beat (which jitters and
+  // can trip on the first beat), we schedule every step on the precise audio
+  // clock, looking ~120ms ahead. The JS timer only decides *when to schedule*.
+  const playOneStep = (deck, step, t) => {
+    const ctx = ctxRef.current;
     const dest = gainsRef.current[deck];
     const cfg = TRACKS[deck];
-    if (timersRef.current[deck]) return; // already running, don't double up
-    let step = 0;
-    const tick = () => {
-      const t = ctx.currentTime + 0.05;
-      tone(ctx, dest, 48, t, 0.18, "sine", 0.5); // kick
-      tone(ctx, dest, cfg.bass[step % cfg.bass.length], t, cfg.tempo * 0.9, "sawtooth", 0.22);
-      if (step % 2 === 1) hat(ctx, dest, t, cfg.swing ? 0.18 : 0.13);
-      if (step % 4 === 0) cfg.chord.forEach((f) => tone(ctx, dest, f, t, 0.2, "triangle", 0.07));
-      step++;
+    tone(ctx, dest, 48, t, 0.18, "sine", 0.5); // kick
+    tone(ctx, dest, cfg.bass[step % cfg.bass.length], t, cfg.tempo * 0.9, "sawtooth", 0.22);
+    if (step % 2 === 1) hat(ctx, dest, t, cfg.swing ? 0.18 : 0.13);
+    if (step % 4 === 0) cfg.chord.forEach((f) => tone(ctx, dest, f, t, 0.2, "triangle", 0.07));
+  };
+
+  const startDeck = (deck) => {
+    const ctx = ensureCtx();
+    const cfg = TRACKS[deck];
+    if (timersRef.current[deck]) return; // already running
+
+    const state = { step: 0, nextTime: 0 };
+
+    const scheduler = () => {
+      const horizon = ctx.currentTime + 0.12; // schedule everything up to 120ms out
+      while (state.nextTime < horizon) {
+        playOneStep(deck, state.step, state.nextTime);
+        state.step++;
+        state.nextTime += cfg.tempo;
+      }
     };
+
     const begin = () => {
-      tick();
-      timersRef.current[deck] = setInterval(tick, cfg.tempo * 1000);
+      state.nextTime = ctx.currentTime + 0.1; // small offset so the first beat lands cleanly
+      scheduler();
+      timersRef.current[deck] = setInterval(scheduler, 25);
     };
-    // Resume is async on some browsers; wait for it so the first beats aren't dropped.
+
     if (ctx.state === "suspended" && ctx.resume) {
       ctx.resume().then(begin).catch(begin);
     } else {
@@ -366,6 +382,7 @@ function TravelMap() {
   const mapRef = useRef(null);
   const recLayerRef = useRef(null); // Leaflet layer group for visitor pins
   const tempMarkerRef = useRef(null); // the dropped-but-unconfirmed pin
+  const roRef = useRef(null); // ResizeObserver keeping Leaflet sized correctly
   const addModeRef = useRef(false);
   const [addMode, setAddMode] = useState(false);
   const [recs, setRecs] = useState([]);
@@ -419,6 +436,18 @@ function TravelMap() {
         worldCopyJump: true,
       }).setView([44, 6], 4); // zoomed into Europe (most pins) by default
       mapRef.current = map;
+
+      // Whenever the map container changes size (reveal animation, layout shifts
+      // from add-mode, window resize), tell Leaflet to recompute tiles so it
+      // never blanks out to gray.
+      if ("ResizeObserver" in window) {
+        const ro = new ResizeObserver(() => map.invalidateSize());
+        ro.observe(elRef.current);
+        roRef.current = ro;
+      }
+      // A couple of delayed nudges for the initial reveal/transition.
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 600);
 
       // Decorative satellite-style imagery with place labels on top.
       L.tileLayer(
@@ -492,6 +521,7 @@ function TravelMap() {
       return () => {
         cancelled = true;
         clearInterval(id);
+        if (roRef.current) roRef.current.disconnect();
         if (mapRef.current) {
           mapRef.current.remove();
           mapRef.current = null;
@@ -501,6 +531,7 @@ function TravelMap() {
 
     return () => {
       cancelled = true;
+      if (roRef.current) roRef.current.disconnect();
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
