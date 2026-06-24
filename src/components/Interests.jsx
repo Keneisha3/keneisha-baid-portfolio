@@ -321,6 +321,7 @@ const TRAVEL_PINS = [
   { name: "Dubai, UAE", coords: [25.2048, 55.2708] },
   { name: "New Delhi, India", coords: [28.6139, 77.209] },
   { name: "Mumbai, India", coords: [19.076, 72.8777] },
+  { name: "Hyderabad, India", coords: [17.385, 78.4867] },
   { name: "New York, USA", coords: [40.7128, -74.006] },
   { name: "Los Angeles, USA", coords: [34.0522, -118.2437] },
   { name: "Palm Springs, USA", coords: [33.8303, -116.5453] },
@@ -330,13 +331,27 @@ const TRAVEL_PINS = [
   { name: "Toronto, Canada", coords: [43.6532, -79.3832] },
 ];
 
+// Quick-jump buttons for each continent.
+const CONTINENTS = [
+  { name: "N. America", emoji: "🌎", center: [40, -100], zoom: 3 },
+  { name: "S. America", emoji: "🌎", center: [-15, -60], zoom: 3 },
+  { name: "Europe", emoji: "🌍", center: [50, 10], zoom: 4 },
+  { name: "Africa", emoji: "🌍", center: [2, 20], zoom: 3 },
+  { name: "Asia", emoji: "🌏", center: [30, 90], zoom: 3 },
+  { name: "Oceania", emoji: "🌏", center: [-25, 134], zoom: 3 },
+];
+
 function TravelMap() {
   const elRef = useRef(null);
   const mapRef = useRef(null);
   const recLayerRef = useRef(null); // Leaflet layer group for visitor pins
+  const tempMarkerRef = useRef(null); // the dropped-but-unconfirmed pin
   const addModeRef = useRef(false);
   const [addMode, setAddMode] = useState(false);
   const [recs, setRecs] = useState([]);
+  const [pending, setPending] = useState(null); // { lat, lng } awaiting a name
+  const [draftName, setDraftName] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Keep a ref in sync so the Leaflet click handler reads the latest value.
   useEffect(() => {
@@ -424,20 +439,24 @@ function TravelMap() {
         if (!cancelled) showRecs(saved);
       });
 
-      // Click to drop a recommendation pin (only in add mode).
-      map.on("click", async (e) => {
+      // Click to drop a draft pin (only in add mode); naming happens in-page.
+      map.on("click", (e) => {
         if (!addModeRef.current) return;
-        const name = window.prompt(
-          "Recommend this spot! What is it? (e.g. 'Best gelato — Rome')"
-        );
-        setAddMode(false);
-        if (!name || !name.trim()) return;
-        const next = await addRec({
-          name: name.trim(),
-          lat: e.latlng.lat,
-          lng: e.latlng.lng,
+        const L2 = window.L;
+        if (tempMarkerRef.current) {
+          map.removeLayer(tempMarkerRef.current);
+        }
+        const draftIcon = L2.divIcon({
+          className: "kb-pin kb-pin--draft",
+          html: '<span class="kb-pin-pulse"></span><span class="kb-pin-dot kb-pin-dot--draft"></span>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 18],
         });
-        if (!cancelled) showRecs(next);
+        tempMarkerRef.current = L2.marker([e.latlng.lat, e.latlng.lng], {
+          icon: draftIcon,
+        }).addTo(map);
+        setPending({ lat: e.latlng.lat, lng: e.latlng.lng });
+        setDraftName("");
       });
     };
 
@@ -481,6 +500,37 @@ function TravelMap() {
     }
   }, [addMode]);
 
+  const removeTempMarker = () => {
+    if (tempMarkerRef.current && mapRef.current) {
+      mapRef.current.removeLayer(tempMarkerRef.current);
+      tempMarkerRef.current = null;
+    }
+  };
+
+  const cancelPending = () => {
+    removeTempMarker();
+    setPending(null);
+    setDraftName("");
+  };
+
+  const savePending = async () => {
+    const name = draftName.trim();
+    if (!name || !pending) return;
+    setSaving(true);
+    const next = await addRec({ name, lat: pending.lat, lng: pending.lng });
+    removeTempMarker();
+    showRecs(next);
+    setSaving(false);
+    setPending(null);
+    setDraftName("");
+    setAddMode(false);
+  };
+
+  const toggleAddMode = () => {
+    cancelPending();
+    setAddMode((m) => !m);
+  };
+
   const clearRecs = () => {
     if (recs.length && window.confirm("Remove the recommendation pins you added?")) {
       showRecs(clearLocal());
@@ -508,38 +558,83 @@ function TravelMap() {
         <div className="pointer-events-none absolute left-3 top-3 z-[500] rounded-full border border-blush-200 bg-white/90 px-3 py-1 text-xs font-semibold text-pink-700 shadow-sm backdrop-blur">
           ✈️ {TRAVEL_PINS.length} places &amp; counting
         </div>
-        {addMode && (
+        {addMode && !pending && (
           <div className="pointer-events-none absolute inset-x-0 top-3 z-[500] flex justify-center">
             <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold text-white shadow">
-              Click anywhere to drop your recommendation
+              Tap the map where you'd recommend a spot
             </span>
           </div>
         )}
+
+        {/* in-page naming form (replaces the unreliable browser prompt) */}
+        {pending && (
+          <div className="absolute inset-x-0 bottom-3 z-[600] flex justify-center px-3">
+            <div className="w-full max-w-sm rounded-2xl border border-blush-200 bg-white/95 p-3 shadow-lg backdrop-blur">
+              <label className="mb-1.5 block text-xs font-semibold text-plum-700">
+                What do you recommend here?
+              </label>
+              <div className="flex gap-2">
+                <input
+                  autoFocus
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && savePending()}
+                  maxLength={80}
+                  placeholder="e.g. Best gelato in Rome"
+                  className="flex-1 rounded-full border border-blush-300 bg-blush-50 px-3.5 py-2 text-sm text-plum-900 outline-none focus:border-pink-400"
+                />
+                <button
+                  onClick={savePending}
+                  disabled={saving || !draftName.trim()}
+                  className="shrink-0 rounded-full bg-pink-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-600 disabled:opacity-40"
+                >
+                  {saving ? "…" : "Add"}
+                </button>
+                <button
+                  onClick={cancelPending}
+                  className="shrink-0 rounded-full px-2 text-sm font-medium text-plum-700/60 hover:text-rose-500"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* continent jump buttons */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {CONTINENTS.map((c) => (
+          <button
+            key={c.name}
+            onClick={() => {
+              const map = mapRef.current;
+              if (map) map.flyTo(c.center, c.zoom);
+            }}
+            className="rounded-full border border-blush-300 bg-white px-3 py-1.5 text-xs font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:bg-pink-50 hover:text-pink-600"
+          >
+            {c.emoji} {c.name}
+          </button>
+        ))}
+        <button
+          onClick={viewAll}
+          className="rounded-full border border-blush-300 bg-white px-3 py-1.5 text-xs font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:bg-pink-50 hover:text-pink-600"
+        >
+          🌍 View all
+        </button>
       </div>
 
       {/* controls */}
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <button
-          onClick={() => setAddMode((m) => !m)}
+          onClick={toggleAddMode}
           className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
             addMode
               ? "bg-rose-500 text-white hover:bg-rose-600"
               : "bg-pink-500 text-white hover:bg-pink-600"
           }`}
         >
-          {addMode ? "✕ Cancel" : "★ Recommend a place"}
-        </button>
-        <button
-          onClick={viewAll}
-          className="rounded-full border border-blush-300 px-3 py-2 text-sm font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:text-pink-600"
-        >
-          🌍 View all
-        </button>
-        <button
-          onClick={viewEurope}
-          className="rounded-full border border-blush-300 px-3 py-2 text-sm font-medium text-plum-700/80 transition-colors hover:border-pink-400 hover:text-pink-600"
-        >
-          ↺ Europe
+          {addMode ? "✕ Done recommending" : "★ Recommend a place"}
         </button>
         {recs.length > 0 && (
           <span className="text-sm text-plum-700/60">

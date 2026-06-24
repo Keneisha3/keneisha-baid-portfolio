@@ -123,6 +123,11 @@ body {
   background: #e0b341 !important;
   border-color: #fff !important;
 }
+/* Draft pin awaiting a name */
+.kb-pin-dot--draft {
+  background: #10b981 !important;
+  border-color: #fff !important;
+}
 
 .leaflet-popup-content-wrapper,
 .leaflet-tooltip {
