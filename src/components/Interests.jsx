@@ -64,172 +64,108 @@ function Turntable({ id, accent, playing }) {
   );
 }
 
-// Interactive 2-deck DJ mixer. Two synthesized tracks (no audio files); play
-// either deck and use the crossfader to blend between them. All Web Audio.
-// Both decks are original synth loops *inspired by* these tracks (not the real
-// recordings) so they're fully playable and copyright-safe.
-const TRACKS = {
+// Two-deck DJ mixer using the YouTube IFrame API. Each deck loads a real song;
+// the crossfader controls each player's volume so you can genuinely blend them.
+// Paste YouTube video IDs below (the part after watch?v=). Leave blank to show
+// a "song coming soon" state.
+const DECKS = {
   A: {
-    name: "Deck A — Break My Love",
-    note: "inspired by RÜFÜS DU SOL",
-    tempo: 0.205, // ~122 BPM driving deep house
+    name: "Break My Love",
+    note: "RÜFÜS DU SOL",
     accent: "#1C3F5F",
-    // F# minor pulse: F#1 walk with octave lift
-    bass: [46.25, 46.25, 69.3, 46.25, 61.74, 46.25, 55.0, 92.5],
-    chord: [185.0, 220.0, 277.18], // F#m-ish airy stab
-    swing: false,
+    videoId: "", // e.g. "dQw4w9WgXcQ"
   },
   B: {
-    name: "Deck B — Hold On, We're Going Home",
-    note: "inspired by Drake",
-    tempo: 0.30, // ~100 BPM warm bounce
+    name: "Hold On, We're Going Home",
+    note: "Drake",
     accent: "#A4343A",
-    // Eb major warmth: Eb walk
-    bass: [77.78, 77.78, 51.91, 77.78, 58.27, 77.78, 51.91, 69.3],
-    chord: [311.13, 392.0, 466.16], // Eb major glow
-    swing: true,
+    videoId: "", // e.g. "dQw4w9WgXcQ"
   },
 };
 
+function ytReady() {
+  return typeof window !== "undefined" && window.YT && window.YT.Player;
+}
+
 function DJMixer() {
-  const ctxRef = useRef(null);
-  const masterRef = useRef(null);
-  const gainsRef = useRef({}); // per-deck GainNode
-  const timersRef = useRef({}); // per-deck interval id
+  const playersRef = useRef({}); // { A: YT.Player, B: YT.Player }
+  const [ready, setReady] = useState({ A: false, B: false });
   const [playing, setPlaying] = useState({ A: false, B: false });
   const [mix, setMix] = useState(50); // 0 = full A, 100 = full B
 
-  const ensureCtx = () => {
-    let ctx = ctxRef.current;
-    if (!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      ctxRef.current = ctx;
-      masterRef.current = ctx.createGain();
-      masterRef.current.gain.value = 0.9;
-      masterRef.current.connect(ctx.destination);
+  // Equal-power volumes (0..100) for each deck from the crossfader.
+  const volumes = (m) => {
+    const x = m / 100;
+    return {
+      A: Math.round(Math.cos((x * Math.PI) / 2) * 100),
+      B: Math.round(Math.cos(((1 - x) * Math.PI) / 2) * 100),
+    };
+  };
+
+  const applyMix = (m) => {
+    const v = volumes(m);
+    ["A", "B"].forEach((d) => {
+      const p = playersRef.current[d];
+      if (p && p.setVolume) p.setVolume(v[d]);
+    });
+  };
+
+  // Build the two players once the API + DOM nodes are available.
+  useEffect(() => {
+    let cancelled = false;
+    const init = () => {
+      if (cancelled || !ytReady()) return;
       ["A", "B"].forEach((d) => {
-        const g = ctx.createGain();
-        g.gain.value = 0.707; // start at equal-power 50% so first notes are audible
-        g.connect(masterRef.current);
-        gainsRef.current[d] = g;
+        if (playersRef.current[d] || !DECKS[d].videoId) return;
+        playersRef.current[d] = new window.YT.Player(`yt-deck-${d}`, {
+          videoId: DECKS[d].videoId,
+          playerVars: { controls: 0, disablekb: 1, rel: 0, playsinline: 1, modestbranding: 1 },
+          events: {
+            onReady: (e) => {
+              e.target.setVolume(volumes(mix)[d]);
+              setReady((r) => ({ ...r, [d]: true }));
+            },
+            onStateChange: (e) => {
+              // 1 = playing, 2 = paused, 0 = ended
+              if (e.data === 1) setPlaying((p) => ({ ...p, [d]: true }));
+              if (e.data === 2 || e.data === 0) setPlaying((p) => ({ ...p, [d]: false }));
+            },
+          },
+        });
       });
-      // iOS/Safari unlock: play a one-sample silent buffer inside the gesture.
-      try {
-        const buf = ctx.createBuffer(1, 1, 22050);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start(0);
-      } catch {
-        /* ignore */
-      }
-    }
-    if (ctx.state === "suspended") {
-      ctx.resume();
-    }
-    return ctx;
-  };
-
-  // Equal-power crossfade between the two deck gains.
-  const applyMix = (value) => {
-    const ctx = ctxRef.current;
-    if (!ctx) return;
-    const x = value / 100;
-    const gA = Math.cos((x * Math.PI) / 2);
-    const gB = Math.cos(((1 - x) * Math.PI) / 2);
-    gainsRef.current.A?.gain.setTargetAtTime(gA, ctx.currentTime, 0.02);
-    gainsRef.current.B?.gain.setTargetAtTime(gB, ctx.currentTime, 0.02);
-  };
-
-  const tone = (ctx, dest, freq, t, dur, type, vol) => {
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(g);
-    g.connect(dest);
-    osc.start(t);
-    osc.stop(t + dur + 0.02);
-  };
-
-  const hat = (ctx, dest, t, vol) => {
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 7000;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(vol, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
-    src.connect(hp);
-    hp.connect(g);
-    g.connect(dest);
-    src.start(t);
-    src.stop(t + 0.05);
-  };
-
-  // Look-ahead scheduler: instead of one setInterval per beat (which jitters and
-  // can trip on the first beat), we schedule every step on the precise audio
-  // clock, looking ~120ms ahead. The JS timer only decides *when to schedule*.
-  const playOneStep = (deck, step, t) => {
-    const ctx = ctxRef.current;
-    const dest = gainsRef.current[deck];
-    const cfg = TRACKS[deck];
-    tone(ctx, dest, 48, t, 0.18, "sine", 0.5); // kick
-    tone(ctx, dest, cfg.bass[step % cfg.bass.length], t, cfg.tempo * 0.9, "sawtooth", 0.22);
-    if (step % 2 === 1) hat(ctx, dest, t, cfg.swing ? 0.18 : 0.13);
-    if (step % 4 === 0) cfg.chord.forEach((f) => tone(ctx, dest, f, t, 0.2, "triangle", 0.07));
-  };
-
-  const startDeck = (deck) => {
-    const ctx = ensureCtx();
-    const cfg = TRACKS[deck];
-    if (timersRef.current[deck]) return; // already running
-
-    const state = { step: 0, nextTime: 0 };
-
-    const scheduler = () => {
-      const horizon = ctx.currentTime + 0.12; // schedule everything up to 120ms out
-      while (state.nextTime < horizon) {
-        playOneStep(deck, state.step, state.nextTime);
-        state.step++;
-        state.nextTime += cfg.tempo;
-      }
     };
 
-    const begin = () => {
-      state.nextTime = ctx.currentTime + 0.1; // small offset so the first beat lands cleanly
-      scheduler();
-      timersRef.current[deck] = setInterval(scheduler, 25);
+    if (ytReady()) init();
+    else {
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (prev) prev();
+        init();
+      };
+      const poll = setInterval(() => {
+        if (ytReady()) {
+          clearInterval(poll);
+          init();
+        }
+      }, 200);
+      setTimeout(() => clearInterval(poll), 8000);
+    }
+
+    return () => {
+      cancelled = true;
+      ["A", "B"].forEach((d) => {
+        const p = playersRef.current[d];
+        if (p && p.destroy) p.destroy();
+        playersRef.current[d] = null;
+      });
     };
+  }, []);
 
-    if (ctx.state === "suspended" && ctx.resume) {
-      ctx.resume().then(begin).catch(begin);
-    } else {
-      begin();
-    }
-  };
-
-  const stopDeck = (deck) => {
-    if (timersRef.current[deck]) {
-      clearInterval(timersRef.current[deck]);
-      timersRef.current[deck] = null;
-    }
-  };
-
-  // Side-effects run directly in the click handler (a real user gesture, which
-  // browsers require to start audio) — not inside the state updater.
-  const toggleDeck = (deck) => {
-    const willPlay = !playing[deck];
-    if (willPlay) startDeck(deck);
-    else stopDeck(deck);
-    setPlaying((p) => ({ ...p, [deck]: willPlay }));
+  const togglePlay = (d) => {
+    const p = playersRef.current[d];
+    if (!p) return;
+    if (playing[d]) p.pauseVideo();
+    else p.playVideo();
   };
 
   const onMix = (e) => {
@@ -238,30 +174,18 @@ function DJMixer() {
     applyMix(v);
   };
 
-  // Stop timers on unmount (but keep the AudioContext — closing it during
-  // React's mount/unmount cycles can silence later playback).
-  useEffect(() => {
-    return () => {
-      stopDeck("A");
-      stopDeck("B");
-    };
-  }, []);
-
   const Deck = ({ id }) => {
-    const cfg = TRACKS[id];
+    const cfg = DECKS[id];
     const on = playing[id];
+    const hasVideo = Boolean(cfg.videoId);
     return (
       <div className="flex-1 rounded-2xl border border-white/10 bg-white/5 p-4">
         <div className="mb-3 flex items-start justify-between gap-2">
           <div>
             <span className="block text-xs font-semibold uppercase tracking-wider text-blush-200/80">
-              {cfg.name}
+              Deck {id} — {cfg.name}
             </span>
-            {cfg.note && (
-              <span className="block text-[10px] italic text-blush-200/50">
-                {cfg.note}
-              </span>
-            )}
+            <span className="block text-[10px] italic text-blush-200/50">{cfg.note}</span>
           </div>
           <span
             className={`mt-1 h-2 w-2 shrink-0 rounded-full ${on ? "animate-pulse" : ""}`}
@@ -269,18 +193,29 @@ function DJMixer() {
           />
         </div>
 
-        {/* SVG turntable: platter, grooved vinyl, glossy label, tonearm */}
         <div className="mx-auto mb-4 w-36">
           <Turntable id={id} accent={cfg.accent} playing={on} />
         </div>
 
-        <button
-          onClick={() => toggleDeck(id)}
-          className="w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
-          style={{ background: cfg.accent }}
-        >
-          {on ? "⏸ Stop" : "▶ Play"}
-        </button>
+        {/* hidden YouTube audio source */}
+        <div className="h-0 w-0 overflow-hidden" aria-hidden="true">
+          <div id={`yt-deck-${id}`} />
+        </div>
+
+        {hasVideo ? (
+          <button
+            onClick={() => togglePlay(id)}
+            disabled={!ready[id]}
+            className="w-full rounded-full px-4 py-2 text-sm font-semibold text-white transition-transform hover:scale-[1.03] disabled:opacity-50"
+            style={{ background: cfg.accent }}
+          >
+            {!ready[id] ? "Loading…" : on ? "⏸ Pause" : "▶ Play"}
+          </button>
+        ) : (
+          <div className="rounded-full bg-white/10 px-4 py-2 text-center text-xs text-blush-200/60">
+            song coming soon
+          </div>
+        )}
       </div>
     );
   };
@@ -318,7 +253,6 @@ function DJMixer() {
     </div>
   );
 }
-
 // Small inline guitar glyph for the header.
 function GuitarIcon() {
   return (
