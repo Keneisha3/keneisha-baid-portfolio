@@ -154,8 +154,8 @@ export default function App() {
         {/* the descent: scroll space for the dive + tunnel flight */}
         <div className="relative h-[320vh]">
           <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
-            <p className="dive-caption font-mono text-[11px] uppercase tracking-[0.35em] text-[#37d6f5]/70">
-              entering the neural pathways…
+            <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-[#8b8fa3]">
+              descending the primary cable
             </p>
           </div>
         </div>
