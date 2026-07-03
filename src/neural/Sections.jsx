@@ -47,26 +47,27 @@ function Links({ links }) {
    the composition; the type only annotates it.
 ===================================================================== */
 export function Landing({ onSkip }) {
-  // This label sits in the white gallery, so it is set in ink.
+  // Name and credentials at the top of the gallery wall, set in ink.
   return (
     <section className="relative h-screen">
-      <div className="rise absolute bottom-16 left-6 max-w-xs sm:left-12 sm:max-w-sm">
+      <div className="rise absolute left-6 top-20 max-w-sm sm:left-12 sm:top-24">
         <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[#a09a8c]">
           collection № 01
         </p>
-        <h1 className="mt-4 font-display text-2xl font-medium leading-snug text-[#1c1a17] sm:text-3xl">
-          Portrait of a working mind
+        <h1 className="mt-3 font-display text-3xl font-medium leading-snug text-[#1c1a17] sm:text-4xl">
+          Keneisha Baid
         </h1>
-        <p className="mt-3 font-display text-sm italic text-[#6b6459]">
-          Keneisha Baid — Management Engineering, University of Waterloo.
+        <p className="mt-2 font-display text-sm italic text-[#6b6459]">
+          Management Engineering, University of Waterloo.
           <br />
-          Marble, ink, and light. 2022–present.
+          Portrait of a working mind — marble and light, 2022–present.
         </p>
-        <div className="mt-6 w-16 border-t border-[#1c1a1720]" />
-        <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.3em] text-[#6b6459]">
-          scroll — the stone is cracking
-        </p>
+        <div className="mt-5 w-16 border-t border-[#1c1a1720]" />
       </div>
+
+      <p className="rise absolute bottom-16 left-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#6b6459] sm:left-12">
+        scroll — the stone is cracking
+      </p>
       <button
         onClick={onSkip}
         className="rise absolute bottom-16 right-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c] transition-colors hover:text-[#a4622e] sm:right-12"

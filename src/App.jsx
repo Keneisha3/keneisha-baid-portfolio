@@ -115,10 +115,7 @@ export default function App() {
       scrollRef.current = p;
       if (flashRef.current) {
         const flash = (c) => Math.max(0, 1 - Math.abs(p - c) / 0.03);
-        flashRef.current.style.opacity = Math.min(
-          0.95,
-          flash(0.3) + flash(0.52)
-        );
+        flashRef.current.style.opacity = Math.min(0.95, flash(0.34));
       }
     };
     onScroll();
@@ -151,11 +148,11 @@ export default function App() {
       <main className="relative z-10">
         <Landing onSkip={skipIntro} />
 
-        {/* the descent: scroll space for the dive + tunnel flight */}
-        <div className="relative h-[320vh]">
+        {/* the descent: scroll space for the zoom into the crack */}
+        <div className="relative h-[160vh]">
           <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
             <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-white mix-blend-difference">
-              through the fissure, into the ink
+              into the stone
             </p>
           </div>
         </div>
