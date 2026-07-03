@@ -54,8 +54,8 @@ export function Sparks() {
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
         ctx.strokeStyle = p.copper
-          ? `rgba(255,176,112,${p.life})`
-          : `rgba(85,222,250,${p.life})`;
+          ? `rgba(217,138,74,${p.life})`
+          : `rgba(90,84,110,${p.life * 0.8})`;
         ctx.lineWidth = 1.1;
         ctx.stroke();
       }
@@ -148,24 +148,26 @@ const NAV = [
 ];
 
 export function MindNav({ humOn, toggleHum }) {
+  // mix-blend-difference lets the same white type read as ink on the white
+  // gallery and as bone on the dark interior — one nav for both worlds.
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-4 sm:px-8">
+    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-4 mix-blend-difference sm:px-8">
       <a
         href="#top"
         onClick={(e) => {
           e.preventDefault();
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
-        className="font-display text-lg font-semibold tracking-tight text-[#e8e4dc]"
+        className="font-display text-lg font-semibold tracking-tight text-white"
       >
-        K<span className="text-[#37d6f5]">B</span>
+        KB
       </a>
       <nav className="hidden items-center gap-6 md:flex">
         {NAV.map((n) => (
           <a
             key={n.id}
             href={`#${n.id}`}
-            className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#8b8fa3] transition-colors hover:text-[#37d6f5]"
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/60 transition-colors hover:text-white"
           >
             {n.label}
           </a>
@@ -175,9 +177,7 @@ export function MindNav({ humOn, toggleHum }) {
         onClick={toggleHum}
         aria-label={humOn ? "Mute ambient sound" : "Enable ambient sound"}
         className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
-          humOn
-            ? "border-[#37d6f5] text-[#37d6f5]"
-            : "border-white/15 text-[#8b8fa3] hover:border-white/40"
+          humOn ? "border-white text-white" : "border-white/30 text-white/60 hover:border-white/70"
         }`}
       >
         {humOn ? "◉" : "◌"}

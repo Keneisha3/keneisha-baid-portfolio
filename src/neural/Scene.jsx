@@ -1,39 +1,107 @@
-/* The 3D "artificial mind" — a fixed full-screen canvas behind the page.
-   Scroll progress (0..1, passed via ref to avoid re-renders) drives the camera:
-     0.00–0.30  the bust in darkness, copper wires pulsing; camera pushes in
-     0.30–0.52  inside the cable: a copper-stranded tunnel flight
-     0.52–1.00  the neural cluster; slow drift while DOM sections scroll  */
-import { useMemo, useRef } from "react";
+/* The mind, in three movements — a fixed full-screen canvas behind the page.
+   Scroll progress (0..1, via ref) drives the camera and the light:
+     0.00–0.30  a white gallery. The bust develops glowing cracks; the camera
+                glides toward one fissure as ink begins to escape it.
+     0.30–0.52  inside the ink: a dark, flowing, abstract space.
+     0.52–1.00  the ideas themselves — a drifting cluster — while the DOM
+                sections scroll over the cloud.                              */
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, Center } from "@react-three/drei";
+import { useGLTF, Center, ContactShadows } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
-const COPPER = new THREE.Color("#ff8c3b");
+const GALLERY = new THREE.Color("#f2efe8"); // warm gallery white
+const INK = new THREE.Color("#08070a"); // the ink
+const VEIN = new THREE.Color("#ffb36b"); // light inside the cracks
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
-const ease = (t) => t * t * (3 - 2 * t); // smoothstep
+const ease = (t) => t * t * (3 - 2 * t);
+const ramp = (p, a, b) => ease(clamp01((p - a) / (b - a)));
 
-// small seeded RNG so the wire layout is identical on every visit
 function seeded(s) {
   let x = s;
   return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
 }
 
-/* ---------- the marble bust (CC0, Poly Haven "marble_bust_01") ---------- */
-const BUST_SCALE = 3.25;
-const CROWN_Y = 1.52; // approx top of the head at this scale
+/* ---------- procedural crack texture (branching fissures, drawn once) ---------- */
+function makeCrackTexture() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 1024;
+  const g = c.getContext("2d");
+  g.fillStyle = "#000";
+  g.fillRect(0, 0, 1024, 1024);
+  const rand = seeded(13);
+  const branch = (x0, y0, ang, len, w, depth) => {
+    if (depth <= 0 || len < 8) return;
+    let px = x0, py = y0, a = ang;
+    g.beginPath();
+    g.moveTo(px, py);
+    const steps = 6 + Math.floor(rand() * 6);
+    for (let s = 0; s < steps; s++) {
+      a += (rand() - 0.5) * 0.9;
+      px += Math.cos(a) * (len / steps);
+      py += Math.sin(a) * (len / steps);
+      g.lineTo(px, py);
+    }
+    g.strokeStyle = "rgba(255,200,140,1)";
+    g.lineWidth = w;
+    g.shadowColor = "rgba(255,170,90,0.9)";
+    g.shadowBlur = 7;
+    g.stroke();
+    if (rand() < 0.85) branch(px, py, a + (rand() - 0.5) * 1.6, len * 0.62, Math.max(1, w * 0.72), depth - 1);
+    if (rand() < 0.55)
+      branch((x0 + px) / 2, (y0 + py) / 2, a + (rand() > 0.5 ? 1 : -1) * (0.8 + rand() * 0.8), len * 0.5, Math.max(1, w * 0.7), depth - 1);
+  };
+  for (let i = 0; i < 12; i++) branch(rand() * 1024, rand() * 1024, rand() * Math.PI * 2, 170 + rand() * 240, 3, 4);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
 
-function Bust() {
+/* ---------- soft ink-billow sprite texture ---------- */
+function makeBillowTexture() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const g = c.getContext("2d");
+  const grad = g.createRadialGradient(128, 128, 10, 128, 128, 128);
+  grad.addColorStop(0, "rgba(9,8,12,0.9)");
+  grad.addColorStop(0.55, "rgba(9,8,12,0.55)");
+  grad.addColorStop(1, "rgba(9,8,12,0)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+
+/* ---------- the marble bust, developing veins of light ---------- */
+const BUST_SCALE = 3.25;
+const FISSURE = new THREE.Vector3(0.14, 1.34, 0.2); // where the camera enters
+
+function Bust({ scrollRef }) {
   const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
-  useMemo(() => {
+  const mats = useRef([]);
+  const crackTex = useMemo(() => makeCrackTexture(), []);
+
+  useEffect(() => {
+    mats.current = [];
     scene.traverse((o) => {
       if (o.isMesh) {
-        o.castShadow = false;
-        o.material.roughness = 0.55;
-        o.material.envMapIntensity = 0.4;
+        o.material.roughness = 0.5;
+        o.material.emissiveMap = crackTex;
+        o.material.emissive = VEIN.clone();
+        o.material.emissiveIntensity = 0;
+        o.material.needsUpdate = true;
+        mats.current.push(o.material);
       }
     });
-  }, [scene]);
+  }, [scene, crackTex]);
+
+  useFrame(({ clock }) => {
+    const p = scrollRef.current;
+    // ideas awakening: the veins brighten as you begin to descend
+    const glow = ramp(p, 0.04, 0.24) * (1.35 + 0.25 * Math.sin(clock.elapsedTime * 1.7));
+    mats.current.forEach((m) => (m.emissiveIntensity = glow));
+  });
+
   return (
     <Center position={[0, 0.72, 0]}>
       <primitive object={scene} scale={BUST_SCALE} />
@@ -41,214 +109,161 @@ function Bust() {
   );
 }
 
-/* ---------- a dense bundle of copper wires erupting from the crown ---------- */
-function makeWireCurves() {
-  const rand = seeded(7);
-  const v = (x, y, z) => new THREE.Vector3(x, y, z);
-  const curves = [];
-
-  // the dedicated entry wire we dive into (arcs up and back)
-  curves.push(
-    new THREE.CatmullRomCurve3([
-      v(0.02, CROWN_Y + 0.04, -0.04),
-      v(0.28, CROWN_Y + 0.55, -0.5),
-      v(0.9, CROWN_Y + 0.95, -1.6),
-      v(1.8, CROWN_Y + 1.3, -3.6),
-    ])
-  );
-
-  // seventeen more, spraying out of the crown in all directions
-  for (let i = 0; i < 17; i++) {
-    const th = rand() * Math.PI * 2;
-    const sr = 0.03 + rand() * 0.13; // start radius on the crown
-    const sx = Math.cos(th) * sr;
-    const sz = Math.sin(th) * sr;
-    const sy = CROWN_Y - 0.06 + rand() * 0.12;
-    const lift = 0.35 + rand() * 0.9; // how high the wire arcs
-    const reach = 2.4 + rand() * 2.2; // how far out it lands
-    const dth = th + (rand() - 0.5) * 1.1; // drift direction
-    const droop = rand() * 1.6; // sag at the far end
-    curves.push(
-      new THREE.CatmullRomCurve3([
-        v(sx, sy, sz),
-        v(sx + Math.cos(dth) * 0.35, sy + lift, sz + Math.sin(dth) * 0.35),
-        v(Math.cos(dth) * (reach * 0.55), sy + lift * 1.15, Math.sin(dth) * (reach * 0.55)),
-        v(Math.cos(dth) * reach, sy + lift - droop, Math.sin(dth) * reach),
-      ])
-    );
-  }
-  return curves;
-}
-
-function Wires({ curves }) {
-  const pulses = useRef([]);
-  const rand = useMemo(() => seeded(21), []);
-  const geoms = useMemo(
-    () =>
-      curves.map(
-        (c, i) =>
-          new THREE.TubeGeometry(c, 56, i === 0 ? 0.022 : 0.011 + (i % 4) * 0.004, 6, false)
-      ),
-    [curves]
-  );
-  const pulseMeta = useMemo(
-    () =>
-      Array.from({ length: 26 }).map((_, i) => ({
-        curve: i % curves.length,
-        offset: rand(),
-        speed: 0.08 + rand() * 0.1,
-      })),
-    [curves, rand]
-  );
+/* ---------- ink escaping the fissure as you approach ---------- */
+function InkBurst({ scrollRef, billowTex }) {
+  const group = useRef();
+  const meta = useMemo(() => {
+    const rand = seeded(31);
+    return Array.from({ length: 12 }).map(() => ({
+      dir: new THREE.Vector3(rand() - 0.3, rand() * 0.7, rand() - 0.3).normalize(),
+      dist: 0.15 + rand() * 0.8,
+      size: 0.5 + rand() * 1.1,
+      rot: rand() * Math.PI,
+    }));
+  }, []);
   useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-    pulses.current.forEach((m, i) => {
-      if (!m) return;
-      const meta = pulseMeta[i];
-      const u = (t * meta.speed + meta.offset) % 1;
-      curves[meta.curve].getPointAt(u, m.position);
-      m.scale.setScalar(0.7 + 0.5 * Math.sin(t * 3 + i));
+    const p = scrollRef.current;
+    const d = ramp(p, 0.2, 0.32); // the escape
+    if (!group.current) return;
+    group.current.visible = d > 0.01;
+    group.current.children.forEach((s, i) => {
+      const m = meta[i];
+      s.position.copy(FISSURE).addScaledVector(m.dir, m.dist * d * 2.2);
+      const sc = m.size * d * (2.6 + 0.2 * Math.sin(clock.elapsedTime * 0.6 + i));
+      s.scale.setScalar(sc);
+      s.material.rotation = m.rot + clock.elapsedTime * 0.04;
+      s.material.opacity = Math.min(1, d * 1.6);
     });
   });
   return (
-    <group>
-      {geoms.map((g, i) => (
-        <mesh key={i} geometry={g}>
-          <meshStandardMaterial
-            color="#8a4b1f"
-            emissive={COPPER}
-            emissiveIntensity={i === 0 ? 0.5 : 0.28}
-            roughness={0.32}
-            metalness={0.95}
-          />
-        </mesh>
-      ))}
-      {/* data pulses travelling along the copper */}
-      {pulseMeta.map((_, i) => (
-        <mesh key={`p${i}`} ref={(el) => (pulses.current[i] = el)}>
-          <sphereGeometry args={[0.024, 8, 8]} />
-          <meshBasicMaterial color="#ffcf9e" toneMapped={false} />
-        </mesh>
+    <group ref={group} visible={false}>
+      {meta.map((_, i) => (
+        <sprite key={i}>
+          <spriteMaterial map={billowTex} transparent depthWrite={false} opacity={0} />
+        </sprite>
       ))}
     </group>
   );
 }
 
-/* ---------- ambient dust motes around the bust ---------- */
-function Motes({ count = 260 }) {
+/* ---------- dust motes drifting in the gallery light ---------- */
+function Motes({ count = 200 }) {
   const ref = useRef();
   const positions = useMemo(() => {
     const a = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      a[i * 3] = (Math.random() - 0.5) * 12;
-      a[i * 3 + 1] = Math.random() * 5.5 - 0.5;
-      a[i * 3 + 2] = (Math.random() - 0.5) * 12;
+      a[i * 3] = (Math.random() - 0.5) * 10;
+      a[i * 3 + 1] = Math.random() * 5 - 0.3;
+      a[i * 3 + 2] = (Math.random() - 0.5) * 10;
     }
     return a;
   }, [count]);
   useFrame(({ clock }) => {
-    if (ref.current) ref.current.rotation.y = clock.elapsedTime * 0.012;
+    if (ref.current) ref.current.rotation.y = clock.elapsedTime * 0.01;
   });
   return (
     <points ref={ref}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.02} color="#e8c9a8" transparent opacity={0.3} sizeAttenuation />
+      <pointsMaterial size={0.016} color="#8f887a" transparent opacity={0.35} sizeAttenuation />
     </points>
   );
 }
 
-/* ---------- the tunnel: inside the copper cable, at x=120 ---------- */
-const TUNNEL_X = 120;
-const TUNNEL_LEN = 60;
+/* ---------- inside the ink: a flowing, abstract dark space at x=120 ---------- */
+const INK_X = 120;
+const INK_LEN = 46;
 
-function Tunnel() {
+function InkSpace({ billowTex }) {
   const group = useRef();
-
-  // long copper strands spiralling gently down the cable interior
-  const strands = useMemo(() => {
-    const rand = seeded(99);
-    return Array.from({ length: 12 }).map(() => {
-      const baseTh = rand() * Math.PI * 2;
-      const r = 1.0 + rand() * 0.3;
-      const twist = (rand() - 0.5) * 2.2; // total helix rotation over the length
+  const billows = useMemo(() => {
+    const rand = seeded(77);
+    return Array.from({ length: 44 }).map(() => ({
+      pos: [
+        (rand() - 0.5) * 7,
+        (rand() - 0.5) * 5,
+        2 - rand() * (INK_LEN + 8),
+      ],
+      size: 2.4 + rand() * 4.5,
+      rot: rand() * Math.PI * 2,
+      spin: (rand() - 0.5) * 0.05,
+    }));
+  }, []);
+  // faint architectural ribbons flowing through the cloud
+  const ribbons = useMemo(() => {
+    const rand = seeded(55);
+    return Array.from({ length: 4 }).map(() => {
       const pts = [];
-      for (let s = 0; s <= 10; s++) {
-        const f = s / 10;
-        const th = baseTh + twist * f;
-        pts.push(new THREE.Vector3(Math.cos(th) * r, Math.sin(th) * r, 2 - f * (TUNNEL_LEN + 4)));
+      const ox = (rand() - 0.5) * 3;
+      const oy = (rand() - 0.5) * 2;
+      for (let s = 0; s <= 8; s++) {
+        const f = s / 8;
+        pts.push(
+          new THREE.Vector3(
+            ox + Math.sin(f * Math.PI * (1.5 + rand())) * 1.6,
+            oy + Math.cos(f * Math.PI * (1 + rand())) * 1.2,
+            2 - f * (INK_LEN + 6)
+          )
+        );
       }
-      return new THREE.CatmullRomCurve3(pts);
+      return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 64, 0.22, 6, false);
     });
   }, []);
-  const strandGeoms = useMemo(
-    () => strands.map((c) => new THREE.TubeGeometry(c, 80, 0.03, 6, false)),
-    [strands]
-  );
-
-  const rings = useMemo(
-    () =>
-      Array.from({ length: 30 }).map((_, i) => ({
-        z: -(i / 30) * TUNNEL_LEN,
-        r: 1.28 + Math.sin(i * 1.7) * 0.08,
-      })),
-    []
-  );
-  const streaks = useMemo(() => {
-    const n = 300;
+  const glimmer = useMemo(() => {
+    const n = 240;
     const a = new Float32Array(n * 3);
+    const rand = seeded(88);
     for (let i = 0; i < n; i++) {
-      const th = Math.random() * Math.PI * 2;
-      const rr = 0.4 + Math.random() * 0.55;
-      a[i * 3] = Math.cos(th) * rr;
-      a[i * 3 + 1] = Math.sin(th) * rr;
-      a[i * 3 + 2] = -Math.random() * TUNNEL_LEN;
+      a[i * 3] = (rand() - 0.5) * 6;
+      a[i * 3 + 1] = (rand() - 0.5) * 4.5;
+      a[i * 3 + 2] = 2 - rand() * INK_LEN;
     }
     return a;
   }, []);
 
   useFrame(({ clock }) => {
-    if (group.current) group.current.rotation.z = clock.elapsedTime * 0.04;
+    if (!group.current) return;
+    const t = clock.elapsedTime;
+    group.current.children.forEach((ch, i) => {
+      if (ch.isSprite) {
+        const b = billows[i];
+        if (b) ch.material.rotation = b.rot + t * b.spin;
+      }
+    });
   });
 
   return (
-    <group ref={group} position={[TUNNEL_X, 0, 0]}>
-      {strandGeoms.map((g, i) => (
-        <mesh key={`s${i}`} geometry={g}>
-          <meshStandardMaterial
-            color="#8a4b1f"
-            emissive={COPPER}
-            emissiveIntensity={0.5}
-            metalness={0.95}
-            roughness={0.35}
-          />
-        </mesh>
+    <group ref={group} position={[INK_X, 0, 0]}>
+      {billows.map((b, i) => (
+        <sprite key={i} position={b.pos} scale={[b.size, b.size, 1]}>
+          <spriteMaterial map={billowTex} transparent depthWrite={false} opacity={0.9} />
+        </sprite>
       ))}
-      {rings.map((r, i) => (
-        <mesh key={i} position={[0, 0, r.z]} rotation={[0, 0, i * 0.4]}>
-          <torusGeometry args={[r.r, 0.014, 6, 40]} />
-          <meshBasicMaterial color="#ffb070" toneMapped={false} transparent opacity={0.55} />
+      {ribbons.map((g, i) => (
+        <mesh key={`r${i}`} geometry={g}>
+          <meshStandardMaterial
+            color="#141220"
+            emissive="#3a3050"
+            emissiveIntensity={0.35}
+            transparent
+            opacity={0.5}
+            roughness={0.8}
+          />
         </mesh>
       ))}
       <points>
         <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={300} array={streaks} itemSize={3} />
+          <bufferAttribute attach="attributes-position" count={240} array={glimmer} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.03} color="#ffe0bd" transparent opacity={0.85} sizeAttenuation />
+        <pointsMaterial size={0.025} color="#ffd9a8" transparent opacity={0.5} sizeAttenuation />
       </points>
-      {/* light source travelling with the camera keeps the copper lit */}
-      <pointLight position={[0, 0, -8]} intensity={6} color="#ffb070" distance={20} />
-      {/* dark cable wall */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -TUNNEL_LEN / 2]}>
-        <cylinderGeometry args={[1.7, 1.7, TUNNEL_LEN + 20, 24, 1, true]} />
-        <meshStandardMaterial color="#070503" side={THREE.BackSide} roughness={1} />
-      </mesh>
+      <pointLight position={[0, 0.5, -10]} intensity={4} color="#c9b8ff" distance={22} />
     </group>
   );
 }
 
-/* ---------- the neural cluster (memories live here), at x=240 ---------- */
+/* ---------- the ideas: a drifting luminous cluster at x=240 ---------- */
 const CLUSTER_X = 240;
 function Cluster() {
   const group = useRef();
@@ -272,15 +287,15 @@ function Cluster() {
     });
     const pts = [];
     nodes.forEach((n, i) => {
-      const dists = nodes
+      nodes
         .map((m, j) => ({ j, d: n.pos.distanceTo(m.pos) }))
         .filter((e) => e.j !== i)
         .sort((a, b) => a.d - b.d)
-        .slice(0, 2);
-      dists.forEach((e) => {
-        pts.push(n.pos.x, n.pos.y, n.pos.z);
-        pts.push(nodes[e.j].pos.x, nodes[e.j].pos.y, nodes[e.j].pos.z);
-      });
+        .slice(0, 2)
+        .forEach((e) => {
+          pts.push(n.pos.x, n.pos.y, n.pos.z);
+          pts.push(nodes[e.j].pos.x, nodes[e.j].pos.y, nodes[e.j].pos.z);
+        });
     });
     return { nodes, linePositions: new Float32Array(pts) };
   }, []);
@@ -291,9 +306,8 @@ function Cluster() {
     if (group.current) group.current.rotation.y = t * 0.03;
     if (inst.current) {
       nodes.forEach((n, i) => {
-        const s = n.scale * (1 + 0.35 * Math.sin(t * 1.6 + n.phase));
         dummy.position.copy(n.pos);
-        dummy.scale.setScalar(s);
+        dummy.scale.setScalar(n.scale * (1 + 0.35 * Math.sin(t * 1.6 + n.phase)));
         dummy.updateMatrix();
         inst.current.setMatrixAt(i, dummy.matrix);
       });
@@ -305,7 +319,7 @@ function Cluster() {
     <group ref={group} position={[CLUSTER_X, 0, 0]}>
       <instancedMesh ref={inst} args={[null, null, nodes.length]}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshBasicMaterial color="#5fe0f7" toneMapped={false} />
+        <meshBasicMaterial color="#ffcf9e" toneMapped={false} />
       </instancedMesh>
       <lineSegments>
         <bufferGeometry>
@@ -316,61 +330,67 @@ function Cluster() {
             itemSize={3}
           />
         </bufferGeometry>
-        <lineBasicMaterial color="#1d7f96" transparent opacity={0.35} />
+        <lineBasicMaterial color="#6e5636" transparent opacity={0.35} />
       </lineSegments>
-      {/* the core — the central processor */}
       <mesh>
         <icosahedronGeometry args={[0.5, 1]} />
-        <meshStandardMaterial
-          color="#0a0c10"
-          emissive={COPPER}
-          emissiveIntensity={1.4}
-          wireframe
-        />
+        <meshStandardMaterial color="#0a0c10" emissive={VEIN} emissiveIntensity={1.3} wireframe />
       </mesh>
     </group>
   );
 }
 
-/* ---------- camera director ---------- */
-function Director({ scrollRef, curves }) {
-  const { camera, pointer } = useThree();
+/* ---------- camera + light director ---------- */
+function Director({ scrollRef }) {
+  const { camera, pointer, scene } = useThree();
   const look = useRef(new THREE.Vector3(0, 1.0, 0));
-  const entry = useMemo(() => curves[0].getPointAt(0.05), [curves]);
+  const bg = useMemo(() => GALLERY.clone(), []);
 
   useFrame(() => {
     const p = scrollRef.current;
 
+    // the world darkens as the ink takes over
+    const dark = ramp(p, 0.22, 0.33);
+    bg.copy(GALLERY).lerp(INK, dark);
+    scene.background = bg;
+    if (scene.fog) {
+      scene.fog.color.copy(bg);
+      scene.fog.near = THREE.MathUtils.lerp(8, 4, dark);
+      scene.fog.far = THREE.MathUtils.lerp(24, 15, dark);
+    }
+
     if (p < 0.3) {
-      // Phase 1: approach the bust (framed large), then dive at the entry wire
-      const a = ease(clamp01(p / 0.22));
-      const d = ease(clamp01((p - 0.22) / 0.08));
-      const px = THREE.MathUtils.lerp(0.0, entry.x, d) + pointer.x * 0.12 * (1 - d);
+      // Movement I: the gallery — approach, then glide into the fissure
+      const a = ease(clamp01(p / 0.2));
+      const d = ease(clamp01((p - 0.2) / 0.1));
+      const px = THREE.MathUtils.lerp(0.0, FISSURE.x, d) + pointer.x * 0.1 * (1 - d);
       const py =
-        THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.95, 1.25, a), entry.y, d) +
-        pointer.y * 0.06 * (1 - d);
-      const pz = THREE.MathUtils.lerp(THREE.MathUtils.lerp(4.1, 2.0, a), entry.z + 0.18, d);
+        THREE.MathUtils.lerp(THREE.MathUtils.lerp(1.0, 1.2, a), FISSURE.y, d) +
+        pointer.y * 0.05 * (1 - d);
+      const pz = THREE.MathUtils.lerp(THREE.MathUtils.lerp(4.2, 2.1, a), FISSURE.z + 0.16, d);
       camera.position.set(px, py, pz);
-      look.current.lerp(
-        d > 0
-          ? curves[0].getPointAt(Math.min(0.3, 0.05 + d * 0.22))
-          : new THREE.Vector3(0, 1.05, 0),
-        0.2
-      );
+      look.current.lerp(d > 0 ? FISSURE : new THREE.Vector3(0, 1.05, 0), 0.2);
       camera.lookAt(look.current);
-      camera.fov = 46 + d * 18;
+      camera.fov = 44 + d * 20;
       camera.updateProjectionMatrix();
     } else if (p < 0.52) {
-      // Phase 2: flying through the copper cable
+      // Movement II: adrift in the ink — a slow, curving glide (no straight tunnel)
       const t = ease(clamp01((p - 0.3) / 0.22));
-      const z = -t * (TUNNEL_LEN - 6);
-      const sway = Math.sin(t * 9) * 0.07;
-      camera.position.set(TUNNEL_X + sway, Math.cos(t * 7) * 0.05, z);
-      camera.lookAt(TUNNEL_X, 0, z - 4);
-      camera.fov = 64 - t * 10;
+      const z = 1 - t * (INK_LEN - 4);
+      camera.position.set(
+        INK_X + Math.sin(t * Math.PI * 2.2) * 0.9,
+        Math.sin(t * Math.PI * 1.4) * 0.6,
+        z
+      );
+      camera.lookAt(
+        INK_X + Math.sin((t + 0.08) * Math.PI * 2.2) * 0.9,
+        Math.sin((t + 0.08) * Math.PI * 1.4) * 0.6,
+        z - 3
+      );
+      camera.fov = 58 - t * 6;
       camera.updateProjectionMatrix();
     } else {
-      // Phase 3: drifting around the neural cluster toward the core
+      // Movement III: among the ideas
       const t = clamp01((p - 0.52) / 0.48);
       const ang = t * 1.9 + 0.4;
       const rad = THREE.MathUtils.lerp(9.5, 6.2, ease(t));
@@ -389,31 +409,32 @@ function Director({ scrollRef, curves }) {
 
 /* ---------- the exported canvas ---------- */
 export default function NeuralCanvas({ scrollRef }) {
-  const curves = useMemo(() => makeWireCurves(), []);
+  const billowTex = useMemo(() => makeBillowTexture(), []);
   return (
     <Canvas
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 0.95, 4.1], fov: 46 }}
-      style={{ position: "fixed", inset: 0, background: "#020204" }}
+      camera={{ position: [0, 1.0, 4.2], fov: 44 }}
+      style={{ position: "fixed", inset: 0, background: "#f2efe8" }}
     >
-      <fog attach="fog" args={["#020204", 6, 17]} />
-      <ambientLight intensity={0.12} />
-      {/* dramatic museum lighting on the bust */}
-      <spotLight position={[2.5, 4.5, 2.5]} angle={0.55} penumbra={0.9} intensity={30} color="#fff4e0" />
-      <pointLight position={[-3, 1.6, 1.5]} intensity={4} color="#7fb7c9" />
-      <pointLight position={[3, 1.0, -2]} intensity={6} color="#d98a4a" />
+      <fog attach="fog" args={["#f2efe8", 8, 24]} />
+      {/* gallery daylight */}
+      <hemisphereLight args={["#ffffff", "#cfc8ba", 0.85]} />
+      <directionalLight position={[3, 5, 3]} intensity={2.1} color="#fff6e8" />
+      <directionalLight position={[-4, 2, -2]} intensity={0.5} color="#dfe8f0" />
 
-      <Bust />
-      <Wires curves={curves} />
+      <Bust scrollRef={scrollRef} />
+      <InkBurst scrollRef={scrollRef} billowTex={billowTex} />
       <Motes />
-      <Tunnel />
+      <ContactShadows position={[0, -0.62, 0]} opacity={0.4} scale={8} blur={2.6} far={3} color="#3a352c" />
+
+      <InkSpace billowTex={billowTex} />
       <Cluster />
-      <Director scrollRef={scrollRef} curves={curves} />
+      <Director scrollRef={scrollRef} />
 
       <EffectComposer>
-        <Bloom intensity={1.15} luminanceThreshold={0.25} mipmapBlur />
-        <Vignette eskil={false} offset={0.25} darkness={0.85} />
+        <Bloom intensity={0.9} luminanceThreshold={0.6} mipmapBlur />
+        <Vignette eskil={false} offset={0.2} darkness={0.6} />
       </EffectComposer>
     </Canvas>
   );

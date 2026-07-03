@@ -114,9 +114,9 @@ export default function App() {
       const p = max > 0 ? window.scrollY / max : 0;
       scrollRef.current = p;
       if (flashRef.current) {
-        const flash = (c) => Math.max(0, 1 - Math.abs(p - c) / 0.018);
+        const flash = (c) => Math.max(0, 1 - Math.abs(p - c) / 0.03);
         flashRef.current.style.opacity = Math.min(
-          0.92,
+          0.95,
           flash(0.3) + flash(0.52)
         );
       }
@@ -134,15 +134,15 @@ export default function App() {
 
   return (
     <div className="relative bg-[#020204] text-[#c6cbd8]">
-      <Suspense fallback={<div className="fixed inset-0 bg-[#020204]" />}>
+      <Suspense fallback={<div className="fixed inset-0 bg-[#f2efe8]" />}>
         <NeuralCanvas scrollRef={scrollRef} />
       </Suspense>
 
-      {/* transition flash between scenes */}
+      {/* the ink swallowing the view at each threshold */}
       <div
         ref={flashRef}
-        className="pointer-events-none fixed inset-0 z-30 bg-[#bfefff]"
-        style={{ opacity: 0, mixBlendMode: "screen" }}
+        className="pointer-events-none fixed inset-0 z-30 bg-[#08070a]"
+        style={{ opacity: 0 }}
       />
 
       <Sparks />
@@ -154,8 +154,8 @@ export default function App() {
         {/* the descent: scroll space for the dive + tunnel flight */}
         <div className="relative h-[320vh]">
           <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
-            <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-[#8b8fa3]">
-              descending the primary cable
+            <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-white mix-blend-difference">
+              through the fissure, into the ink
             </p>
           </div>
         </div>
