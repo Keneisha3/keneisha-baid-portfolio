@@ -1,0 +1,187 @@
+/* Ambient effects: electric cursor sparks, the low electrical hum, and the
+   minimal floating nav. */
+import { useEffect, useRef, useState } from "react";
+
+/* ---------- electric sparks that follow the cursor ---------- */
+export function Sparks() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let raf;
+    let parts = [];
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    let last = 0;
+    const onMove = (e) => {
+      const now = performance.now();
+      if (now - last < 28 || parts.length > 160) return; // throttle
+      last = now;
+      const n = 2;
+      for (let i = 0; i < n; i++) {
+        parts.push({
+          x: e.clientX,
+          y: e.clientY,
+          vx: (Math.random() - 0.5) * 2.4,
+          vy: (Math.random() - 0.5) * 2.4 - 0.4,
+          life: 1,
+          copper: Math.random() > 0.7,
+        });
+      }
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      parts = parts.filter((p) => p.life > 0.02);
+      for (const p of parts) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02;
+        p.life *= 0.92;
+        ctx.beginPath();
+        // tiny jagged spark: a short line in the velocity direction
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
+        ctx.strokeStyle = p.copper
+          ? `rgba(255,176,112,${p.life})`
+          : `rgba(85,222,250,${p.life})`;
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="pointer-events-none fixed inset-0 z-40"
+      aria-hidden="true"
+    />
+  );
+}
+
+/* ---------- ambient electrical hum (off until toggled — autoplay rules) ---------- */
+export function useHum() {
+  const ctxRef = useRef(null);
+  const gainRef = useRef(null);
+  const [on, setOn] = useState(false);
+
+  const toggle = () => {
+    if (!ctxRef.current) {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const master = ctx.createGain();
+      master.gain.value = 0;
+      master.connect(ctx.destination);
+
+      // low mains-hum stack: 50Hz + 100Hz sines + filtered noise shimmer
+      [50, 100, 150].forEach((f, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = f;
+        g.gain.value = [0.5, 0.22, 0.06][i];
+        o.connect(g);
+        g.connect(master);
+        o.start();
+      });
+      const len = ctx.sampleRate * 2;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      let lastV = 0;
+      for (let i = 0; i < len; i++) {
+        lastV = lastV * 0.98 + (Math.random() * 2 - 1) * 0.02; // brown-ish noise
+        d[i] = lastV * 2.4;
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+      noise.loop = true;
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 400;
+      const ng = ctx.createGain();
+      ng.gain.value = 0.28;
+      noise.connect(lp);
+      lp.connect(ng);
+      ng.connect(master);
+      noise.start();
+
+      ctxRef.current = ctx;
+      gainRef.current = master;
+    }
+    const ctx = ctxRef.current;
+    if (ctx.state === "suspended") ctx.resume();
+    const g = gainRef.current.gain;
+    const next = !on;
+    g.cancelScheduledValues(ctx.currentTime);
+    g.setTargetAtTime(next ? 0.05 : 0.0, ctx.currentTime, 0.4);
+    setOn(next);
+  };
+
+  return { humOn: on, toggleHum: toggle };
+}
+
+/* ---------- minimal floating nav ---------- */
+const NAV = [
+  { id: "projects", label: "memories" },
+  { id: "skills", label: "skills" },
+  { id: "experience", label: "exhibit" },
+  { id: "contact", label: "core" },
+];
+
+export function MindNav({ humOn, toggleHum }) {
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-4 sm:px-8">
+      <a
+        href="#top"
+        onClick={(e) => {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        className="font-display text-lg font-semibold tracking-tight text-[#e8e4dc]"
+      >
+        K<span className="text-[#37d6f5]">B</span>
+      </a>
+      <nav className="hidden items-center gap-6 md:flex">
+        {NAV.map((n) => (
+          <a
+            key={n.id}
+            href={`#${n.id}`}
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#8b8fa3] transition-colors hover:text-[#37d6f5]"
+          >
+            {n.label}
+          </a>
+        ))}
+      </nav>
+      <button
+        onClick={toggleHum}
+        aria-label={humOn ? "Mute ambient sound" : "Enable ambient sound"}
+        className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
+          humOn
+            ? "border-[#37d6f5] text-[#37d6f5]"
+            : "border-white/15 text-[#8b8fa3] hover:border-white/40"
+        }`}
+      >
+        {humOn ? "◉" : "◌"}
+      </button>
+    </header>
+  );
+}

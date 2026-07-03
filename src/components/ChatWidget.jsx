@@ -126,10 +126,10 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed bottom-24 right-6 z-50 flex h-[540px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-3xl border border-pink-200 bg-white shadow-2xl shadow-pink-500/20"
+            className="fixed bottom-24 right-6 z-50 flex h-[540px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-3xl border border-pink-200 bg-blush-100 shadow-2xl shadow-pink-500/20"
           >
             <div className="flex items-center gap-3 border-b border-pink-100 bg-gradient-to-r from-pink-400 to-rose-400 px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-sm font-bold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-sm font-bold text-white">
                 KB
               </div>
               <div>
@@ -137,7 +137,7 @@ export default function ChatWidget() {
                   Ask about Keneisha
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-white/85">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white" /> Always around
+                  <span className="h-1.5 w-1.5 rounded-full bg-blush-100" /> Always around
                 </div>
               </div>
             </div>
@@ -155,7 +155,7 @@ export default function ChatWidget() {
                     className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
                         ? "rounded-br-md bg-pink-500 text-white"
-                        : "rounded-bl-md border border-pink-100 bg-white text-plum-700"
+                        : "rounded-bl-md border border-pink-100 bg-blush-100 text-plum-700"
                     }`}
                   >
                     {m.content}
@@ -165,7 +165,7 @@ export default function ChatWidget() {
 
               {loading && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-pink-100 bg-white px-4 py-3">
+                  <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-pink-100 bg-blush-100 px-4 py-3">
                     {[0, 1, 2].map((d) => (
                       <motion.span
                         key={d}
@@ -185,7 +185,7 @@ export default function ChatWidget() {
                     <button
                       key={q}
                       onClick={() => respond(q)}
-                      className="rounded-full border border-pink-200 bg-white px-3 py-1.5 text-xs font-medium text-pink-600 transition-colors hover:bg-pink-50"
+                      className="rounded-full border border-pink-200 bg-blush-100 px-3 py-1.5 text-xs font-medium text-pink-600 transition-colors hover:bg-pink-50"
                     >
                       {q}
                     </button>
@@ -199,7 +199,7 @@ export default function ChatWidget() {
                 e.preventDefault();
                 respond(input);
               }}
-              className="flex items-center gap-2 border-t border-pink-100 bg-white px-3 py-3"
+              className="flex items-center gap-2 border-t border-pink-100 bg-blush-100 px-3 py-3"
             >
               <input
                 ref={inputRef}

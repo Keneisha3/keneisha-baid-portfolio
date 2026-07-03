@@ -4,44 +4,42 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Pantone-inspired palette: Blue Opal primary, Rhythmic Red secondary,
-        // warm Amberlight/Toffee neutrals, Skyway as a soft accent.
-        // Token names kept (blush/pink/rose/plum) so components re-skin in place.
-
-        // blush = warm Amberlight neutral surfaces
+        // Neural palette. Legacy token names kept so shared components
+        // (e.g. the chat widget) re-skin in place:
+        //   blush = dark surfaces · pink = synapse cyan · rose = copper ·
+        //   plum = light bone text (inverted for the dark theme)
         blush: {
-          50: "#FBF8F3",
-          100: "#F4EADD",
-          200: "#E8D6C2",
-          300: "#D9BD9F",
-          400: "#B5946F",
+          50: "#0a0d12",
+          100: "#0e1218",
+          200: "#1a2230",
+          300: "#2a3547",
+          400: "#3d4a61",
         },
-        // pink = PRIMARY accent (Blue Opal) + Skyway lighter step
         pink: {
-          DEFAULT: "#1C3F5F",
-          400: "#6E92B4", // Skyway-leaning
-          500: "#1C3F5F",
-          600: "#163750",
-          700: "#10293C",
+          DEFAULT: "#37d6f5",
+          50: "#062028",
+          100: "#0a2e3a",
+          200: "#0f4152",
+          300: "#17607a",
+          400: "#7be9ff",
+          500: "#37d6f5",
+          600: "#22b8d8",
+          700: "#1a92ad",
         },
-        // rose = SECONDARY accent (Rhythmic Red / Syrah)
         rose: {
-          DEFAULT: "#A4343A",
-          400: "#C0565B",
-          500: "#A4343A",
-          700: "#6E1E2E", // Syrah
+          DEFAULT: "#d98a4a",
+          400: "#ffb070",
+          500: "#d98a4a",
+          700: "#a4622e",
         },
-        // skyway = soft blue accent
-        skyway: {
-          DEFAULT: "#AFC7DE",
-          400: "#AFC7DE",
-        },
-        // plum = Toffee / Tawny Port deep ink for text
         plum: {
-          DEFAULT: "#4A3526",
-          700: "#5C2935", // Tawny Port
-          900: "#2A1D16",
+          DEFAULT: "#c6cbd8",
+          700: "#e8e4dc",
+          900: "#f4f1ea",
         },
+        bone: "#e8e4dc",
+        synapse: "#37d6f5",
+        copper: "#d98a4a",
       },
       fontFamily: {
         sans: [
@@ -54,20 +52,7 @@ export default {
           "sans-serif",
         ],
         display: ["\"Fraunces\"", "Georgia", "serif"],
-      },
-      keyframes: {
-        "gradient-shift": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-        },
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-12px)" },
-        },
-      },
-      animation: {
-        "gradient-shift": "gradient-shift 14s ease infinite",
-        float: "float 6s ease-in-out infinite",
+        mono: ["\"IBM Plex Mono\"", "ui-monospace", "SFMono-Regular", "monospace"],
       },
     },
   },

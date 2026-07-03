@@ -1,62 +1,168 @@
-import { useEffect, useState } from "react";
-import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Skills from "./components/Skills";
-import Timeline from "./components/Timeline";
-import Projects from "./components/Projects";
-import Interests from "./components/Interests";
-import Contact from "./components/Contact";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import {
+  Landing,
+  ProjectNeurons,
+  SkillTerminals,
+  MuseumExhibit,
+  CoreTerminal,
+} from "./neural/Sections";
+import { Sparks, useHum, MindNav } from "./neural/Fx";
 import ChatWidget from "./components/ChatWidget";
 
-// Soft divider between sections.
-function Divider() {
+// Three.js only loads for the full experience — lite mode never pays for it.
+const NeuralCanvas = lazy(() => import("./neural/Scene"));
+
+// Lite mode: weak/failed WebGL, reduced-motion users, small mobile devices,
+// or an explicit ?lite flag. Same content, no 3D.
+function detectLite() {
+  try {
+    if (new URLSearchParams(window.location.search).has("lite")) return true;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return true;
+    const c = document.createElement("canvas");
+    if (!(c.getContext("webgl2") || c.getContext("webgl"))) return true;
+    const mobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (mobile && (navigator.hardwareConcurrency || 8) <= 4) return true;
+  } catch {
+    return true;
+  }
+  return false;
+}
+
+function Sections() {
   return (
-    <div className="mx-auto h-px max-w-7xl bg-gradient-to-r from-transparent via-blush-200 to-transparent" />
+    <>
+      <ProjectNeurons />
+      <SkillTerminals />
+      <MuseumExhibit />
+      <CoreTerminal />
+    </>
   );
 }
 
-// Tiny hash-based router: main scrolling page, plus a separate Life page.
-function useHashRoute() {
-  const [hash, setHash] = useState(window.location.hash || "#/");
-  useEffect(() => {
-    const onChange = () => setHash(window.location.hash || "#/");
-    window.addEventListener("hashchange", onChange);
-    return () => window.removeEventListener("hashchange", onChange);
-  }, []);
-  return hash;
+/* Static fallback: same content, a quiet SVG "synapse" hero instead of 3D. */
+function LiteExperience({ humOn, toggleHum }) {
+  return (
+    <div className="relative min-h-screen bg-[#020204] text-[#c6cbd8]">
+      <MindNav humOn={humOn} toggleHum={toggleHum} />
+      <section className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-6 text-center">
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-40"
+          viewBox="0 0 800 600"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
+          {Array.from({ length: 14 }).map((_, i) => {
+            const y = 40 + i * 42;
+            return (
+              <path
+                key={i}
+                d={`M-10 ${y} C 200 ${y - 60 + (i % 3) * 40}, 500 ${y + 70 - (i % 4) * 35}, 810 ${y}`}
+                fill="none"
+                stroke={i % 3 ? "#123c4a" : "#3a2a1c"}
+                strokeWidth="1"
+              />
+            );
+          })}
+          {Array.from({ length: 22 }).map((_, i) => (
+            <circle
+              key={`c${i}`}
+              cx={(i * 137) % 800}
+              cy={(i * 211) % 600}
+              r={i % 4 ? 2 : 3.5}
+              fill={i % 3 ? "#37d6f5" : "#d98a4a"}
+              opacity="0.5"
+            />
+          ))}
+        </svg>
+        <p className="relative font-mono text-xs uppercase tracking-[0.4em] text-[#37d6f5]">
+          inside the mind of
+        </p>
+        <h1 className="relative mt-3 font-display text-5xl font-semibold tracking-tight text-[#e8e4dc] sm:text-7xl">
+          Keneisha Baid
+        </h1>
+        <p className="relative mt-4 max-w-md text-sm text-[#8b8fa3]">
+          Management Engineering · University of Waterloo. Data, products, and
+          the occasional beautiful obsession.
+        </p>
+        <a
+          href="#projects"
+          className="relative mt-10 rounded-full border border-[#37d6f5]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#37d6f5] transition-colors hover:bg-[#37d6f5]/10"
+        >
+          explore ↓
+        </a>
+      </section>
+      <main className="relative">
+        <Sections />
+      </main>
+      <ChatWidget />
+    </div>
+  );
 }
 
 export default function App() {
-  const hash = useHashRoute();
-  const route = (hash.replace(/^#\/?/, "") || "home").toLowerCase();
-  const isLife = route === "life";
+  const [lite] = useState(detectLite);
+  const scrollRef = useRef(0);
+  const flashRef = useRef(null);
+  const { humOn, toggleHum } = useHum();
 
-  // Jump to top when switching between the main page and the Life page.
+  // Feed scroll progress (0..1) to the 3D director without re-rendering React,
+  // and drive the white-out flashes at the two scene transitions.
   useEffect(() => {
-    if (route === "life" || route === "home" || route === "") {
-      window.scrollTo(0, 0);
-    }
-  }, [route]);
+    if (lite) return;
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? window.scrollY / max : 0;
+      scrollRef.current = p;
+      if (flashRef.current) {
+        const flash = (c) => Math.max(0, 1 - Math.abs(p - c) / 0.018);
+        flashRef.current.style.opacity = Math.min(
+          0.92,
+          flash(0.3) + flash(0.52)
+        );
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [lite]);
+
+  const skipIntro = () => {
+    document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  if (lite) return <LiteExperience humOn={humOn} toggleHum={toggleHum} />;
 
   return (
-    <div className="relative min-h-screen bg-blush-50 text-plum-700">
-      <Navbar route={route} />
-      {isLife ? (
-        <main className="pt-20">
-          <Interests standalone />
-          <Contact />
-        </main>
-      ) : (
-        <main>
-          <Hero />
-          <Projects />
-          <Divider />
-          <Timeline />
-          <Divider />
-          <Skills />
-          <Contact />
-        </main>
-      )}
+    <div className="relative bg-[#020204] text-[#c6cbd8]">
+      <Suspense fallback={<div className="fixed inset-0 bg-[#020204]" />}>
+        <NeuralCanvas scrollRef={scrollRef} />
+      </Suspense>
+
+      {/* transition flash between scenes */}
+      <div
+        ref={flashRef}
+        className="pointer-events-none fixed inset-0 z-30 bg-[#bfefff]"
+        style={{ opacity: 0, mixBlendMode: "screen" }}
+      />
+
+      <Sparks />
+      <MindNav humOn={humOn} toggleHum={toggleHum} />
+
+      <main className="relative z-10">
+        <Landing onSkip={skipIntro} />
+
+        {/* the descent: scroll space for the dive + tunnel flight */}
+        <div className="relative h-[320vh]">
+          <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
+            <p className="dive-caption font-mono text-[11px] uppercase tracking-[0.35em] text-[#37d6f5]/70">
+              entering the neural pathways…
+            </p>
+          </div>
+        </div>
+
+        <Sections />
+      </main>
+
       <ChatWidget />
     </div>
   );
