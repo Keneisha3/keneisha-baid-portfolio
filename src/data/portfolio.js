@@ -64,6 +64,7 @@ export const EXPERIENCE = [
     company: "Creospark",
     role: "Business Analyst",
     period: "Jan 2026 – Apr 2026",
+    img: "/photos/work/creospark-office.jpg",
     color: "#EC4899",
     bullets: [
       "Led stakeholder engagement across 3 digital transformation projects using Power Platform, SharePoint, Power BI, Power Automate, React, and Jira, improving operational efficiency by 24%.",
@@ -74,6 +75,7 @@ export const EXPERIENCE = [
     company: "Creospark",
     role: "Software Developer",
     period: "May 2025 – Aug 2025",
+    img: "/photos/work/creospark-team.jpg",
     color: "#FB7185",
     bullets: [
       "Built enterprise SPFx web parts using TypeScript, React, and SharePoint APIs, improving platform usability by 27%.",

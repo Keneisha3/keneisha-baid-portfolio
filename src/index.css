@@ -96,3 +96,24 @@ input.seesaw::-moz-range-thumb {
 .dive-caption {
   opacity: 0.45;
 }
+
+/* Gallery rails: an honest horizontal scroll bar */
+.rail {
+  scrollbar-width: thin;
+  scrollbar-color: #a4622e #e4ddd0;
+}
+.rail::-webkit-scrollbar {
+  height: 9px;
+}
+.rail::-webkit-scrollbar-track {
+  background: #e9e3d7;
+  border-radius: 6px;
+  margin: 0 7vw;
+}
+.rail::-webkit-scrollbar-thumb {
+  background: #c99c66;
+  border-radius: 6px;
+}
+.rail::-webkit-scrollbar-thumb:hover {
+  background: #a4622e;
+}

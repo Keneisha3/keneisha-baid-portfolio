@@ -4,35 +4,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
 
-/* ---------- horizontal gallery rail: vertical scroll pans the room ---------- */
-function Rail({ children, heightVh = 300, id }) {
-  const wrapRef = useRef(null);
-  const trackRef = useRef(null);
-  useEffect(() => {
-    const onScroll = () => {
-      const wrap = wrapRef.current;
-      const track = trackRef.current;
-      if (!wrap || !track) return;
-      const total = wrap.offsetHeight - window.innerHeight;
-      const prog = Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total));
-      const dist = Math.max(0, track.scrollWidth - window.innerWidth);
-      track.style.transform = `translate3d(${-prog * dist}px,0,0)`;
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
+/* ---------- horizontal gallery rail with an honest, visible scroll bar.
+   Browsing sideways is optional: scroll the bar (or swipe/drag) to walk the
+   room, or simply continue down the page past it. ---------- */
+function Rail({ children, id }) {
   return (
-    <section id={id} ref={wrapRef} style={{ height: `${heightVh}vh` }} className="relative">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <div ref={trackRef} className="flex items-center gap-12 pl-[7vw] pr-[12vw] will-change-transform">
-          {children}
-        </div>
+    <section id={id} className="relative py-20">
+      <div className="rail flex items-start gap-12 overflow-x-auto px-[7vw] pb-6">
+        {children}
       </div>
+      <p className="mt-3 px-[7vw] font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+        ⟷ slide the bar to walk the room — or keep scrolling down to move on
+      </p>
     </section>
   );
 }
@@ -68,7 +51,7 @@ function ProjectMedia({ p }) {
       <img
         src={`https://opengraph.githubassets.com/kb/${m[1]}`}
         alt={`${p.title} — repository`}
-        className="h-44 w-full rounded-t-md border-b border-[#1c1a1712] object-cover"
+        className="h-24 w-full rounded-t-md border-b border-[#1c1a1712] object-cover object-left"
         loading="lazy"
       />
     );
@@ -492,7 +475,7 @@ const ARTIFACTS = [
 
 export function ProjectNeurons() {
   return (
-    <Rail id="projects" heightVh={340}>
+    <Rail id="projects">
       {/* the wing's wall label opens the room */}
       <header className="w-[min(70vw,20rem)] shrink-0">
         <Kicker>wing II — the memory vault</Kicker>
@@ -502,8 +485,8 @@ export function ProjectNeurons() {
           <span className="italic text-[#5d5749]">walk among them.</span>
         </h2>
         <p className="mt-6 text-[15px] leading-relaxed text-[#5d5749]">
-          Each is stored differently, the way real memories are. Keep
-          scrolling — the room moves sideways. Everything here can be touched.
+          Each is stored differently, the way real memories are. Slide through
+          the room at your own pace — everything here can be touched.
         </p>
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
           → the gallery continues
@@ -598,10 +581,26 @@ export function SkillTerminals() {
 /* =====================================================================
    EXPERIENCE — wall labels beside invisible artifacts
 ===================================================================== */
-export function MuseumExhibit() {
+/* A photograph from the room itself — hides quietly if the file isn't there yet. */
+function JobPhoto({ src, alt }) {
+  const [ok, setOk] = useState(true);
+  if (!src || !ok) return null;
   return (
-    <Rail id="experience" heightVh={280}>
-      <header className="w-[min(70vw,18rem)] shrink-0">
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setOk(false)}
+      loading="lazy"
+      className="mb-5 h-44 w-full rounded-md border border-[#1c1a1714] object-cover shadow-[0_1px_2px_rgba(28,26,23,0.07),0_10px_30px_rgba(28,26,23,0.07)]"
+    />
+  );
+}
+
+export function MuseumExhibit() {
+  const chronological = [...EXPERIENCE].reverse(); // oldest room first
+  return (
+    <Rail id="experience">
+      <header className="w-[min(70vw,18rem)] shrink-0 pt-2">
         <Kicker>wing III — acquisitions</Kicker>
         <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Five rooms
@@ -609,28 +608,31 @@ export function MuseumExhibit() {
           <span className="italic text-[#5d5749]">that shaped the mind.</span>
         </h2>
         <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-          → in order of acquisition
+          → in order of acquisition, 2023 to now
         </p>
       </header>
 
-      {EXPERIENCE.map((e, i) => (
-        <article key={`${e.company}-${e.role}`} className="w-[min(84vw,26rem)] shrink-0">
-          <span
-            className="pointer-events-none select-none font-display text-8xl font-medium leading-none text-transparent"
-            style={{ WebkitTextStroke: "1.2px #1c1a1726" }}
-          >
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <p className={`mt-4 font-mono text-[10px] uppercase tracking-[0.3em] ${CU}`}>
-            {e.period}
-          </p>
-          <h3 className="mt-2 font-display text-2xl font-medium leading-snug text-[#171411]">
+      {chronological.map((e, i) => (
+        <article key={`${e.company}-${e.role}`} className="w-[min(84vw,28rem)] shrink-0">
+          <div className="flex items-baseline gap-4">
+            <span
+              className="pointer-events-none select-none font-display text-6xl font-medium leading-none text-transparent"
+              style={{ WebkitTextStroke: "1.2px #1c1a172e" }}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <p className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CU}`}>{e.period}</p>
+          </div>
+          <h3 className="mt-3 font-display text-[1.6rem] font-medium leading-snug text-[#171411]">
             {e.role}
             <span className="block text-lg italic text-[#5d5749]">at {e.company}</span>
           </h3>
-          <ul className="mt-4 space-y-3 border-l border-[#1c1a1714] pl-5">
+          <div className="mt-4">
+            <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />
+          </div>
+          <ul className="space-y-3.5 border-l-2 border-[#d98a4a]/40 pl-5">
             {e.bullets.map((b, j) => (
-              <li key={j} className="text-[14px] leading-[1.7] text-[#48423a]">
+              <li key={j} className="text-[15px] leading-[1.75] text-[#3f3930]">
                 {b}
               </li>
             ))}
