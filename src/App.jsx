@@ -42,7 +42,7 @@ function Sections() {
 /* Static fallback: same content, a quiet SVG "synapse" hero instead of 3D. */
 function LiteExperience({ humOn, toggleHum }) {
   return (
-    <div className="relative min-h-screen bg-[#020204] text-[#c6cbd8]">
+    <div className="relative min-h-screen bg-[#f2efe8] text-[#3a352c]">
       <MindNav humOn={humOn} toggleHum={toggleHum} />
       <section className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-6 text-center">
         <svg
@@ -58,7 +58,7 @@ function LiteExperience({ humOn, toggleHum }) {
                 key={i}
                 d={`M-10 ${y} C 200 ${y - 60 + (i % 3) * 40}, 500 ${y + 70 - (i % 4) * 35}, 810 ${y}`}
                 fill="none"
-                stroke={i % 3 ? "#123c4a" : "#3a2a1c"}
+                stroke={i % 3 ? "#d8cdbb" : "#e3d7c2"}
                 strokeWidth="1"
               />
             );
@@ -69,24 +69,24 @@ function LiteExperience({ humOn, toggleHum }) {
               cx={(i * 137) % 800}
               cy={(i * 211) % 600}
               r={i % 4 ? 2 : 3.5}
-              fill={i % 3 ? "#37d6f5" : "#d98a4a"}
+              fill={i % 3 ? "#a4622e" : "#d98a4a"}
               opacity="0.5"
             />
           ))}
         </svg>
-        <p className="relative font-mono text-xs uppercase tracking-[0.4em] text-[#37d6f5]">
+        <p className="relative font-mono text-xs uppercase tracking-[0.4em] text-[#a4622e]">
           inside the mind of
         </p>
-        <h1 className="relative mt-3 font-display text-5xl font-semibold tracking-tight text-[#e8e4dc] sm:text-7xl">
+        <h1 className="relative mt-3 font-display text-5xl font-semibold tracking-tight text-[#1c1a17] sm:text-6xl">
           Keneisha Baid
         </h1>
-        <p className="relative mt-4 max-w-md text-sm text-[#8b8fa3]">
+        <p className="relative mt-4 max-w-md text-sm text-[#6b6459]">
           Management Engineering · University of Waterloo. Data, products, and
           the occasional beautiful obsession.
         </p>
         <a
           href="#projects"
-          className="relative mt-10 rounded-full border border-[#37d6f5]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#37d6f5] transition-colors hover:bg-[#37d6f5]/10"
+          className="relative mt-10 rounded-full border border-[#a4622e]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#a4622e] transition-colors hover:bg-[#a4622e]/10"
         >
           explore ↓
         </a>
@@ -130,7 +130,7 @@ export default function App() {
   if (lite) return <LiteExperience humOn={humOn} toggleHum={toggleHum} />;
 
   return (
-    <div className="relative bg-[#020204] text-[#c6cbd8]">
+    <div className="relative bg-[#f2efe8] text-[#3a352c]">
       <Suspense fallback={<div className="fixed inset-0 bg-[#f2efe8]" />}>
         <NeuralCanvas scrollRef={scrollRef} />
       </Suspense>

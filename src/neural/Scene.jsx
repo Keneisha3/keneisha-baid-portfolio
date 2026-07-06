@@ -11,7 +11,7 @@ import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 const GALLERY = new THREE.Color("#f2efe8"); // warm gallery white
-const STONE_DARK = new THREE.Color("#08070a"); // inside the sculpture
+const STONE_DARK = new THREE.Color("#e9e3d7"); // inside the marble — still light
 const VEIN = new THREE.Color("#ffb36b"); // light inside the cracks
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const ease = (t) => t * t * (3 - 2 * t);
@@ -64,27 +64,76 @@ const FISSURE = new THREE.Vector3(0.14, 1.34, 0.2); // where the camera enters
 function Bust({ scrollRef }) {
   const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
   const mats = useRef([]);
+  const shaders = useRef([]);
   const crackTex = useMemo(() => makeCrackTexture(), []);
 
   useEffect(() => {
     mats.current = [];
+    shaders.current = [];
     scene.traverse((o) => {
-      if (o.isMesh) {
-        o.material.roughness = 0.5;
-        o.material.emissiveMap = crackTex;
-        o.material.emissive = VEIN.clone();
-        o.material.emissiveIntensity = 0.12; // hairline fractures already faintly visible
-        o.material.needsUpdate = true;
-        mats.current.push(o.material);
+      if (!o.isMesh) return;
+
+      // Give every triangle its own vertices + a shared centroid attribute, so
+      // spatial cells of triangles can drift apart as rigid marble shards.
+      if (!o.geometry.getAttribute("aCenter")) {
+        const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry;
+        const pos = g.getAttribute("position");
+        const centers = new Float32Array(pos.count * 3);
+        for (let i = 0; i < pos.count; i += 3) {
+          const cx = (pos.getX(i) + pos.getX(i + 1) + pos.getX(i + 2)) / 3;
+          const cy = (pos.getY(i) + pos.getY(i + 1) + pos.getY(i + 2)) / 3;
+          const cz = (pos.getZ(i) + pos.getZ(i + 1) + pos.getZ(i + 2)) / 3;
+          for (let k = 0; k < 3; k++) {
+            centers[(i + k) * 3] = cx;
+            centers[(i + k) * 3 + 1] = cy;
+            centers[(i + k) * 3 + 2] = cz;
+          }
+        }
+        g.setAttribute("aCenter", new THREE.BufferAttribute(centers, 3));
+        o.geometry = g;
       }
+      o.geometry.computeBoundingBox();
+      const core = new THREE.Vector3();
+      o.geometry.boundingBox.getCenter(core);
+
+      o.material.roughness = 0.5;
+      o.material.emissiveMap = crackTex;
+      o.material.emissive = VEIN.clone();
+      o.material.emissiveIntensity = 0.12; // hairline fractures faintly visible at rest
+      o.material.side = THREE.DoubleSide; // shard backs show through the gaps
+      o.material.customProgramCacheKey = () => "bust-shatter";
+      o.material.onBeforeCompile = (shader) => {
+        shader.uniforms.uBreak = { value: 0 };
+        shader.uniforms.uCells = { value: 15.0 };
+        shader.uniforms.uCore = { value: core };
+        shader.vertexShader =
+          `attribute vec3 aCenter;\n` +
+          `uniform float uBreak;\nuniform float uCells;\nuniform vec3 uCore;\n` +
+          `float hsh(vec3 p){return fract(sin(dot(p, vec3(127.1,311.7,74.7)))*43758.5453);}\n` +
+          shader.vertexShader.replace(
+            "#include <begin_vertex>",
+            `#include <begin_vertex>\n{\n` +
+              `  vec3 cell = floor(aCenter * uCells);\n` +
+              `  float h = hsh(cell);\n` +
+              `  vec3 dir = normalize((cell + 0.5) / uCells - uCore + vec3(1e-4));\n` +
+              `  vec3 jit = vec3(hsh(cell+1.0), hsh(cell+2.0), hsh(cell+3.0)) - 0.5;\n` +
+              `  transformed += (dir * (0.55 + 0.45*h) + jit * 0.9) * uBreak * 0.24;\n` +
+              `}`
+          );
+        shaders.current.push(shader);
+      };
+      o.material.needsUpdate = true;
+      mats.current.push(o.material);
     });
   }, [scene, crackTex]);
 
   useFrame(({ clock }) => {
     const p = scrollRef.current;
-    // the stone splits open as you descend
+    // the veins brighten, then the stone physically comes apart
     const glow = 0.12 + ramp(p, 0.03, 0.26) * (2.2 + 0.35 * Math.sin(clock.elapsedTime * 1.7));
     mats.current.forEach((m) => (m.emissiveIntensity = glow));
+    const br = ramp(p, 0.14, 0.34);
+    shaders.current.forEach((s) => (s.uniforms.uBreak.value = br));
   });
 
   return (
@@ -188,7 +237,7 @@ function Cluster() {
     <group ref={group} position={[CLUSTER_X, 0, 0]}>
       <instancedMesh ref={inst} args={[null, null, nodes.length]}>
         <sphereGeometry args={[1, 10, 10]} />
-        <meshBasicMaterial color="#ffcf9e" toneMapped={false} />
+        <meshBasicMaterial color="#b4622e" toneMapped={false} />
       </instancedMesh>
       <lineSegments>
         <bufferGeometry>
@@ -199,16 +248,16 @@ function Cluster() {
             itemSize={3}
           />
         </bufferGeometry>
-        <lineBasicMaterial color="#6e5636" transparent opacity={0.35} />
+        <lineBasicMaterial color="#9a8a6e" transparent opacity={0.5} />
       </lineSegments>
       <mesh>
         <icosahedronGeometry args={[0.5, 1]} />
-        <meshStandardMaterial color="#0a0c10" emissive={VEIN} emissiveIntensity={1.3} wireframe />
+        <meshStandardMaterial color="#5a3a1c" emissive={VEIN} emissiveIntensity={0.6} wireframe />
       </mesh>
       {/* faint marble walls of the interior, catching the vein-light */}
       <mesh>
         <sphereGeometry args={[9, 24, 24]} />
-        <meshStandardMaterial color="#0d0b09" roughness={0.95} side={THREE.BackSide} />
+        <meshStandardMaterial color="#efeadf" roughness={0.95} side={THREE.BackSide} />
       </mesh>
       <pointLight position={[0, 2, 0]} intensity={3} color="#ffb36b" distance={14} />
     </group>
@@ -230,8 +279,8 @@ function Director({ scrollRef }) {
     scene.background = bg;
     if (scene.fog) {
       scene.fog.color.copy(bg);
-      scene.fog.near = THREE.MathUtils.lerp(8, 4, dark);
-      scene.fog.far = THREE.MathUtils.lerp(24, 16, dark);
+      scene.fog.near = THREE.MathUtils.lerp(8, 5, dark);
+      scene.fog.far = THREE.MathUtils.lerp(24, 18, dark);
     }
 
     if (p < 0.34) {
@@ -291,8 +340,8 @@ export default function NeuralCanvas({ scrollRef }) {
       <Director scrollRef={scrollRef} />
 
       <EffectComposer>
-        <Bloom intensity={0.9} luminanceThreshold={0.55} mipmapBlur />
-        <Vignette eskil={false} offset={0.2} darkness={0.6} />
+        <Bloom intensity={0.7} luminanceThreshold={0.9} mipmapBlur />
+        <Vignette eskil={false} offset={0.2} darkness={0.3} />
       </EffectComposer>
     </Canvas>
   );

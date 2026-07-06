@@ -5,12 +5,12 @@ import { useMemo, useRef, useState } from "react";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
 
 /* ---------- shared type primitives ---------- */
-const BONE = "text-[#e8e4dc]";
-const DIM = "text-[#8b8fa3]";
-const FAINT = "text-[#4a4f60]";
-const CY = "text-[#37d6f5]";
+const BONE = "text-[#1c1a17]";
+const DIM = "text-[#6b6459]";
+const FAINT = "text-[#a09a8c]";
+const CY = "text-[#a4622e]";
 const CU = "text-[#d98a4a]";
-const RULE = "border-t border-[#ffffff14]";
+const RULE = "border-t border-[#1c1a1714]";
 
 function Kicker({ children, className = "" }) {
   return (
@@ -33,7 +33,7 @@ function Links({ links }) {
           href={l.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#ffffff2a] underline-offset-4 transition-colors hover:text-[#37d6f5] hover:decoration-[#37d6f5]`}
+          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#1c1a172a] underline-offset-4 transition-colors hover:text-[#a4622e] hover:decoration-[#a4622e]`}
         >
           {l.label} ↗
         </a>
@@ -117,8 +117,8 @@ function ArtifactViewport() {
         onMouseMove={onMove}
         onMouseLeave={() => setCursor(null)}
       >
-        <line x1="0" y1="160" x2="560" y2="160" stroke="#ffffff14" />
-        <path d={path} fill="none" stroke="#8b8fa3" strokeWidth="1" />
+        <line x1="0" y1="160" x2="560" y2="160" stroke="#1c1a1714" />
+        <path d={path} fill="none" stroke="#6b6459" strokeWidth="1" />
         {markers.map((m) => (
           <g key={m}>
             <circle cx={(m / 63) * 560} cy={160 - pts[m]} r="3" fill="none" stroke="#d98a4a" />
@@ -131,8 +131,8 @@ function ArtifactViewport() {
         ))}
         {cursor !== null && (
           <g>
-            <line x1={(cursor / 63) * 560} y1="0" x2={(cursor / 63) * 560} y2="160" stroke="#37d6f5" strokeWidth="0.5" />
-            <circle cx={(cursor / 63) * 560} cy={160 - pts[cursor]} r="2.5" fill="#37d6f5" />
+            <line x1={(cursor / 63) * 560} y1="0" x2={(cursor / 63) * 560} y2="160" stroke="#a4622e" strokeWidth="0.5" />
+            <circle cx={(cursor / 63) * 560} cy={160 - pts[cursor]} r="2.5" fill="#a4622e" />
           </g>
         )}
       </svg>
@@ -168,7 +168,7 @@ function ArtifactBench() {
             onClick={() => setSel(i)}
             className={`font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${
               sel === i ? CY : FAINT
-            } hover:text-[#8b8fa3]`}
+            } hover:text-[#6b6459]`}
           >
             {sel === i ? "▸ " : ""}
             {name}
@@ -184,9 +184,9 @@ function ArtifactBench() {
             R² = {BENCH[sel][1].toFixed(3)}
           </span>
         </div>
-        <div className="mt-2 h-px w-full bg-[#ffffff14]">
+        <div className="mt-2 h-px w-full bg-[#1c1a1714]">
           <div
-            className="h-px bg-[#37d6f5] transition-all duration-700 ease-out"
+            className="h-px bg-[#a4622e] transition-all duration-700 ease-out"
             style={{ width: `${BENCH[sel][1] * 100}%` }}
           />
         </div>
@@ -201,26 +201,26 @@ function ArtifactBench() {
 /* MEM — the storyboard: walk the UX flow frame by frame */
 const FRAMES = [
   { k: "onboarding", draw: (
-    <g><rect x="200" y="24" width="160" height="10" rx="2" fill="#8b8fa3" opacity=".5"/><rect x="220" y="46" width="120" height="6" rx="2" fill="#4a4f60"/><rect x="235" y="70" width="90" height="16" rx="8" fill="none" stroke="#37d6f5"/></g>
+    <g><rect x="200" y="24" width="160" height="10" rx="2" fill="#6b6459" opacity=".5"/><rect x="220" y="46" width="120" height="6" rx="2" fill="#a09a8c"/><rect x="235" y="70" width="90" height="16" rx="8" fill="none" stroke="#a4622e"/></g>
   )},
   { k: "household", draw: (
-    <g><rect x="24" y="20" width="70" height="70" rx="4" fill="none" stroke="#8b8fa3"/><rect x="104" y="20" width="70" height="70" rx="4" fill="none" stroke="#8b8fa3"/><rect x="184" y="20" width="70" height="70" rx="4" fill="none" stroke="#37d6f5"/><rect x="264" y="20" width="70" height="70" rx="4" fill="none" stroke="#8b8fa3"/><circle cx="219" cy="42" r="8" fill="#37d6f5" opacity=".6"/></g>
+    <g><rect x="24" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><rect x="104" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><rect x="184" y="20" width="70" height="70" rx="4" fill="none" stroke="#a4622e"/><rect x="264" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><circle cx="219" cy="42" r="8" fill="#a4622e" opacity=".6"/></g>
   )},
   { k: "schedule", draw: (
-    <g>{[0,1,2,3,4].map(i=>(<line key={i} x1={40+i*64} y1="18" x2={40+i*64} y2="92" stroke="#ffffff14"/>))}<rect x="46" y="30" width="52" height="14" rx="2" fill="#37d6f5" opacity=".35"/><rect x="110" y="52" width="116" height="14" rx="2" fill="#d98a4a" opacity=".4"/><rect x="238" y="26" width="52" height="14" rx="2" fill="#8b8fa3" opacity=".3"/></g>
+    <g>{[0,1,2,3,4].map(i=>(<line key={i} x1={40+i*64} y1="18" x2={40+i*64} y2="92" stroke="#1c1a1714"/>))}<rect x="46" y="30" width="52" height="14" rx="2" fill="#a4622e" opacity=".35"/><rect x="110" y="52" width="116" height="14" rx="2" fill="#d98a4a" opacity=".4"/><rect x="238" y="26" width="52" height="14" rx="2" fill="#6b6459" opacity=".3"/></g>
   )},
   { k: "tasks", draw: (
-    <g>{[0,1,2].map(i=>(<g key={i}><rect x="30" y={24+i*24} width="12" height="12" rx="2" fill="none" stroke={i===0?"#37d6f5":"#4a4f60"}/><rect x="54" y={27+i*24} width={180-i*40} height="6" rx="2" fill="#4a4f60"/></g>))}<path d="M33 30 l3 3 5 -6" stroke="#37d6f5" fill="none"/></g>
+    <g>{[0,1,2].map(i=>(<g key={i}><rect x="30" y={24+i*24} width="12" height="12" rx="2" fill="none" stroke={i===0?"#a4622e":"#a09a8c"}/><rect x="54" y={27+i*24} width={180-i*40} height="6" rx="2" fill="#a09a8c"/></g>))}<path d="M33 30 l3 3 5 -6" stroke="#a4622e" fill="none"/></g>
   )},
   { k: "shared care", draw: (
-    <g><circle cx="150" cy="55" r="26" fill="none" stroke="#8b8fa3"/><circle cx="210" cy="55" r="26" fill="none" stroke="#37d6f5"/><path d="M150 55 h60" stroke="#d98a4a" strokeDasharray="3 3"/></g>
+    <g><circle cx="150" cy="55" r="26" fill="none" stroke="#6b6459"/><circle cx="210" cy="55" r="26" fill="none" stroke="#a4622e"/><path d="M150 55 h60" stroke="#d98a4a" strokeDasharray="3 3"/></g>
   )},
 ];
 function ArtifactStoryboard() {
   const [f, setF] = useState(0);
   return (
     <div>
-      <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#ffffff14] bg-[#05070a]">
+      <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#1c1a1714] bg-[#faf7f1]">
         {FRAMES[f].draw}
       </svg>
       <div className="mt-3 flex items-center justify-between">
@@ -231,7 +231,7 @@ function ArtifactStoryboard() {
               onClick={() => setF(i)}
               className={`font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                 f === i ? CY : FAINT
-              } hover:text-[#8b8fa3]`}
+              } hover:text-[#6b6459]`}
             >
               {String(i + 1).padStart(2, "0")}
             </button>
@@ -267,13 +267,13 @@ function ArtifactSeesaw() {
       />
       <div className="mt-3 grid grid-cols-2 gap-6">
         <div>
-          <div className="h-px bg-[#ffffff14]">
-            <div className="h-px bg-[#37d6f5] transition-all duration-300" style={{ width: `${100 - w}%` }} />
+          <div className="h-px bg-[#1c1a1714]">
+            <div className="h-px bg-[#a4622e] transition-all duration-300" style={{ width: `${100 - w}%` }} />
           </div>
           <p className={`mt-1.5 font-mono text-[10px] ${DIM}`}>policy: yield-curve control era</p>
         </div>
         <div className="text-right">
-          <div className="h-px bg-[#ffffff14]">
+          <div className="h-px bg-[#1c1a1714]">
             <div className="ml-auto h-px bg-[#d98a4a] transition-all duration-300" style={{ width: `${w}%` }} />
           </div>
           <p className={`mt-1.5 font-mono text-[10px] ${DIM}`}>policy: tightening cycle</p>
@@ -310,18 +310,18 @@ function ArtifactAutomaton() {
   return (
     <div>
       <svg viewBox="0 0 380 150" className="w-full select-none">
-        <path d="M104 42 H266" stroke="#ffffff22" />
-        <path d="M92 60 L166 106" stroke="#ffffff22" />
-        <path d="M288 60 L212 106" stroke="#ffffff22" />
+        <path d="M104 42 H266" stroke="#1c1a1722" />
+        <path d="M92 60 L166 106" stroke="#1c1a1722" />
+        <path d="M288 60 L212 106" stroke="#1c1a1722" />
         {STATES.map((st, i) => (
           <g key={st.k}>
             <circle
               cx={st.x} cy={st.y} r="26"
               fill={s === i ? "rgba(55,214,245,0.08)" : "none"}
-              stroke={s === i ? "#37d6f5" : "#4a4f60"}
+              stroke={s === i ? "#a4622e" : "#a09a8c"}
               strokeWidth={s === i ? 1.5 : 1}
             />
-            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="IBM Plex Mono" fill={s === i ? "#e8e4dc" : "#8b8fa3"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="IBM Plex Mono" fill={s === i ? "#1c1a17" : "#6b6459"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
               {st.k}
             </text>
           </g>
@@ -330,7 +330,7 @@ function ArtifactAutomaton() {
       <div className="mt-2 flex items-center justify-between">
         <button
           onClick={step}
-          className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CY} underline decoration-[#37d6f5]/40 underline-offset-4 hover:decoration-[#37d6f5]`}
+          className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CY} underline decoration-[#a4622e]/40 underline-offset-4 hover:decoration-[#a4622e]`}
         >
           advance the chain ▸
         </button>
@@ -340,7 +340,7 @@ function ArtifactAutomaton() {
               key={i}
               className="h-1.5 w-1.5 rounded-full"
               style={{
-                background: ["#37d6f5", "#d98a4a", "#8b8fa3"][h],
+                background: ["#a4622e", "#d98a4a", "#6b6459"][h],
                 opacity: 0.25 + (i / hist.length) * 0.75,
               }}
             />
@@ -394,7 +394,7 @@ function ArtifactForming() {
           <circle
             key={i}
             cx={n.x} cy={n.y} r={n.r}
-            fill="#0a0703"
+            fill="#f2efe8"
             stroke="#d98a4a"
             strokeWidth="0.8"
             className="transition-all duration-700 group-hover:fill-[#d98a4a]"
@@ -545,7 +545,7 @@ export function MuseumExhibit() {
             <div className="relative md:col-span-3">
               <span
                 className="pointer-events-none select-none font-display text-7xl font-medium leading-none text-transparent"
-                style={{ WebkitTextStroke: "1px #ffffff1e" }}
+                style={{ WebkitTextStroke: "1px #1c1a1722" }}
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
@@ -631,7 +631,7 @@ export function CoreTerminal() {
         </header>
 
         <div className="md:col-span-8" ref={onEnter}>
-          <div className="border-l border-[#ffffff14] pl-6 font-mono text-[13px] leading-8 sm:pl-10">
+          <div className="border-l border-[#1c1a1714] pl-6 font-mono text-[13px] leading-8 sm:pl-10">
             {TERM.slice(0, booted).map((l, i) =>
               l.href ? (
                 <a
@@ -639,12 +639,12 @@ export function CoreTerminal() {
                   href={l.href}
                   target={l.href.startsWith("mailto") ? undefined : "_blank"}
                   rel="noopener noreferrer"
-                  className={`block whitespace-pre ${DIM} transition-colors hover:text-[#37d6f5]`}
+                  className={`block whitespace-pre ${DIM} transition-colors hover:text-[#a4622e]`}
                 >
                   {l.t} <span className={FAINT}>↗</span>
                 </a>
               ) : (
-                <div key={i} className={`whitespace-pre ${l.c ? CY : "text-[#c6cbd8]"}`}>
+                <div key={i} className={`whitespace-pre ${l.c ? CY : "text-[#3a352c]"}`}>
                   {l.t}
                 </div>
               )
@@ -658,13 +658,22 @@ export function CoreTerminal() {
         </div>
       </div>
 
-      <footer className={`mt-28 flex flex-wrap items-baseline justify-between gap-3 ${RULE} pt-5`}>
-        <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${FAINT}`}>
-          © {new Date().getFullYear()} {PROFILE.name}
-        </span>
-        <span className={`font-mono text-[10px] ${FAINT}`}>
-          bust: “Marble Bust 01”, Poly Haven — CC0
-        </span>
+      <footer className={`mt-28 ${RULE} pt-6`}>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${FAINT}`}>
+            © {new Date().getFullYear()} {PROFILE.name}
+          </span>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM} transition-colors hover:text-[#a4622e]`}
+          >
+            surface again ↑
+          </button>
+        </div>
+        <p className={`mt-4 font-display text-xs italic ${FAINT}`}>
+          End of the collection. Sculpture: “Marble Bust 01”, Poly Haven (CC0) —
+          cracks, light, and everything inside them: the artist's own.
+        </p>
       </footer>
     </section>
   );

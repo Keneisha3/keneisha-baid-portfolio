@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -12,8 +12,8 @@ html {
 
 body {
   margin: 0;
-  background-color: #020204;
-  color: #c6cbd8;
+  background-color: #f2efe8;
+  color: #3a352c;
   font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -24,19 +24,19 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #05070a;
+  background: #eae5da;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2530;
+  background: #cbbfa9;
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #37d6f5;
+  background: #a4622e;
 }
 
 ::selection {
-  background: #37d6f5;
-  color: #020204;
+  background: #a4622e;
+  color: #fff;
 }
 
 /* One-shot reveal for the landing wall label (mount only, not scroll-driven) */
@@ -69,7 +69,7 @@ input.seesaw {
   -webkit-appearance: none;
   appearance: none;
   height: 1px;
-  background: #ffffff22;
+  background: #1c1a1726;
   outline: none;
   cursor: ew-resize;
 }
