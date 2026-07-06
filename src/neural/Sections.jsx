@@ -5,8 +5,8 @@ import { useMemo, useRef, useState } from "react";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
 
 /* ---------- shared type primitives ---------- */
-const BONE = "text-[#1c1a17]";
-const DIM = "text-[#6b6459]";
+const BONE = "text-[#171411]";
+const DIM = "text-[#5d5749]";
 const FAINT = "text-[#a09a8c]";
 const CY = "text-[#a4622e]";
 const CU = "text-[#d98a4a]";
@@ -421,54 +421,55 @@ const ARTIFACTS = [
 
 export function ProjectNeurons() {
   return (
-    <section id="projects" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
-      <header className="mb-20 max-w-md">
+    <section id="projects" className="relative mx-auto max-w-4xl px-6 py-36 sm:px-10">
+      <header className="mb-24">
         <Kicker>wing II — the memory vault</Kicker>
-        <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
+        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.15] text-[#171411] sm:text-5xl">
           Six memories,
           <br />
-          <span className="italic">recalled on request.</span>
+          <span className="italic text-[#5d5749]">recalled on request.</span>
         </h2>
-        <p className={`mt-4 text-sm leading-relaxed ${DIM}`}>
-          Each is stored differently, the way real memories are. Touch them.
+        <p className="mt-6 max-w-md text-[15px] leading-relaxed text-[#5d5749]">
+          Each is stored differently, the way real memories are. Every one of
+          these is something you can touch.
         </p>
       </header>
 
-      <div className="space-y-24">
+      <div className="space-y-28">
         {PROJECTS.map((p, i) => {
           const art = ARTIFACTS.find((a) => a.match.test(p.title));
           const even = i % 2 === 0;
           return (
-            <article
-              key={p.title}
-              className={`grid gap-8 md:grid-cols-12 ${RULE} pt-10`}
-            >
-              {/* catalog rail */}
-              <div className={`md:col-span-3 ${even ? "" : "md:order-last md:text-right"}`}>
-                <p className={`font-mono text-[10px] uppercase tracking-[0.35em] ${FAINT}`}>
-                  mem.{String(i + 1).padStart(2, "0")}
-                </p>
-                <p className={`mt-1 font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : CY}`}>
-                  {p.status ? "still forming" : "consolidated"}
-                </p>
-                <p className={`mt-4 font-display text-sm italic ${DIM}`}>
-                  stored as {art?.label ?? "a plain record"}
-                </p>
-                <div className={`mt-4 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10px] ${FAINT} ${even ? "" : "md:justify-end"}`}>
-                  {p.tech.map((t) => (
-                    <span key={t}>{t}</span>
-                  ))}
-                </div>
+            <article key={p.title} className={even ? "" : "md:ml-auto"} style={{ maxWidth: "44rem" }}>
+              {/* catalog line */}
+              <div className={`flex items-baseline justify-between ${RULE} pt-4`}>
+                <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#a09a8c]">
+                  mem.{String(i + 1).padStart(2, "0")} — stored as {art?.label ?? "a plain record"}
+                </span>
+                <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
+                  {p.status ? "◈ still forming" : "consolidated"}
+                </span>
               </div>
 
-              {/* the artifact */}
-              <div className="md:col-span-9">
-                <h3 className={`font-display text-xl font-medium ${BONE}`}>{p.title}</h3>
-                <p className={`mt-2 max-w-xl text-sm leading-relaxed ${DIM}`}>{p.description}</p>
-                <div className="mt-6">{art?.el}</div>
-                <div className="mt-5">
-                  <Links links={p.links} />
-                </div>
+              {/* title + reading text */}
+              <h3 className="mt-5 font-display text-2xl font-medium leading-snug text-[#171411] sm:text-3xl">
+                {p.title}
+              </h3>
+              <p className="mt-3 max-w-xl text-[15px] leading-[1.75] text-[#48423a]">
+                {p.description}
+              </p>
+
+              {/* the artifact, mounted on its mat */}
+              <div className="mt-7 rounded-lg border border-[#1c1a1712] bg-[#faf8f2] p-5 shadow-[0_1px_2px_rgba(28,26,23,0.06),0_8px_28px_rgba(28,26,23,0.05)] sm:p-7">
+                {art?.el}
+              </div>
+
+              {/* provenance */}
+              <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+                <Links links={p.links} />
+                <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
+                  {p.tech.join(" · ")}
+                </span>
               </div>
             </article>
           );

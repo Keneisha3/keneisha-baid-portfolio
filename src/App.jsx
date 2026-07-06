@@ -103,6 +103,7 @@ export default function App() {
   const [lite] = useState(detectLite);
   const scrollRef = useRef(0);
   const flashRef = useRef(null);
+  const scrimRef = useRef(null);
   const { humOn, toggleHum } = useHum();
 
   // Feed scroll progress (0..1) to the 3D director without re-rendering React,
@@ -116,6 +117,11 @@ export default function App() {
       if (flashRef.current) {
         const flash = (c) => Math.max(0, 1 - Math.abs(p - c) / 0.03);
         flashRef.current.style.opacity = Math.min(0.95, flash(0.34));
+      }
+      if (scrimRef.current) {
+        // a calm gallery-paper wash under the reading sections
+        const t = Math.min(1, Math.max(0, (p - 0.4) / 0.1));
+        scrimRef.current.style.opacity = 0.88 * t;
       }
     };
     onScroll();
@@ -142,6 +148,13 @@ export default function App() {
         style={{ opacity: 0 }}
       />
 
+      {/* readable surface: gallery paper rising under the sections */}
+      <div
+        ref={scrimRef}
+        className="pointer-events-none fixed inset-0 z-[5] bg-[#f2efe8]"
+        style={{ opacity: 0 }}
+      />
+
       <Sparks />
       <MindNav humOn={humOn} toggleHum={toggleHum} />
 
@@ -149,7 +162,7 @@ export default function App() {
         <Landing onSkip={skipIntro} />
 
         {/* the descent: scroll space for the zoom into the crack */}
-        <div className="relative h-[160vh]">
+        <div className="relative h-[220vh]">
           <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
             <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-white mix-blend-difference">
               into the stone

@@ -59,7 +59,7 @@ function makeCrackTexture() {
 
 /* ---------- the marble bust, cracking open ---------- */
 const BUST_SCALE = 3.25;
-const FISSURE = new THREE.Vector3(0.14, 1.34, 0.2); // where the camera enters
+const FISSURE = new THREE.Vector3(0.0, 1.12, 0.02); // dead center of the head
 
 function Bust({ scrollRef }) {
   const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
@@ -302,10 +302,10 @@ function Director({ scrollRef }) {
       // Movement II: inside the sculpture, among the ideas
       const t = clamp01((p - 0.34) / 0.66);
       const ang = t * 2.1 + 0.3;
-      const rad = THREE.MathUtils.lerp(4.6, 6.6, ease(t)); // born at the middle, drifting outward
+      const rad = THREE.MathUtils.lerp(1.6, 5.4, ease(t)); // born at the very middle, ideas all around
       camera.position.set(
         CLUSTER_X + Math.sin(ang) * rad + pointer.x * 0.3,
-        0.9 - t * 0.5 + pointer.y * 0.2,
+        0.35 - t * 0.15 + pointer.y * 0.15,
         Math.cos(ang) * rad
       );
       camera.lookAt(CLUSTER_X, 0, 0);
