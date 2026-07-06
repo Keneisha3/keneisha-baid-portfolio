@@ -138,6 +138,7 @@ export const PROJECTS = [
   },
   {
     title: "FamFlow UX Prototype",
+    figma: "", // paste a public Figma share URL to embed the live file in its box
     description:
       "Led the design of an accessible family management platform, developing interactive Figma prototypes and user workflows for scheduling, communication, and task sharing. Applied UX research, HCI principles, and usability heuristics to reduce cognitive load and improve the experience for multi-user households.",
     tech: ["User-Centered Design", "Human-Computer Interaction", "Figma"],

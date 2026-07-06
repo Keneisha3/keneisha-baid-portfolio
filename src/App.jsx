@@ -32,8 +32,8 @@ function Sections() {
   return (
     <>
       <ProjectNeurons />
-      <SkillTerminals />
       <MuseumExhibit />
+      <SkillTerminals />
       <CoreTerminal />
     </>
   );
@@ -120,7 +120,7 @@ export default function App() {
       }
       if (scrimRef.current) {
         // a calm gallery-paper wash under the reading sections
-        const t = Math.min(1, Math.max(0, (p - 0.4) / 0.1));
+        const t = Math.min(1, Math.max(0, (p - 0.33) / 0.07));
         scrimRef.current.style.opacity = 0.88 * t;
       }
     };
@@ -162,7 +162,7 @@ export default function App() {
         <Landing onSkip={skipIntro} />
 
         {/* the descent: scroll space for the zoom into the crack */}
-        <div className="relative h-[220vh]">
+        <div className="relative h-[240vh]">
           <div className="sticky top-0 flex h-screen items-end justify-center pb-16">
             <p className="dive-caption font-mono text-[10px] uppercase tracking-[0.4em] text-white mix-blend-difference">
               into the stone

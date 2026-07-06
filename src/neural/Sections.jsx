@@ -1,8 +1,79 @@
 /* DOM layer of the neural experience — designed as museum wall-text and
    bench instruments, not web cards. Asymmetric, typographic, hairline rules.
    Every project is a different artifact with its own interaction. */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
+
+/* ---------- horizontal gallery rail: vertical scroll pans the room ---------- */
+function Rail({ children, heightVh = 300, id }) {
+  const wrapRef = useRef(null);
+  const trackRef = useRef(null);
+  useEffect(() => {
+    const onScroll = () => {
+      const wrap = wrapRef.current;
+      const track = trackRef.current;
+      if (!wrap || !track) return;
+      const total = wrap.offsetHeight - window.innerHeight;
+      const prog = Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total));
+      const dist = Math.max(0, track.scrollWidth - window.innerWidth);
+      track.style.transform = `translate3d(${-prog * dist}px,0,0)`;
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  return (
+    <section id={id} ref={wrapRef} style={{ height: `${heightVh}vh` }} className="relative">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <div ref={trackRef} className="flex items-center gap-12 pl-[7vw] pr-[12vw] will-change-transform">
+          {children}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* Pulls real material into a project's box: a Figma embed, the actual
+   presentation PDF, or the repository's own preview card. */
+function ProjectMedia({ p }) {
+  const figma = p.figma || p.links?.find((l) => /figma/i.test(l.label))?.href;
+  if (figma)
+    return (
+      <iframe
+        title={`${p.title} — Figma`}
+        src={`https://www.figma.com/embed?embed_host=portfolio&url=${encodeURIComponent(figma)}`}
+        className="h-44 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+        loading="lazy"
+        allowFullScreen
+      />
+    );
+  const pdf = p.links?.find((l) => /pdf|presentation/i.test(l.label))?.href;
+  if (pdf)
+    return (
+      <iframe
+        title={`${p.title} — presentation, first page`}
+        src={`${pdf}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+        className="pointer-events-none h-44 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+        loading="lazy"
+      />
+    );
+  const gh = p.links?.find((l) => /github\.com\//.test(l.href || ""));
+  const m = gh && /github\.com\/([^/]+\/[^/.]+)/.exec(gh.href);
+  if (m)
+    return (
+      <img
+        src={`https://opengraph.githubassets.com/kb/${m[1]}`}
+        alt={`${p.title} — repository`}
+        className="h-44 w-full rounded-t-md border-b border-[#1c1a1712] object-cover"
+        loading="lazy"
+      />
+    );
+  return null;
+}
 
 /* ---------- shared type primitives ---------- */
 const BONE = "text-[#171411]";
@@ -421,61 +492,60 @@ const ARTIFACTS = [
 
 export function ProjectNeurons() {
   return (
-    <section id="projects" className="relative mx-auto max-w-4xl px-6 py-36 sm:px-10">
-      <header className="mb-24">
+    <Rail id="projects" heightVh={340}>
+      {/* the wing's wall label opens the room */}
+      <header className="w-[min(70vw,20rem)] shrink-0">
         <Kicker>wing II — the memory vault</Kicker>
-        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.15] text-[#171411] sm:text-5xl">
+        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Six memories,
           <br />
-          <span className="italic text-[#5d5749]">recalled on request.</span>
+          <span className="italic text-[#5d5749]">walk among them.</span>
         </h2>
-        <p className="mt-6 max-w-md text-[15px] leading-relaxed text-[#5d5749]">
-          Each is stored differently, the way real memories are. Every one of
-          these is something you can touch.
+        <p className="mt-6 text-[15px] leading-relaxed text-[#5d5749]">
+          Each is stored differently, the way real memories are. Keep
+          scrolling — the room moves sideways. Everything here can be touched.
+        </p>
+        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+          → the gallery continues
         </p>
       </header>
 
-      <div className="space-y-28">
-        {PROJECTS.map((p, i) => {
-          const art = ARTIFACTS.find((a) => a.match.test(p.title));
-          const even = i % 2 === 0;
-          return (
-            <article key={p.title} className={even ? "" : "md:ml-auto"} style={{ maxWidth: "44rem" }}>
-              {/* catalog line */}
-              <div className={`flex items-baseline justify-between ${RULE} pt-4`}>
-                <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#a09a8c]">
-                  mem.{String(i + 1).padStart(2, "0")} — stored as {art?.label ?? "a plain record"}
-                </span>
-                <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
-                  {p.status ? "◈ still forming" : "consolidated"}
-                </span>
-              </div>
+      {PROJECTS.map((p, i) => {
+        const art = ARTIFACTS.find((a) => a.match.test(p.title));
+        return (
+          <article key={p.title} className="w-[min(86vw,32rem)] shrink-0">
+            <div className={`flex items-baseline justify-between ${RULE} pt-3`}>
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+                mem.{String(i + 1).padStart(2, "0")} · {art?.label ?? "a plain record"}
+              </span>
+              <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
+                {p.status ? "◈ forming" : "consolidated"}
+              </span>
+            </div>
 
-              {/* title + reading text */}
-              <h3 className="mt-5 font-display text-2xl font-medium leading-snug text-[#171411] sm:text-3xl">
-                {p.title}
-              </h3>
-              <p className="mt-3 max-w-xl text-[15px] leading-[1.75] text-[#48423a]">
-                {p.description}
-              </p>
+            <h3 className="mt-3 font-display text-2xl font-medium leading-snug text-[#171411]">
+              {p.title}
+            </h3>
+            <p className="mt-2 text-[14px] leading-[1.7] text-[#48423a] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] overflow-hidden">
+              {p.description}
+            </p>
 
-              {/* the artifact, mounted on its mat */}
-              <div className="mt-7 rounded-lg border border-[#1c1a1712] bg-[#faf8f2] p-5 shadow-[0_1px_2px_rgba(28,26,23,0.06),0_8px_28px_rgba(28,26,23,0.05)] sm:p-7">
-                {art?.el}
-              </div>
+            {/* the case: real material on top, the instrument beneath */}
+            <div className="mt-5 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2] shadow-[0_1px_2px_rgba(28,26,23,0.07),0_12px_36px_rgba(28,26,23,0.07)]">
+              <ProjectMedia p={p} />
+              <div className="p-5">{art?.el}</div>
+            </div>
 
-              {/* provenance */}
-              <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-                <Links links={p.links} />
-                <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
-                  {p.tech.join(" · ")}
-                </span>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5">
+              <Links links={p.links} />
+              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
+                {p.tech.slice(0, 3).join(" · ")}
+              </span>
+            </div>
+          </article>
+        );
+      })}
+    </Rail>
   );
 }
 
@@ -487,7 +557,7 @@ export function SkillTerminals() {
     <section id="skills" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
-          <Kicker>wing III — the workshop</Kicker>
+          <Kicker>wing IV — the workshop</Kicker>
           <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
             Tools, catalogued
             <br />
@@ -530,47 +600,44 @@ export function SkillTerminals() {
 ===================================================================== */
 export function MuseumExhibit() {
   return (
-    <section id="experience" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
-      <header className="mb-20 max-w-md">
-        <Kicker>wing IV — acquisitions</Kicker>
-        <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
+    <Rail id="experience" heightVh={280}>
+      <header className="w-[min(70vw,18rem)] shrink-0">
+        <Kicker>wing III — acquisitions</Kicker>
+        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Five rooms
           <br />
-          <span className="italic">that shaped the mind.</span>
+          <span className="italic text-[#5d5749]">that shaped the mind.</span>
         </h2>
+        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+          → in order of acquisition
+        </p>
       </header>
 
-      <div>
-        {EXPERIENCE.map((e, i) => (
-          <article key={`${e.company}-${e.role}`} className={`${RULE} grid gap-6 py-12 md:grid-cols-12`}>
-            <div className="relative md:col-span-3">
-              <span
-                className="pointer-events-none select-none font-display text-7xl font-medium leading-none text-transparent"
-                style={{ WebkitTextStroke: "1px #1c1a1722" }}
-              >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <p className={`mt-3 font-mono text-[10px] uppercase tracking-[0.3em] ${CU}`}>
-                {e.period}
-              </p>
-            </div>
-            <div className="md:col-span-8">
-              <h3 className={`font-display text-xl font-medium ${BONE}`}>
-                {e.role} <span className={`italic ${DIM}`}>at {e.company}</span>
-              </h3>
-              <ul className="mt-4 max-w-xl space-y-3">
-                {e.bullets.map((b, j) => (
-                  <li key={j} className={`flex gap-4 text-sm leading-relaxed ${DIM}`}>
-                    <span className={`mt-px font-mono text-[10px] ${FAINT}`}>—</span>
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
+      {EXPERIENCE.map((e, i) => (
+        <article key={`${e.company}-${e.role}`} className="w-[min(84vw,26rem)] shrink-0">
+          <span
+            className="pointer-events-none select-none font-display text-8xl font-medium leading-none text-transparent"
+            style={{ WebkitTextStroke: "1.2px #1c1a1726" }}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </span>
+          <p className={`mt-4 font-mono text-[10px] uppercase tracking-[0.3em] ${CU}`}>
+            {e.period}
+          </p>
+          <h3 className="mt-2 font-display text-2xl font-medium leading-snug text-[#171411]">
+            {e.role}
+            <span className="block text-lg italic text-[#5d5749]">at {e.company}</span>
+          </h3>
+          <ul className="mt-4 space-y-3 border-l border-[#1c1a1714] pl-5">
+            {e.bullets.map((b, j) => (
+              <li key={j} className="text-[14px] leading-[1.7] text-[#48423a]">
+                {b}
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </Rail>
   );
 }
 
