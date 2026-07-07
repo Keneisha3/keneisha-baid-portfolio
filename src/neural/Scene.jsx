@@ -143,6 +143,62 @@ function Bust({ scrollRef }) {
   );
 }
 
+/* ---------- the rest of the collection: statues receding into the hall ----------
+   The same CC0 bust, re-dressed in plain marble (no cracks, no shatter) and
+   placed on pedestals at varied angles — an old museum wing in the fog. */
+const HALL_STATUES = [
+  { p: [-3.4, 0, -3.0], s: 2.0, r: 0.7 },
+  { p: [3.6, 0, -3.8], s: 2.3, r: -0.8 },
+  { p: [-5.2, 0, -7.2], s: 2.6, r: 1.4 },
+  { p: [5.4, 0, -7.8], s: 2.4, r: -2.0 },
+  { p: [-2.0, 0, -11.0], s: 2.8, r: 2.6 },
+  { p: [2.4, 0, -12.0], s: 2.6, r: 0.3 },
+];
+
+function HallStatues() {
+  const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
+  const marble = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: "#e6e0d2", roughness: 0.62 }),
+    []
+  );
+  const clones = useMemo(
+    () =>
+      HALL_STATUES.map((d) => {
+        const c = scene.clone(true);
+        c.traverse((o) => {
+          if (o.isMesh) o.material = marble;
+        });
+        return { obj: c, ...d };
+      }),
+    [scene, marble]
+  );
+  return (
+    <group>
+      {clones.map((c, i) => (
+        <group key={i} position={c.p} rotation={[0, c.r, 0]}>
+          {/* pedestal */}
+          <mesh position={[0, 0.45, 0]}>
+            <cylinderGeometry args={[0.5, 0.58, 0.9, 20]} />
+            <meshStandardMaterial color="#dcd5c6" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.94, 0]}>
+            <boxGeometry args={[1.0, 0.08, 1.0]} />
+            <meshStandardMaterial color="#e4ddcf" roughness={0.8} />
+          </mesh>
+          <Center position={[0, 0.98 + 0.3 * c.s, 0]}>
+            <primitive object={c.obj} scale={c.s} />
+          </Center>
+        </group>
+      ))}
+      {/* the hall floor, catching the statues' presence */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.63, -6]}>
+        <planeGeometry args={[40, 40]} />
+        <meshStandardMaterial color="#eceadf" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
 /* ---------- the fissure mouth: light pouring out as it opens ---------- */
 function FissureGlow({ scrollRef }) {
   const light = useRef();
@@ -332,6 +388,7 @@ export default function NeuralCanvas({ scrollRef }) {
       <directionalLight position={[-4, 2, -2]} intensity={0.5} color="#dfe8f0" />
 
       <Bust scrollRef={scrollRef} />
+      <HallStatues />
       <FissureGlow scrollRef={scrollRef} />
       <Motes />
       <ContactShadows position={[0, -0.62, 0]} opacity={0.4} scale={8} blur={2.6} far={3} color="#3a352c" />

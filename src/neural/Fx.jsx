@@ -22,46 +22,69 @@ export function Sparks() {
     resize();
     window.addEventListener("resize", resize);
 
+    // glitter palette: gold, champagne, copper, and the occasional white flash
+    const TONES = [
+      [255, 213, 106],
+      [255, 233, 178],
+      [222, 148, 82],
+      [255, 255, 255],
+    ];
     let last = 0;
     const onMove = (e) => {
       const now = performance.now();
-      if (now - last < 28 || parts.length > 160) return; // throttle
+      if (now - last < 22 || parts.length > 220) return; // throttle
       last = now;
-      const n = 2;
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < 3; i++) {
         parts.push({
-          x: e.clientX,
-          y: e.clientY,
-          vx: (Math.random() - 0.5) * 2.4,
-          vy: (Math.random() - 0.5) * 2.4 - 0.4,
+          x: e.clientX + (Math.random() - 0.5) * 6,
+          y: e.clientY + (Math.random() - 0.5) * 6,
+          vx: (Math.random() - 0.5) * 1.8,
+          vy: (Math.random() - 0.5) * 1.4 + 0.3, // glitter falls
           life: 1,
-          copper: Math.random() > 0.7,
+          size: 1.4 + Math.random() * 2.2,
+          rot: Math.random() * Math.PI,
+          spin: (Math.random() - 0.5) * 0.3,
+          tone: TONES[(Math.random() * TONES.length) | 0],
+          phase: Math.random() * Math.PI * 2,
         });
       }
     };
     window.addEventListener("mousemove", onMove, { passive: true });
 
-    const draw = () => {
+    const star = (x, y, r, rot) => {
+      // a four-point sparkle
+      ctx.beginPath();
+      for (let k = 0; k < 4; k++) {
+        const a = rot + (k * Math.PI) / 2;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      }
+      ctx.stroke();
+    };
+
+    const draw = (t) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      parts = parts.filter((p) => p.life > 0.02);
+      parts = parts.filter((p) => p.life > 0.03);
       for (const p of parts) {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.02;
-        p.life *= 0.92;
-        ctx.beginPath();
-        // tiny jagged spark: a short line in the velocity direction
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x - p.vx * 2.2, p.y - p.vy * 2.2);
-        ctx.strokeStyle = p.copper
-          ? `rgba(217,138,74,${p.life})`
-          : `rgba(90,84,110,${p.life * 0.8})`;
-        ctx.lineWidth = 1.1;
-        ctx.stroke();
+        p.vy += 0.045; // gravity
+        p.rot += p.spin;
+        p.life *= 0.945;
+        // twinkle: each fleck flickers on its own rhythm
+        const tw = 0.55 + 0.45 * Math.sin(t * 0.02 + p.phase);
+        const a = p.life * tw;
+        const [r, g, b] = p.tone;
+        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.lineWidth = 1;
+        star(p.x, p.y, p.size * (0.6 + p.life), p.rot);
+        // a bright core dot
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.4, 1.4);
       }
       raf = requestAnimationFrame(draw);
     };
-    draw();
+    raf = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(raf);
