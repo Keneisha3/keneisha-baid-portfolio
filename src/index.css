@@ -118,24 +118,36 @@ input.seesaw::-moz-range-thumb {
   background: #a4622e;
 }
 
-/* Gilded painting frames for the museum pieces */
+/* Carved gilded frames for the museum pieces — matched to the scanned
+   frames hanging in the 3D building. Layered profile: dark bronze outer
+   edge, beaded gold moulding, bright fillet, then the linen mat. */
 .painting-frame {
-  padding: 11px;
-  border-radius: 3px;
+  padding: 15px;
+  border-radius: 2px;
   background:
-    linear-gradient(135deg, #c9a35c 0%, #e9cf8f 28%, #b08442 55%, #dcbd78 82%, #a97f3c 100%);
+    /* beading along the moulding */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 240, 200, 0.22) 0 3px,
+      rgba(90, 58, 18, 0.22) 3px 6px
+    ),
+    /* carved gold body */
+    linear-gradient(135deg, #b8863f 0%, #ecd394 22%, #9c7434 48%, #e6c887 72%, #8a6226 100%);
   box-shadow:
-    0 16px 38px rgba(28, 26, 23, 0.18),
-    0 3px 8px rgba(28, 26, 23, 0.12),
-    inset 0 0 0 1px rgba(92, 62, 20, 0.55),
-    inset 0 0 0 3px rgba(255, 240, 200, 0.35);
+    0 22px 44px rgba(28, 26, 23, 0.22),
+    0 4px 10px rgba(28, 26, 23, 0.14),
+    inset 0 0 0 2px rgba(70, 44, 12, 0.65),
+    inset 0 0 0 4px rgba(255, 244, 208, 0.5),
+    inset 0 0 0 6px rgba(122, 84, 30, 0.45),
+    inset 0 0 0 7px rgba(255, 236, 190, 0.3);
 }
 .painting-mat {
   background: #faf8f2;
-  padding: 14px;
+  padding: 16px;
   box-shadow:
-    inset 0 0 0 1px rgba(28, 26, 23, 0.14),
-    inset 0 0 16px rgba(28, 26, 23, 0.07);
+    inset 0 0 0 1px rgba(28, 26, 23, 0.16),
+    inset 0 0 0 2px rgba(200, 168, 110, 0.35),
+    inset 0 0 18px rgba(28, 26, 23, 0.08);
 }
 .painting-plaque {
   display: inline-block;

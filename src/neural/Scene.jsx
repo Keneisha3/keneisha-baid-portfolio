@@ -1,17 +1,17 @@
-/* The mind, in two movements — a fixed full-screen canvas behind the page.
-   Scroll progress (0..1, via ref) drives the camera and the light:
-     0.00–0.34  a white gallery. The bust cracks open with veins of light;
-                the camera zooms straight into one fissure.
-     0.34–1.00  deeper inside the museum: a long exhibition hall the camera
-                walks through while the DOM sections scroll over it.       */
+/* One building, two movements — a fixed full-screen canvas behind the page.
+   The whole experience happens inside the Sponza palazzo (© Crytek, CC BY 3.0):
+     0.00–0.34  the sculpture room — the first bay of the building. The bust
+                cracks open with veins of light; the camera zooms into a fissure.
+     0.34–1.00  everything else — the camera continues down the palazzo past
+                the rest of the collection, or roams freely on request.       */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Center, ContactShadows, PointerLockControls } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
-const GALLERY = new THREE.Color("#f2efe8"); // warm gallery white
-const STONE_DARK = new THREE.Color("#e9e3d7"); // inside the marble — still light
+const GALLERY = new THREE.Color("#f2efe8"); // warm daylight
+const STONE_DARK = new THREE.Color("#e9e3d7"); // deeper in the building
 const VEIN = new THREE.Color("#ffb36b"); // light inside the cracks
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const ease = (t) => t * t * (3 - 2 * t);
@@ -21,6 +21,12 @@ function seeded(s) {
   let x = s;
   return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
 }
+
+/* ---------- world layout ---------- */
+const HALL_X = 240; // the building lives here, away from origin
+const HALL_DIMS = { len: 44, halfW: 3.4, ready: false }; // measured on load
+const SR = () => HALL_DIMS.len / 2 - 6; // the sculpture room: first bay's z
+const PLINTH_H = 0.5;
 
 /* ---------- procedural crack texture: dense, branching, deep ---------- */
 function makeCrackTexture() {
@@ -57,11 +63,10 @@ function makeCrackTexture() {
   return tex;
 }
 
-/* ---------- the marble bust, cracking open ---------- */
-const BUST_SCALE = 3.25;
-const FISSURE = new THREE.Vector3(0.0, 1.12, 0.02); // dead center of the head
+/* ---------- the marble bust, cracking open on its plinth ---------- */
+const BUST_SCALE = 2.9;
 
-function Bust({ scrollRef }) {
+function Bust({ scrollRef, position }) {
   const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
   const mats = useRef([]);
   const shaders = useRef([]);
@@ -72,9 +77,7 @@ function Bust({ scrollRef }) {
     shaders.current = [];
     scene.traverse((o) => {
       if (!o.isMesh) return;
-
-      // Give every triangle its own vertices + a shared centroid attribute, so
-      // spatial cells of triangles can drift apart as rigid marble shards.
+      // per-triangle centroids so spatial cells can drift apart as rigid shards
       if (!o.geometry.getAttribute("aCenter")) {
         const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry;
         const pos = g.getAttribute("position");
@@ -99,8 +102,8 @@ function Bust({ scrollRef }) {
       o.material.roughness = 0.5;
       o.material.emissiveMap = crackTex;
       o.material.emissive = VEIN.clone();
-      o.material.emissiveIntensity = 0.12; // hairline fractures faintly visible at rest
-      o.material.side = THREE.DoubleSide; // shard backs show through the gaps
+      o.material.emissiveIntensity = 0.12;
+      o.material.side = THREE.DoubleSide;
       o.material.customProgramCacheKey = () => "bust-shatter";
       o.material.onBeforeCompile = (shader) => {
         shader.uniforms.uBreak = { value: 0 };
@@ -129,7 +132,6 @@ function Bust({ scrollRef }) {
 
   useFrame(({ clock }) => {
     const p = scrollRef.current;
-    // the veins brighten, then the stone physically comes apart
     const glow = 0.12 + ramp(p, 0.03, 0.26) * (2.2 + 0.35 * Math.sin(clock.elapsedTime * 1.7));
     mats.current.forEach((m) => (m.emissiveIntensity = glow));
     const br = ramp(p, 0.14, 0.34);
@@ -137,89 +139,38 @@ function Bust({ scrollRef }) {
   });
 
   return (
-    <Center position={[0, 0.72, 0]}>
-      <primitive object={scene} scale={BUST_SCALE} />
-    </Center>
-  );
-}
-
-/* ---------- the rest of the collection: statues receding into the hall ----------
-   The same CC0 bust, re-dressed in plain marble (no cracks, no shatter) and
-   placed on pedestals at varied angles — an old museum wing in the fog. */
-const HALL_STATUES = [
-  { p: [-3.4, 0, -3.0], s: 2.0, r: 0.7 },
-  { p: [3.6, 0, -3.8], s: 2.3, r: -0.8 },
-  { p: [-5.2, 0, -7.2], s: 2.6, r: 1.4 },
-  { p: [5.4, 0, -7.8], s: 2.4, r: -2.0 },
-  { p: [-2.0, 0, -11.0], s: 2.8, r: 2.6 },
-  { p: [2.4, 0, -12.0], s: 2.6, r: 0.3 },
-];
-
-function HallStatues() {
-  const { scene } = useGLTF("/models/bust/marble_bust_01_1k.gltf");
-  const marble = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: "#e6e0d2", roughness: 0.62 }),
-    []
-  );
-  const clones = useMemo(
-    () =>
-      HALL_STATUES.map((d) => {
-        const c = scene.clone(true);
-        c.traverse((o) => {
-          if (o.isMesh) o.material = marble;
-        });
-        return { obj: c, ...d };
-      }),
-    [scene, marble]
-  );
-  return (
-    <group>
-      {clones.map((c, i) => (
-        <group key={i} position={c.p} rotation={[0, c.r, 0]}>
-          {/* pedestal */}
-          <mesh position={[0, 0.45, 0]}>
-            <cylinderGeometry args={[0.5, 0.58, 0.9, 20]} />
-            <meshStandardMaterial color="#dcd5c6" roughness={0.85} />
-          </mesh>
-          <mesh position={[0, 0.94, 0]}>
-            <boxGeometry args={[1.0, 0.08, 1.0]} />
-            <meshStandardMaterial color="#e4ddcf" roughness={0.8} />
-          </mesh>
-          <Center position={[0, 0.98 + 0.3 * c.s, 0]}>
-            <primitive object={c.obj} scale={c.s} />
-          </Center>
-        </group>
-      ))}
-      {/* the hall floor, catching the statues' presence */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.63, -6]}>
-        <planeGeometry args={[40, 40]} />
-        <meshStandardMaterial color="#eceadf" roughness={0.9} />
+    <group position={position}>
+      {/* the plinth it stands on */}
+      <mesh position={[0, PLINTH_H / 2, 0]}>
+        <cylinderGeometry args={[0.85, 0.95, PLINTH_H, 26]} />
+        <meshStandardMaterial color="#d8d1c2" roughness={0.8} />
       </mesh>
+      <Center position={[0, PLINTH_H + 0.64, 0]}>
+        <primitive object={scene} scale={BUST_SCALE} />
+      </Center>
     </group>
   );
 }
 
 /* ---------- the fissure mouth: light pouring out as it opens ---------- */
-function FissureGlow({ scrollRef }) {
+function FissureGlow({ scrollRef, position }) {
   const light = useRef();
   useFrame(({ clock }) => {
     const p = scrollRef.current;
     const open = ramp(p, 0.16, 0.32);
-    if (light.current) {
-      light.current.intensity = open * (14 + Math.sin(clock.elapsedTime * 5) * 2.5);
-    }
+    if (light.current) light.current.intensity = open * (14 + Math.sin(clock.elapsedTime * 5) * 2.5);
   });
-  return <pointLight ref={light} position={FISSURE} intensity={0} color="#ffb36b" distance={2.5} />;
+  return <pointLight ref={light} position={position} intensity={0} color="#ffb36b" distance={2.5} />;
 }
 
-/* ---------- dust motes drifting in the gallery light ---------- */
-function Motes({ count = 200 }) {
+/* ---------- dust motes drifting in the room's light ---------- */
+function Motes({ center = [0, 0, 0], count = 180 }) {
   const ref = useRef();
   const positions = useMemo(() => {
     const a = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      a[i * 3] = (Math.random() - 0.5) * 10;
-      a[i * 3 + 1] = Math.random() * 5 - 0.3;
+      a[i * 3] = (Math.random() - 0.5) * 8;
+      a[i * 3 + 1] = Math.random() * 5;
       a[i * 3 + 2] = (Math.random() - 0.5) * 10;
     }
     return a;
@@ -228,25 +179,16 @@ function Motes({ count = 200 }) {
     if (ref.current) ref.current.rotation.y = clock.elapsedTime * 0.01;
   });
   return (
-    <points ref={ref}>
+    <points ref={ref} position={center}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.016} color="#8f887a" transparent opacity={0.35} sizeAttenuation />
+      <pointsMaterial size={0.014} color="#b9ac94" transparent opacity={0.4} sizeAttenuation />
     </points>
   );
 }
 
-/* ---------- inside the stone: the Sponza palazzo at x=240 ----------
-   After the statue breaks you are deeper in the museum — a real building:
-   the Sponza atrium (© Crytek, CC BY 3.0, draco-compressed), with scanned
-   sculptures (Poly Haven, CC0) exhibited down its central walk. Scroll walks
-   you through; click "walk the gallery" to roam it freely. */
-const HALL_X = 240;
-// measured from the building after load; safe fallbacks until then
-const HALL_DIMS = { len: 44, halfW: 3.4, ready: false };
-
-/* Loads a scanned model, normalises it to a target height, grounds it at y=0. */
+/* ---------- a scanned model, normalised and grounded ---------- */
 function Exhibit({ url, height = 1.2, position, rotationY = 0, material = null }) {
   const { scene } = useGLTF(url);
   const obj = useMemo(() => {
@@ -268,6 +210,25 @@ function Exhibit({ url, height = 1.2, position, rotationY = 0, material = null }
   );
 }
 
+/* Wall-hung version: centred on its own middle so it can hang at eye height. */
+function WallFrame({ url, height = 1.4, position, rotationY = 0 }) {
+  const { scene } = useGLTF(url);
+  const obj = useMemo(() => scene.clone(true), [scene]);
+  const s = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    return height / (size.y || 1);
+  }, [obj, height]);
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <Center>
+        <primitive object={obj} scale={s} />
+      </Center>
+    </group>
+  );
+}
+
 function Pedestal({ position, h = 1.0, children }) {
   return (
     <group position={position}>
@@ -284,18 +245,19 @@ function Pedestal({ position, h = 1.0, children }) {
   );
 }
 
-function GalleryHall() {
+/* ---------- the building and everything in it ---------- */
+function Building({ scrollRef }) {
   const { scene } = useGLTF("/models/sponza/Sponza_c.gltf");
   const [ready, setReady] = useState(false);
 
-  // centre the palazzo on the hall origin, floor at y=0, long axis down Z
+  // centre the palazzo, floor at y=0, long axis down Z
   const fit = useMemo(() => {
     const box = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
     box.getSize(size);
     const center = new THREE.Vector3();
     box.getCenter(center);
-    HALL_DIMS.len = size.x * 0.88; // source long axis is X; we rotate it onto Z
+    HALL_DIMS.len = size.x * 0.88;
     HALL_DIMS.halfW = Math.max(2.8, size.z * 0.22);
     HALL_DIMS.ready = true;
     return { y: -box.min.y, cx: center.x, cz: center.z };
@@ -307,55 +269,99 @@ function GalleryHall() {
     []
   );
 
-  // exhibits spaced down the measured walk
-  const shows = useMemo(() => {
-    const L = HALL_DIMS.len;
-    const zAt = (f) => L / 2 - 4 - f * (L - 8);
-    return [
-      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -2.6, z: zAt(0.06), r: 0.5, ped: 0.55 },
-      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 2.6, z: zAt(0.2), r: -0.3, ped: 1.05 },
-      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -2.6, z: zAt(0.34), r: 0.9, ped: 0.95 },
-      { url: "/models/bust/marble_bust_01_1k.gltf", h: 1.5, x: 2.6, z: zAt(0.48), r: -0.6, ped: 0.7, marble: true },
-      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: -2.6, z: zAt(0.62), r: 2.2, ped: 1.05 },
-      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: 2.6, z: zAt(0.76), r: -2.4, ped: 0.55 },
-      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -2.6, z: zAt(0.9), r: 1.7, ped: 0.95 },
-    ];
-  }, [ready]);
+  const L = HALL_DIMS.len;
+  const sr = SR(); // sculpture room z
+  const walkStart = sr - 5;
+  const walkEnd = -L / 2 + 4;
+  const zAt = (f) => walkStart - f * (walkStart - walkEnd);
+
+  // the rest of the collection, past the sculpture room
+  const shows = useMemo(
+    () => [
+      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -2.6, z: zAt(0.08), r: 0.5, ped: 0.55 },
+      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 2.6, z: zAt(0.22), r: -0.3, ped: 1.05 },
+      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -2.6, z: zAt(0.38), r: 0.9, ped: 0.95 },
+      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 2.6, z: zAt(0.54), r: 2.2, ped: 1.05 },
+      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -2.6, z: zAt(0.7), r: -2.4, ped: 0.55 },
+      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: 2.6, z: zAt(0.86), r: 1.7, ped: 0.95 },
+    ],
+    [ready] // eslint-disable-line
+  );
+
+  // the sculpture room's silent companions (plain marble busts)
+  const companions = [
+    { x: -2.7, z: sr + 1.8, r: 0.7, s: 1.9 },
+    { x: 2.7, z: sr + 1.2, r: -0.9, s: 2.1 },
+    { x: -2.7, z: sr - 2.4, r: 1.6, s: 2.0 },
+    { x: 2.7, z: sr - 3.0, r: -2.2, s: 1.8 },
+  ];
+
+  // scanned frames hung along the walk
+  const frameW = HALL_DIMS.halfW + 1.05;
+  const frames = [
+    { url: "/models/fancy_picture_frame_01/fancy_picture_frame_01_1k.gltf", x: -frameW, z: zAt(0.15), r: Math.PI / 2 },
+    { url: "/models/hanging_picture_frame_02/hanging_picture_frame_02_1k.gltf", x: frameW, z: zAt(0.3), r: -Math.PI / 2 },
+    { url: "/models/hanging_picture_frame_02/hanging_picture_frame_02_1k.gltf", x: -frameW, z: zAt(0.48), r: Math.PI / 2 },
+    { url: "/models/fancy_picture_frame_01/fancy_picture_frame_01_1k.gltf", x: frameW, z: zAt(0.62), r: -Math.PI / 2 },
+    { url: "/models/fancy_picture_frame_01/fancy_picture_frame_01_1k.gltf", x: -frameW, z: zAt(0.8), r: Math.PI / 2 },
+  ];
 
   return (
     <group position={[HALL_X, 0, 0]}>
+      {/* the palazzo itself */}
       <group rotation={[0, Math.PI / 2, 0]}>
         <primitive object={scene} position={[-fit.cx, fit.y, -fit.cz]} />
       </group>
 
-      {/* warm lamps down the walk */}
+      {/* THE SCULPTURE ROOM — first bay of the building */}
+      <Bust scrollRef={scrollRef} position={[0, 0, sr]} />
+      <FissureGlow scrollRef={scrollRef} position={[0, PLINTH_H + 1.12, sr + 0.05]} />
+      <Motes center={[0, 0, sr]} />
+      <ContactShadows position={[0, 0.02, sr]} opacity={0.35} scale={9} blur={2.4} far={4} color="#3a352c" />
+      {companions.map((c, i) => (
+        <group key={`c${i}`} position={[c.x, 0, c.z]} rotation={[0, c.r, 0]}>
+          <mesh position={[0, 0.45, 0]}>
+            <cylinderGeometry args={[0.5, 0.58, 0.9, 20]} />
+            <meshStandardMaterial color="#dcd5c6" roughness={0.85} />
+          </mesh>
+          <group position={[0, 0.9, 0]}>
+            <Exhibit
+              url="/models/bust/marble_bust_01_1k.gltf"
+              height={0.62 * c.s}
+              position={[0, 0, 0]}
+              material={marble}
+            />
+          </group>
+        </group>
+      ))}
+      {/* a museum spot on the centrepiece */}
+      <spotLight position={[2.2, 5.4, sr + 2.4]} angle={0.5} penumbra={0.85} intensity={20} color="#fff2df" target-position={[0, 1.4, sr]} />
+
+      {/* EVERYTHING ELSE — the rest of the palazzo */}
       {[0.15, 0.5, 0.85].map((f) => (
-        <pointLight
-          key={f}
-          position={[0, 4.2, HALL_DIMS.len / 2 - 4 - f * (HALL_DIMS.len - 8)]}
-          intensity={3}
-          color="#ffe6bf"
-          distance={14}
-        />
+        <pointLight key={f} position={[0, 4.2, zAt(f)]} intensity={3} color="#ffe6bf" distance={14} />
       ))}
       <hemisphereLight args={["#fff8ec", "#b9ae98", 0.5]} />
 
-      {/* gallery benches down the centre */}
-      {[0.28, 0.7].map((f) => (
+      {[0.3, 0.68].map((f) => (
         <Exhibit
-          key={f}
+          key={`b${f}`}
           url="/models/painted_wooden_bench/painted_wooden_bench_1k.gltf"
           height={0.85}
-          position={[0, 0, HALL_DIMS.len / 2 - 4 - f * (HALL_DIMS.len - 8)]}
+          position={[0, 0, zAt(f)]}
           rotationY={Math.PI / 2}
         />
       ))}
 
-      {/* the exhibits */}
       {shows.map((s, i) => (
         <Pedestal key={i} position={[s.x, 0, s.z]} h={s.ped}>
-          <Exhibit url={s.url} height={s.h} position={[0, 0, 0]} rotationY={s.r} material={s.marble ? marble : null} />
+          <Exhibit url={s.url} height={s.h} position={[0, 0, 0]} rotationY={s.r} />
         </Pedestal>
+      ))}
+
+      {/* the scanned frames on the walls */}
+      {frames.map((f, i) => (
+        <WallFrame key={`f${i}`} url={f.url} height={1.45} position={[f.x, 2.2, f.z]} rotationY={f.r} />
       ))}
     </group>
   );
@@ -396,7 +402,6 @@ function WalkControls() {
     if (k.KeyS || k.ArrowDown) camera.position.addScaledVector(fwd, -speed);
     if (k.KeyA || k.ArrowLeft) camera.position.addScaledVector(right, -speed);
     if (k.KeyD || k.ArrowRight) camera.position.addScaledVector(right, speed);
-    // stay inside the palazzo
     const L = HALL_DIMS.len;
     camera.position.x = THREE.MathUtils.clamp(camera.position.x, HALL_X - HALL_DIMS.halfW, HALL_X + HALL_DIMS.halfW);
     camera.position.z = THREE.MathUtils.clamp(camera.position.z, -L / 2 + 1.5, L / 2 - 1.5);
@@ -422,50 +427,54 @@ function WalkControls() {
 /* ---------- camera + light director ---------- */
 function Director({ scrollRef }) {
   const { camera, pointer, scene } = useThree();
-  const look = useRef(new THREE.Vector3(0, 1.0, 0));
+  const look = useRef(new THREE.Vector3(HALL_X, 1.5, 0));
   const bg = useMemo(() => GALLERY.clone(), []);
 
   useFrame(() => {
+    if (WALK.locked) return; // the visitor has the wheel
     const p = scrollRef.current;
+    const sr = SR();
 
-    // the world darkens as you pass through the stone
+    // deeper into the building, slightly warmer and dimmer
     const dark = ramp(p, 0.26, 0.36);
     bg.copy(GALLERY).lerp(STONE_DARK, dark);
     scene.background = bg;
     if (scene.fog) {
       scene.fog.color.copy(bg);
-      scene.fog.near = THREE.MathUtils.lerp(8, 5, dark);
-      scene.fog.far = THREE.MathUtils.lerp(24, 18, dark);
+      scene.fog.near = THREE.MathUtils.lerp(10, 7, dark);
+      scene.fog.far = THREE.MathUtils.lerp(34, 26, dark);
     }
 
+    const fissure = new THREE.Vector3(HALL_X, PLINTH_H + 1.12, sr + 0.05);
+
     if (p < 0.34) {
-      // Movement I: the gallery — approach, then ZOOM into the fissure
+      // Movement I: the sculpture room — approach, then zoom into the fissure
       const a = ease(clamp01(p / 0.18));
-      const d = ease(clamp01((p - 0.18) / 0.16)); // long, committed zoom
-      const px = THREE.MathUtils.lerp(0.0, FISSURE.x, d) + pointer.x * 0.1 * (1 - d);
+      const d = ease(clamp01((p - 0.18) / 0.16));
+      const px = THREE.MathUtils.lerp(HALL_X + 0.15, fissure.x, d) + pointer.x * 0.1 * (1 - d);
       const py =
-        THREE.MathUtils.lerp(THREE.MathUtils.lerp(1.0, 1.18, a), FISSURE.y, d) +
+        THREE.MathUtils.lerp(THREE.MathUtils.lerp(1.35, 1.55, a), fissure.y, d) +
         pointer.y * 0.05 * (1 - d);
-      // all the way in — the crack fills the frame before the cut
-      const pz = THREE.MathUtils.lerp(THREE.MathUtils.lerp(4.2, 2.0, a), FISSURE.z + 0.05, d);
+      const pz = THREE.MathUtils.lerp(THREE.MathUtils.lerp(sr + 4.6, sr + 2.2, a), fissure.z + 0.05, d);
       camera.position.set(px, py, pz);
-      look.current.lerp(d > 0 ? FISSURE : new THREE.Vector3(0, 1.05, 0), 0.22);
+      look.current.lerp(d > 0 ? fissure : new THREE.Vector3(HALL_X, PLINTH_H + 1.0, sr), 0.22);
       camera.lookAt(look.current);
-      camera.fov = 44 + d * 28; // the zoom stretches as you enter
+      camera.fov = 44 + d * 28;
       camera.updateProjectionMatrix();
     } else {
-      // Movement II: strolling the palazzo (unless the visitor took the wheel)
-      if (WALK.locked) return;
-      const t = clamp01((p - 0.34) / 0.66);
+      // Movement II: strolling the rest of the palazzo
+      const t = ease(clamp01((p - 0.34) / 0.66));
       const L = HALL_DIMS.len;
-      const z = (L / 2 - 3) - t * (L - 7);
-      const bob = Math.sin(t * 46) * 0.02; // footsteps
+      const walkStart = sr - 3;
+      const walkEnd = -L / 2 + 3;
+      const z = walkStart - t * (walkStart - walkEnd);
+      const bob = Math.sin(t * 46) * 0.02;
       const target = new THREE.Vector3(
         HALL_X + Math.sin(t * 5) * 0.3 + pointer.x * 0.2,
         1.6 + bob + pointer.y * 0.1,
         z
       );
-      camera.position.lerp(target, 0.12); // smooth, incl. resuming after free-roam
+      camera.position.lerp(target, 0.12);
       camera.lookAt(HALL_X + pointer.x * 0.5, 1.45 + pointer.y * 0.2, z - 6);
       camera.fov = 52;
       camera.updateProjectionMatrix();
@@ -480,22 +489,16 @@ export default function NeuralCanvas({ scrollRef }) {
     <Canvas
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 1.0, 4.2], fov: 44 }}
+      camera={{ position: [HALL_X, 1.35, 20.6], fov: 44 }}
       style={{ position: "fixed", inset: 0, background: "#f2efe8" }}
     >
-      <fog attach="fog" args={["#f2efe8", 8, 24]} />
-      {/* gallery daylight */}
-      <hemisphereLight args={["#ffffff", "#cfc8ba", 0.85]} />
-      <directionalLight position={[3, 5, 3]} intensity={2.1} color="#fff6e8" />
-      <directionalLight position={[-4, 2, -2]} intensity={0.5} color="#dfe8f0" />
+      <fog attach="fog" args={["#f2efe8", 10, 34]} />
+      {/* daylight falling through the atrium opening */}
+      <hemisphereLight args={["#ffffff", "#cfc8ba", 0.75]} />
+      <directionalLight position={[HALL_X + 4, 12, 6]} intensity={1.8} color="#fff6e8" />
+      <directionalLight position={[HALL_X - 5, 8, -6]} intensity={0.5} color="#dfe8f0" />
 
-      <Bust scrollRef={scrollRef} />
-      <HallStatues />
-      <FissureGlow scrollRef={scrollRef} />
-      <Motes />
-      <ContactShadows position={[0, -0.62, 0]} opacity={0.4} scale={8} blur={2.6} far={3} color="#3a352c" />
-
-      <GalleryHall />
+      <Building scrollRef={scrollRef} />
       <WalkControls />
       <Director scrollRef={scrollRef} />
 
@@ -511,6 +514,7 @@ useGLTF.preload("/models/bust/marble_bust_01_1k.gltf");
 useGLTF.preload("/models/gothic_statue/gothic_statue_1k.gltf");
 useGLTF.preload("/models/horse_statue_01/horse_statue_01_1k.gltf");
 useGLTF.preload("/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf");
-useGLTF.preload("/models/Chandelier_03/Chandelier_03_1k.gltf");
 useGLTF.preload("/models/painted_wooden_bench/painted_wooden_bench_1k.gltf");
+useGLTF.preload("/models/fancy_picture_frame_01/fancy_picture_frame_01_1k.gltf");
+useGLTF.preload("/models/hanging_picture_frame_02/hanging_picture_frame_02_1k.gltf");
 useGLTF.preload("/models/sponza/Sponza_c.gltf");
