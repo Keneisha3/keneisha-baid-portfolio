@@ -94,7 +94,23 @@ function LiteExperience({ humOn, toggleHum }) {
       <main className="relative">
         <Sections />
       </main>
-      <ChatWidget />
+      {/* free-roam controls */}
+      {inHall && !walking && !coarse && (
+        <button
+          id="kb-walk-anchor"
+          onClick={() => window.dispatchEvent(new Event("kb:walk"))}
+          className="fixed bottom-6 left-6 z-40 rounded-full border border-[#a4622e]/50 bg-[#f2efe8]/90 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[#a4622e] shadow-lg backdrop-blur transition-colors hover:bg-[#a4622e] hover:text-white"
+        >
+          🚶 walk the gallery
+        </button>
+      )}
+      {walking && (
+        <p className="pointer-events-none fixed inset-x-0 top-16 z-40 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-[#5d5749]">
+          wasd / arrows to move · shift to hurry · esc to leave
+        </p>
+      )}
+
+      {!walking && <ChatWidget />}
     </div>
   );
 }
@@ -105,6 +121,46 @@ export default function App() {
   const flashRef = useRef(null);
   const scrimRef = useRef(null);
   const { humOn, toggleHum } = useHum();
+  const [walking, setWalking] = useState(false);
+  const [inHall, setInHall] = useState(false);
+  const walkingRef = useRef(false);
+  const inHallRef = useRef(false);
+  const coarse = useRef(
+    typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches
+  ).current;
+
+  // free-roam lock/unlock events from the 3D scene
+  useEffect(() => {
+    const lock = () => {
+      walkingRef.current = true;
+      setWalking(true);
+      if (scrimRef.current) scrimRef.current.style.opacity = 0;
+      if (flashRef.current) flashRef.current.style.opacity = 0;
+    };
+    const unlock = () => {
+      walkingRef.current = false;
+      setWalking(false);
+    };
+    window.addEventListener("kb:lock", lock);
+    window.addEventListener("kb:unlock", unlock);
+    return () => {
+      window.removeEventListener("kb:lock", lock);
+      window.removeEventListener("kb:unlock", unlock);
+    };
+  }, []);
+
+  // while walking, the page must not scroll underneath the visitor
+  useEffect(() => {
+    const block = (e) => {
+      if (walkingRef.current) e.preventDefault();
+    };
+    window.addEventListener("wheel", block, { passive: false });
+    window.addEventListener("touchmove", block, { passive: false });
+    return () => {
+      window.removeEventListener("wheel", block);
+      window.removeEventListener("touchmove", block);
+    };
+  }, []);
 
   // Feed scroll progress (0..1) to the 3D director without re-rendering React,
   // and drive the white-out flashes at the two scene transitions.
@@ -121,7 +177,12 @@ export default function App() {
       if (scrimRef.current) {
         // a calm gallery-paper wash under the reading sections
         const t = Math.min(1, Math.max(0, (p - 0.33) / 0.07));
-        scrimRef.current.style.opacity = 0.66 * t;
+        scrimRef.current.style.opacity = walkingRef.current ? 0 : 0.66 * t;
+      }
+      const ih = p > 0.36 && p < 0.985;
+      if (ih !== inHallRef.current) {
+        inHallRef.current = ih;
+        setInHall(ih);
       }
     };
     onScroll();
@@ -158,7 +219,11 @@ export default function App() {
       <Sparks />
       <MindNav humOn={humOn} toggleHum={toggleHum} />
 
-      <main className="relative z-10">
+      <main
+        className={`relative z-10 transition-opacity duration-500 ${
+          walking ? "pointer-events-none opacity-0" : "opacity-100"
+        }`}
+      >
         <Landing onSkip={skipIntro} />
 
         {/* the descent: scroll space for the zoom into the crack */}

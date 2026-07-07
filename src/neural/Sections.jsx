@@ -771,8 +771,9 @@ export function CoreTerminal() {
           </button>
         </div>
         <p className={`mt-4 font-display text-xs italic ${FAINT}`}>
-          End of the collection. Sculpture: “Marble Bust 01”, Poly Haven (CC0) —
-          cracks, light, and everything inside them: the artist's own.
+          End of the collection. Sculpture scans: Poly Haven (CC0) · palazzo:
+          “Sponza” © Crytek, CC BY 3.0 — the cracks, light, and everything
+          inside them: the artist's own.
         </p>
       </footer>
     </section>

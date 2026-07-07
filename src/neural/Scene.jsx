@@ -4,9 +4,9 @@
                 the camera zooms straight into one fissure.
      0.34–1.00  deeper inside the museum: a long exhibition hall the camera
                 walks through while the DOM sections scroll over it.       */
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, Center, ContactShadows } from "@react-three/drei";
+import { useGLTF, Center, ContactShadows, PointerLockControls } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
@@ -237,13 +237,14 @@ function Motes({ count = 200 }) {
   );
 }
 
-/* ---------- inside the stone: a long exhibition hall at x=240 ----------
-   After the statue breaks you are not in a void — you are deeper in the
-   museum. A real gallery: floor, walls, skylights, chandeliers, and
-   pedestals carrying scanned sculptures (all CC0, Poly Haven). The camera
-   simply walks forward as the page scrolls. */
+/* ---------- inside the stone: the Sponza palazzo at x=240 ----------
+   After the statue breaks you are deeper in the museum — a real building:
+   the Sponza atrium (© Crytek, CC BY 3.0, draco-compressed), with scanned
+   sculptures (Poly Haven, CC0) exhibited down its central walk. Scroll walks
+   you through; click "walk the gallery" to roam it freely. */
 const HALL_X = 240;
-const HALL_LEN = 64;
+// measured from the building after load; safe fallbacks until then
+const HALL_DIMS = { len: 44, halfW: 3.4, ready: false };
 
 /* Loads a scanned model, normalises it to a target height, grounds it at y=0. */
 function Exhibit({ url, height = 1.2, position, rotationY = 0, material = null }) {
@@ -284,65 +285,68 @@ function Pedestal({ position, h = 1.0, children }) {
 }
 
 function GalleryHall() {
+  const { scene } = useGLTF("/models/sponza/Sponza_c.gltf");
+  const [ready, setReady] = useState(false);
+
+  // centre the palazzo on the hall origin, floor at y=0, long axis down Z
+  const fit = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(scene);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    HALL_DIMS.len = size.x * 0.88; // source long axis is X; we rotate it onto Z
+    HALL_DIMS.halfW = Math.max(2.8, size.z * 0.22);
+    HALL_DIMS.ready = true;
+    return { y: -box.min.y, cx: center.x, cz: center.z };
+  }, [scene]);
+  useEffect(() => setReady(true), [fit]);
+
   const marble = useMemo(
     () => new THREE.MeshStandardMaterial({ color: "#e6e0d2", roughness: 0.62 }),
     []
   );
-  // exhibits alternating down the hall
-  const shows = [
-    { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -3.6, z: -6, r: 0.5, ped: 0.55 },
-    { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 3.6, z: -12, r: -0.3, ped: 1.05 },
-    { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -3.6, z: -20, r: 0.9, ped: 0.95 },
-    { url: "/models/bust/marble_bust_01_1k.gltf", h: 1.5, x: 3.6, z: -27, r: -0.6, ped: 0.7, marble: true },
-    { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: -3.6, z: -35, r: 2.2, ped: 1.05 },
-    { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: 3.6, z: -43, r: -2.4, ped: 0.55 },
-    { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -3.6, z: -51, r: 1.7, ped: 0.95 },
-  ];
+
+  // exhibits spaced down the measured walk
+  const shows = useMemo(() => {
+    const L = HALL_DIMS.len;
+    const zAt = (f) => L / 2 - 4 - f * (L - 8);
+    return [
+      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -2.6, z: zAt(0.06), r: 0.5, ped: 0.55 },
+      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 2.6, z: zAt(0.2), r: -0.3, ped: 1.05 },
+      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -2.6, z: zAt(0.34), r: 0.9, ped: 0.95 },
+      { url: "/models/bust/marble_bust_01_1k.gltf", h: 1.5, x: 2.6, z: zAt(0.48), r: -0.6, ped: 0.7, marble: true },
+      { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: -2.6, z: zAt(0.62), r: 2.2, ped: 1.05 },
+      { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: 2.6, z: zAt(0.76), r: -2.4, ped: 0.55 },
+      { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -2.6, z: zAt(0.9), r: 1.7, ped: 0.95 },
+    ];
+  }, [ready]);
+
   return (
     <group position={[HALL_X, 0, 0]}>
-      {/* architecture */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -HALL_LEN / 2 + 4]}>
-        <planeGeometry args={[13, HALL_LEN + 16]} />
-        <meshStandardMaterial color="#e9e2d3" roughness={0.9} />
-      </mesh>
-      {[-6.2, 6.2].map((wx) => (
-        <mesh key={wx} position={[wx, 3, -HALL_LEN / 2 + 4]} rotation={[0, wx > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
-          <planeGeometry args={[HALL_LEN + 16, 6]} />
-          <meshStandardMaterial color="#f3efe5" roughness={0.95} />
-        </mesh>
-      ))}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 6, -HALL_LEN / 2 + 4]}>
-        <planeGeometry args={[13, HALL_LEN + 16]} />
-        <meshStandardMaterial color="#f6f2e9" roughness={0.95} />
-      </mesh>
-      {/* skylight strips */}
-      {[-4, -18, -32, -46].map((sz) => (
-        <mesh key={sz} rotation={[Math.PI / 2, 0, 0]} position={[0, 5.98, sz]}>
-          <planeGeometry args={[8, 5]} />
-          <meshBasicMaterial color="#fffdf4" toneMapped={false} />
-        </mesh>
-      ))}
-      {/* far wall closing the hall */}
-      <mesh position={[0, 3, -HALL_LEN - 4]}>
-        <planeGeometry args={[13, 6]} />
-        <meshStandardMaterial color="#efe9db" roughness={0.95} />
-      </mesh>
+      <group rotation={[0, Math.PI / 2, 0]}>
+        <primitive object={scene} position={[-fit.cx, fit.y, -fit.cz]} />
+      </group>
 
-      {/* chandeliers */}
-      {[-10, -28, -46].map((cz) => (
-        <group key={cz} position={[0, 4.4, cz]}>
-          <Exhibit url="/models/Chandelier_03/Chandelier_03_1k.gltf" height={1.5} position={[0, 0, 0]} />
-          <pointLight position={[0, -0.2, 0]} intensity={2.2} color="#ffe6bf" distance={9} />
-        </group>
+      {/* warm lamps down the walk */}
+      {[0.15, 0.5, 0.85].map((f) => (
+        <pointLight
+          key={f}
+          position={[0, 4.2, HALL_DIMS.len / 2 - 4 - f * (HALL_DIMS.len - 8)]}
+          intensity={3}
+          color="#ffe6bf"
+          distance={14}
+        />
       ))}
+      <hemisphereLight args={["#fff8ec", "#b9ae98", 0.5]} />
 
       {/* gallery benches down the centre */}
-      {[-16, -38].map((bz) => (
+      {[0.28, 0.7].map((f) => (
         <Exhibit
-          key={bz}
+          key={f}
           url="/models/painted_wooden_bench/painted_wooden_bench_1k.gltf"
           height={0.85}
-          position={[0, 0, bz]}
+          position={[0, 0, HALL_DIMS.len / 2 - 4 - f * (HALL_DIMS.len - 8)]}
           rotationY={Math.PI / 2}
         />
       ))}
@@ -354,6 +358,64 @@ function GalleryHall() {
         </Pedestal>
       ))}
     </group>
+  );
+}
+
+/* ---------- free roam: pointer-lock walking inside the palazzo ---------- */
+const WALK = { locked: false };
+
+function WalkControls() {
+  const controls = useRef();
+  const keys = useRef({});
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const down = (e) => (keys.current[e.code] = true);
+    const up = (e) => (keys.current[e.code] = false);
+    const want = () => controls.current && controls.current.lock();
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("kb:walk", want);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("kb:walk", want);
+    };
+  }, []);
+
+  useFrame((_, delta) => {
+    if (!WALK.locked) return;
+    const k = keys.current;
+    const speed = (k.ShiftLeft || k.ShiftRight ? 4.6 : 2.6) * Math.min(delta, 0.05);
+    const fwd = new THREE.Vector3();
+    camera.getWorldDirection(fwd);
+    fwd.y = 0;
+    fwd.normalize();
+    const right = new THREE.Vector3().crossVectors(fwd, new THREE.Vector3(0, 1, 0));
+    if (k.KeyW || k.ArrowUp) camera.position.addScaledVector(fwd, speed);
+    if (k.KeyS || k.ArrowDown) camera.position.addScaledVector(fwd, -speed);
+    if (k.KeyA || k.ArrowLeft) camera.position.addScaledVector(right, -speed);
+    if (k.KeyD || k.ArrowRight) camera.position.addScaledVector(right, speed);
+    // stay inside the palazzo
+    const L = HALL_DIMS.len;
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, HALL_X - HALL_DIMS.halfW, HALL_X + HALL_DIMS.halfW);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, -L / 2 + 1.5, L / 2 - 1.5);
+    camera.position.y = 1.6;
+  });
+
+  return (
+    <PointerLockControls
+      ref={controls}
+      selector="#kb-walk-anchor"
+      onLock={() => {
+        WALK.locked = true;
+        window.dispatchEvent(new Event("kb:lock"));
+      }}
+      onUnlock={() => {
+        WALK.locked = false;
+        window.dispatchEvent(new Event("kb:unlock"));
+      }}
+    />
   );
 }
 
@@ -392,16 +454,19 @@ function Director({ scrollRef }) {
       camera.fov = 44 + d * 28; // the zoom stretches as you enter
       camera.updateProjectionMatrix();
     } else {
-      // Movement II: walking the deeper gallery, one room at a time
+      // Movement II: strolling the palazzo (unless the visitor took the wheel)
+      if (WALK.locked) return;
       const t = clamp01((p - 0.34) / 0.66);
-      const z = 4 - t * (HALL_LEN - 6);
-      const bob = Math.sin(t * 46) * 0.025; // footsteps
-      camera.position.set(
+      const L = HALL_DIMS.len;
+      const z = (L / 2 - 3) - t * (L - 7);
+      const bob = Math.sin(t * 46) * 0.02; // footsteps
+      const target = new THREE.Vector3(
         HALL_X + Math.sin(t * 5) * 0.3 + pointer.x * 0.2,
-        1.55 + bob + pointer.y * 0.12,
+        1.6 + bob + pointer.y * 0.1,
         z
       );
-      camera.lookAt(HALL_X + pointer.x * 0.5, 1.35 + pointer.y * 0.2, z - 6);
+      camera.position.lerp(target, 0.12); // smooth, incl. resuming after free-roam
+      camera.lookAt(HALL_X + pointer.x * 0.5, 1.45 + pointer.y * 0.2, z - 6);
       camera.fov = 52;
       camera.updateProjectionMatrix();
     }
@@ -431,6 +496,7 @@ export default function NeuralCanvas({ scrollRef }) {
       <ContactShadows position={[0, -0.62, 0]} opacity={0.4} scale={8} blur={2.6} far={3} color="#3a352c" />
 
       <GalleryHall />
+      <WalkControls />
       <Director scrollRef={scrollRef} />
 
       <EffectComposer>
@@ -447,3 +513,4 @@ useGLTF.preload("/models/horse_statue_01/horse_statue_01_1k.gltf");
 useGLTF.preload("/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf");
 useGLTF.preload("/models/Chandelier_03/Chandelier_03_1k.gltf");
 useGLTF.preload("/models/painted_wooden_bench/painted_wooden_bench_1k.gltf");
+useGLTF.preload("/models/sponza/Sponza_c.gltf");
