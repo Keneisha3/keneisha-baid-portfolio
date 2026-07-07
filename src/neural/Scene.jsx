@@ -239,6 +239,87 @@ function Motes({ count = 200 }) {
 
 /* ---------- inside the sculpture: the ideas, a luminous cluster at x=240 ---------- */
 const CLUSTER_X = 240;
+
+/* Shards of the broken statue, suspended and slowly tumbling among the ideas. */
+function Fragments({ count = 44 }) {
+  const inst = useRef();
+  const meta = useMemo(() => {
+    const rand = seeded(63);
+    return Array.from({ length: count }).map(() => {
+      const th = rand() * Math.PI * 2;
+      const ph = Math.acos(2 * rand() - 1);
+      const r = 2.2 + rand() * 3.8;
+      return {
+        pos: new THREE.Vector3(
+          r * Math.sin(ph) * Math.cos(th),
+          r * Math.cos(ph) * 0.7,
+          r * Math.sin(ph) * Math.sin(th)
+        ),
+        scale: 0.07 + rand() * 0.18,
+        axis: new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize(),
+        speed: 0.05 + rand() * 0.15,
+        phase: rand() * Math.PI * 2,
+      };
+    });
+  }, [count]);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const q = useMemo(() => new THREE.Quaternion(), []);
+  useFrame(({ clock }) => {
+    if (!inst.current) return;
+    const t = clock.elapsedTime;
+    meta.forEach((m, i) => {
+      dummy.position.copy(m.pos);
+      dummy.position.y += Math.sin(t * 0.3 + m.phase) * 0.12; // gentle bob
+      q.setFromAxisAngle(m.axis, t * m.speed + m.phase);
+      dummy.quaternion.copy(q);
+      dummy.scale.setScalar(m.scale);
+      dummy.updateMatrix();
+      inst.current.setMatrixAt(i, dummy.matrix);
+    });
+    inst.current.instanceMatrix.needsUpdate = true;
+  });
+  return (
+    <instancedMesh ref={inst} args={[null, null, count]}>
+      <tetrahedronGeometry args={[1, 0]} />
+      <meshStandardMaterial color="#e9e3d6" roughness={0.5} />
+    </instancedMesh>
+  );
+}
+
+/* Golden repair-seams threading the interior, like kintsugi through the mind. */
+function Filaments() {
+  const geoms = useMemo(() => {
+    const rand = seeded(29);
+    return Array.from({ length: 5 }).map(() => {
+      const pts = [];
+      const th0 = rand() * Math.PI * 2;
+      for (let s = 0; s <= 7; s++) {
+        const f = s / 7;
+        const th = th0 + f * Math.PI * (1.2 + rand());
+        const r = 2.0 + Math.sin(f * Math.PI) * (1.8 + rand() * 1.6);
+        pts.push(
+          new THREE.Vector3(
+            Math.cos(th) * r,
+            (rand() - 0.5) * 2.6 + Math.sin(f * Math.PI * 2) * 0.7,
+            Math.sin(th) * r
+          )
+        );
+      }
+      return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 72, 0.016, 5, false);
+    });
+  }, []);
+  return geoms.map((g, i) => (
+    <mesh key={i} geometry={g}>
+      <meshStandardMaterial
+        color="#7a5426"
+        emissive={VEIN}
+        emissiveIntensity={0.85}
+        roughness={0.35}
+        metalness={0.6}
+      />
+    </mesh>
+  ));
+}
 function Cluster() {
   const group = useRef();
   const inst = useRef();
@@ -310,6 +391,10 @@ function Cluster() {
         <icosahedronGeometry args={[0.5, 1]} />
         <meshStandardMaterial color="#5a3a1c" emissive={VEIN} emissiveIntensity={0.6} wireframe />
       </mesh>
+      {/* the broken statue's shards, drifting in here with you */}
+      <Fragments />
+      {/* kintsugi seams of gold threading the interior */}
+      <Filaments />
       {/* faint marble walls of the interior, catching the vein-light */}
       <mesh>
         <sphereGeometry args={[9, 24, 24]} />

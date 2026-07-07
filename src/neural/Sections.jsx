@@ -29,7 +29,7 @@ function ProjectMedia({ p }) {
       <iframe
         title={`${p.title} — Figma`}
         src={`https://www.figma.com/embed?embed_host=portfolio&url=${encodeURIComponent(figma)}`}
-        className="h-44 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+        className="h-80 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
         loading="lazy"
         allowFullScreen
       />

@@ -140,11 +140,15 @@ export const PROJECTS = [
   },
   {
     title: "FamFlow UX Prototype",
-    figma: "", // paste a public Figma share URL to embed the live file in its box
+    figma: "https://www.figma.com/proto/8M19jiQgJ7S0Xjvf2Uf2zf/FamFlow-Vertical-Prototype-Medium-Fidelity?node-id=0-1&t=zerNLS0qXjv6pjou-1",
     description:
       "Led the design of an accessible family management platform, developing interactive Figma prototypes and user workflows for scheduling, communication, and task sharing. Applied UX research, HCI principles, and usability heuristics to reduce cognitive load and improve the experience for multi-user households.",
     tech: ["User-Centered Design", "Human-Computer Interaction", "Figma"],
-    links: [{ label: "Github", href: "https://github.com/Keneisha3/famflow-ux-prototype.git" }],
+    links: [
+      { label: "Github", href: "https://github.com/Keneisha3/famflow-ux-prototype.git" },
+      { label: "Prototype · vertical", href: "https://www.figma.com/proto/8M19jiQgJ7S0Xjvf2Uf2zf/FamFlow-Vertical-Prototype-Medium-Fidelity?node-id=0-1&t=zerNLS0qXjv6pjou-1" },
+      { label: "Prototype · horizontal", href: "https://www.figma.com/proto/Y2vhHKGHsuPIQlu5ngxLjK/FamFlow-Horizontal-Prototype-Medium-Fidelity?node-id=0-1&t=0TEMj7fXe1wzjwTF-1" },
+    ],
   },
   {
     title: "Financial Analyst Research",
