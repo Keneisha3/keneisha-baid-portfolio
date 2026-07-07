@@ -504,7 +504,7 @@ export function ProjectNeurons() {
     <Rail id="projects">
       {/* the wing's wall label opens the room */}
       <header className="w-[min(70vw,20rem)] shrink-0">
-        <Kicker>wing II — the memory vault</Kicker>
+        <Kicker>exhibition I — the works</Kicker>
         <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Six memories,
           <br />
@@ -568,7 +568,7 @@ export function SkillTerminals() {
     <section id="skills" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
-          <Kicker>wing IV — the workshop</Kicker>
+          <Kicker>exhibition III — the workshop</Kicker>
           <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
             Tools, catalogued
             <br />
@@ -629,7 +629,7 @@ export function MuseumExhibit() {
   return (
     <Rail id="experience">
       <header className="w-[min(70vw,18rem)] shrink-0 pt-2">
-        <Kicker>wing III — acquisitions</Kicker>
+        <Kicker>exhibition II — the acquisitions</Kicker>
         <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Five rooms
           <br />

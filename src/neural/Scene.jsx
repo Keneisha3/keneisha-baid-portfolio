@@ -2,8 +2,8 @@
    Scroll progress (0..1, via ref) drives the camera and the light:
      0.00–0.34  a white gallery. The bust cracks open with veins of light;
                 the camera zooms straight into one fissure.
-     0.34–1.00  inside the sculpture: the ideas themselves, a luminous
-                cluster, while the DOM sections scroll over it.            */
+     0.34–1.00  deeper inside the museum: a long exhibition hall the camera
+                walks through while the DOM sections scroll over it.       */
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Center, ContactShadows } from "@react-three/drei";
@@ -237,170 +237,122 @@ function Motes({ count = 200 }) {
   );
 }
 
-/* ---------- inside the sculpture: the ideas, a luminous cluster at x=240 ---------- */
-const CLUSTER_X = 240;
+/* ---------- inside the stone: a long exhibition hall at x=240 ----------
+   After the statue breaks you are not in a void — you are deeper in the
+   museum. A real gallery: floor, walls, skylights, chandeliers, and
+   pedestals carrying scanned sculptures (all CC0, Poly Haven). The camera
+   simply walks forward as the page scrolls. */
+const HALL_X = 240;
+const HALL_LEN = 64;
 
-/* Shards of the broken statue, suspended and slowly tumbling among the ideas. */
-function Fragments({ count = 44 }) {
-  const inst = useRef();
-  const meta = useMemo(() => {
-    const rand = seeded(63);
-    return Array.from({ length: count }).map(() => {
-      const th = rand() * Math.PI * 2;
-      const ph = Math.acos(2 * rand() - 1);
-      const r = 2.2 + rand() * 3.8;
-      return {
-        pos: new THREE.Vector3(
-          r * Math.sin(ph) * Math.cos(th),
-          r * Math.cos(ph) * 0.7,
-          r * Math.sin(ph) * Math.sin(th)
-        ),
-        scale: 0.07 + rand() * 0.18,
-        axis: new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize(),
-        speed: 0.05 + rand() * 0.15,
-        phase: rand() * Math.PI * 2,
-      };
-    });
-  }, [count]);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const q = useMemo(() => new THREE.Quaternion(), []);
-  useFrame(({ clock }) => {
-    if (!inst.current) return;
-    const t = clock.elapsedTime;
-    meta.forEach((m, i) => {
-      dummy.position.copy(m.pos);
-      dummy.position.y += Math.sin(t * 0.3 + m.phase) * 0.12; // gentle bob
-      q.setFromAxisAngle(m.axis, t * m.speed + m.phase);
-      dummy.quaternion.copy(q);
-      dummy.scale.setScalar(m.scale);
-      dummy.updateMatrix();
-      inst.current.setMatrixAt(i, dummy.matrix);
-    });
-    inst.current.instanceMatrix.needsUpdate = true;
-  });
+/* Loads a scanned model, normalises it to a target height, grounds it at y=0. */
+function Exhibit({ url, height = 1.2, position, rotationY = 0, material = null }) {
+  const { scene } = useGLTF(url);
+  const obj = useMemo(() => {
+    const c = scene.clone(true);
+    if (material) c.traverse((o) => { if (o.isMesh) o.material = material; });
+    return c;
+  }, [scene, material]);
+  const fit = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const s = height / (size.y || 1);
+    return { s, y: -box.min.y * s };
+  }, [obj, height]);
   return (
-    <instancedMesh ref={inst} args={[null, null, count]}>
-      <tetrahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color="#e9e3d6" roughness={0.5} />
-    </instancedMesh>
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <primitive object={obj} scale={fit.s} position={[0, fit.y, 0]} />
+    </group>
   );
 }
 
-/* Golden repair-seams threading the interior, like kintsugi through the mind. */
-function Filaments() {
-  const geoms = useMemo(() => {
-    const rand = seeded(29);
-    return Array.from({ length: 5 }).map(() => {
-      const pts = [];
-      const th0 = rand() * Math.PI * 2;
-      for (let s = 0; s <= 7; s++) {
-        const f = s / 7;
-        const th = th0 + f * Math.PI * (1.2 + rand());
-        const r = 2.0 + Math.sin(f * Math.PI) * (1.8 + rand() * 1.6);
-        pts.push(
-          new THREE.Vector3(
-            Math.cos(th) * r,
-            (rand() - 0.5) * 2.6 + Math.sin(f * Math.PI * 2) * 0.7,
-            Math.sin(th) * r
-          )
-        );
-      }
-      return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 72, 0.016, 5, false);
-    });
-  }, []);
-  return geoms.map((g, i) => (
-    <mesh key={i} geometry={g}>
-      <meshStandardMaterial
-        color="#7a5426"
-        emissive={VEIN}
-        emissiveIntensity={0.85}
-        roughness={0.35}
-        metalness={0.6}
-      />
-    </mesh>
-  ));
-}
-function Cluster() {
-  const group = useRef();
-  const inst = useRef();
-  const { nodes, linePositions } = useMemo(() => {
-    const rand = seeded(42);
-    const N = 90;
-    const nodes = Array.from({ length: N }).map(() => {
-      const th = rand() * Math.PI * 2;
-      const ph = Math.acos(2 * rand() - 1);
-      const r = 1.4 + rand() * 3.6;
-      return {
-        pos: new THREE.Vector3(
-          r * Math.sin(ph) * Math.cos(th),
-          r * Math.cos(ph) * 0.72,
-          r * Math.sin(ph) * Math.sin(th)
-        ),
-        scale: 0.03 + rand() * 0.075,
-        phase: rand() * Math.PI * 2,
-      };
-    });
-    const pts = [];
-    nodes.forEach((n, i) => {
-      nodes
-        .map((m, j) => ({ j, d: n.pos.distanceTo(m.pos) }))
-        .filter((e) => e.j !== i)
-        .sort((a, b) => a.d - b.d)
-        .slice(0, 2)
-        .forEach((e) => {
-          pts.push(n.pos.x, n.pos.y, n.pos.z);
-          pts.push(nodes[e.j].pos.x, nodes[e.j].pos.y, nodes[e.j].pos.z);
-        });
-    });
-    return { nodes, linePositions: new Float32Array(pts) };
-  }, []);
-
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime;
-    if (group.current) group.current.rotation.y = t * 0.03;
-    if (inst.current) {
-      nodes.forEach((n, i) => {
-        dummy.position.copy(n.pos);
-        dummy.scale.setScalar(n.scale * (1 + 0.35 * Math.sin(t * 1.6 + n.phase)));
-        dummy.updateMatrix();
-        inst.current.setMatrixAt(i, dummy.matrix);
-      });
-      inst.current.instanceMatrix.needsUpdate = true;
-    }
-  });
-
+function Pedestal({ position, h = 1.0, children }) {
   return (
-    <group ref={group} position={[CLUSTER_X, 0, 0]}>
-      <instancedMesh ref={inst} args={[null, null, nodes.length]}>
-        <sphereGeometry args={[1, 10, 10]} />
-        <meshBasicMaterial color="#b4622e" toneMapped={false} />
-      </instancedMesh>
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={linePositions.length / 3}
-            array={linePositions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color="#9a8a6e" transparent opacity={0.5} />
-      </lineSegments>
-      <mesh>
-        <icosahedronGeometry args={[0.5, 1]} />
-        <meshStandardMaterial color="#5a3a1c" emissive={VEIN} emissiveIntensity={0.6} wireframe />
+    <group position={position}>
+      <mesh position={[0, h / 2, 0]}>
+        <boxGeometry args={[0.9, h, 0.9]} />
+        <meshStandardMaterial color="#ddd6c7" roughness={0.85} />
       </mesh>
-      {/* the broken statue's shards, drifting in here with you */}
-      <Fragments />
-      {/* kintsugi seams of gold threading the interior */}
-      <Filaments />
-      {/* faint marble walls of the interior, catching the vein-light */}
-      <mesh>
-        <sphereGeometry args={[9, 24, 24]} />
-        <meshStandardMaterial color="#efeadf" roughness={0.95} side={THREE.BackSide} />
+      <mesh position={[0, h + 0.03, 0]}>
+        <boxGeometry args={[1.0, 0.06, 1.0]} />
+        <meshStandardMaterial color="#e6dfd0" roughness={0.8} />
       </mesh>
-      <pointLight position={[0, 2, 0]} intensity={3} color="#ffb36b" distance={14} />
+      <group position={[0, h + 0.06, 0]}>{children}</group>
+    </group>
+  );
+}
+
+function GalleryHall() {
+  const marble = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: "#e6e0d2", roughness: 0.62 }),
+    []
+  );
+  // exhibits alternating down the hall
+  const shows = [
+    { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: -3.6, z: -6, r: 0.5, ped: 0.55 },
+    { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: 3.6, z: -12, r: -0.3, ped: 1.05 },
+    { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -3.6, z: -20, r: 0.9, ped: 0.95 },
+    { url: "/models/bust/marble_bust_01_1k.gltf", h: 1.5, x: 3.6, z: -27, r: -0.6, ped: 0.7, marble: true },
+    { url: "/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf", h: 0.85, x: -3.6, z: -35, r: 2.2, ped: 1.05 },
+    { url: "/models/gothic_statue/gothic_statue_1k.gltf", h: 1.7, x: 3.6, z: -43, r: -2.4, ped: 0.55 },
+    { url: "/models/horse_statue_01/horse_statue_01_1k.gltf", h: 1.05, x: -3.6, z: -51, r: 1.7, ped: 0.95 },
+  ];
+  return (
+    <group position={[HALL_X, 0, 0]}>
+      {/* architecture */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -HALL_LEN / 2 + 4]}>
+        <planeGeometry args={[13, HALL_LEN + 16]} />
+        <meshStandardMaterial color="#e9e2d3" roughness={0.9} />
+      </mesh>
+      {[-6.2, 6.2].map((wx) => (
+        <mesh key={wx} position={[wx, 3, -HALL_LEN / 2 + 4]} rotation={[0, wx > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
+          <planeGeometry args={[HALL_LEN + 16, 6]} />
+          <meshStandardMaterial color="#f3efe5" roughness={0.95} />
+        </mesh>
+      ))}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 6, -HALL_LEN / 2 + 4]}>
+        <planeGeometry args={[13, HALL_LEN + 16]} />
+        <meshStandardMaterial color="#f6f2e9" roughness={0.95} />
+      </mesh>
+      {/* skylight strips */}
+      {[-4, -18, -32, -46].map((sz) => (
+        <mesh key={sz} rotation={[Math.PI / 2, 0, 0]} position={[0, 5.98, sz]}>
+          <planeGeometry args={[8, 5]} />
+          <meshBasicMaterial color="#fffdf4" toneMapped={false} />
+        </mesh>
+      ))}
+      {/* far wall closing the hall */}
+      <mesh position={[0, 3, -HALL_LEN - 4]}>
+        <planeGeometry args={[13, 6]} />
+        <meshStandardMaterial color="#efe9db" roughness={0.95} />
+      </mesh>
+
+      {/* chandeliers */}
+      {[-10, -28, -46].map((cz) => (
+        <group key={cz} position={[0, 4.4, cz]}>
+          <Exhibit url="/models/Chandelier_03/Chandelier_03_1k.gltf" height={1.5} position={[0, 0, 0]} />
+          <pointLight position={[0, -0.2, 0]} intensity={2.2} color="#ffe6bf" distance={9} />
+        </group>
+      ))}
+
+      {/* gallery benches down the centre */}
+      {[-16, -38].map((bz) => (
+        <Exhibit
+          key={bz}
+          url="/models/painted_wooden_bench/painted_wooden_bench_1k.gltf"
+          height={0.85}
+          position={[0, 0, bz]}
+          rotationY={Math.PI / 2}
+        />
+      ))}
+
+      {/* the exhibits */}
+      {shows.map((s, i) => (
+        <Pedestal key={i} position={[s.x, 0, s.z]} h={s.ped}>
+          <Exhibit url={s.url} height={s.h} position={[0, 0, 0]} rotationY={s.r} material={s.marble ? marble : null} />
+        </Pedestal>
+      ))}
     </group>
   );
 }
@@ -440,17 +392,17 @@ function Director({ scrollRef }) {
       camera.fov = 44 + d * 28; // the zoom stretches as you enter
       camera.updateProjectionMatrix();
     } else {
-      // Movement II: inside the sculpture, among the ideas
+      // Movement II: walking the deeper gallery, one room at a time
       const t = clamp01((p - 0.34) / 0.66);
-      const ang = t * 2.1 + 0.3;
-      const rad = THREE.MathUtils.lerp(1.6, 5.4, ease(t)); // born at the very middle, ideas all around
+      const z = 4 - t * (HALL_LEN - 6);
+      const bob = Math.sin(t * 46) * 0.025; // footsteps
       camera.position.set(
-        CLUSTER_X + Math.sin(ang) * rad + pointer.x * 0.3,
-        0.35 - t * 0.15 + pointer.y * 0.15,
-        Math.cos(ang) * rad
+        HALL_X + Math.sin(t * 5) * 0.3 + pointer.x * 0.2,
+        1.55 + bob + pointer.y * 0.12,
+        z
       );
-      camera.lookAt(CLUSTER_X, 0, 0);
-      camera.fov = 54;
+      camera.lookAt(HALL_X + pointer.x * 0.5, 1.35 + pointer.y * 0.2, z - 6);
+      camera.fov = 52;
       camera.updateProjectionMatrix();
     }
   });
@@ -478,7 +430,7 @@ export default function NeuralCanvas({ scrollRef }) {
       <Motes />
       <ContactShadows position={[0, -0.62, 0]} opacity={0.4} scale={8} blur={2.6} far={3} color="#3a352c" />
 
-      <Cluster />
+      <GalleryHall />
       <Director scrollRef={scrollRef} />
 
       <EffectComposer>
@@ -490,3 +442,8 @@ export default function NeuralCanvas({ scrollRef }) {
 }
 
 useGLTF.preload("/models/bust/marble_bust_01_1k.gltf");
+useGLTF.preload("/models/gothic_statue/gothic_statue_1k.gltf");
+useGLTF.preload("/models/horse_statue_01/horse_statue_01_1k.gltf");
+useGLTF.preload("/models/antique_ceramic_vase_01/antique_ceramic_vase_01_1k.gltf");
+useGLTF.preload("/models/Chandelier_03/Chandelier_03_1k.gltf");
+useGLTF.preload("/models/painted_wooden_bench/painted_wooden_bench_1k.gltf");

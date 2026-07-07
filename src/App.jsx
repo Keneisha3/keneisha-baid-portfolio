@@ -121,7 +121,7 @@ export default function App() {
       if (scrimRef.current) {
         // a calm gallery-paper wash under the reading sections
         const t = Math.min(1, Math.max(0, (p - 0.33) / 0.07));
-        scrimRef.current.style.opacity = 0.88 * t;
+        scrimRef.current.style.opacity = 0.66 * t;
       }
     };
     onScroll();
