@@ -22,12 +22,12 @@ export function Sparks() {
     resize();
     window.addEventListener("resize", resize);
 
-    // glitter palette: gold, champagne, copper, and the occasional white flash
+    // glitter palette: yellows only — buttercup, gold, lemon, pale starlight
     const TONES = [
-      [255, 213, 106],
-      [255, 233, 178],
-      [222, 148, 82],
-      [255, 255, 255],
+      [255, 214, 64],
+      [255, 199, 44],
+      [255, 232, 122],
+      [255, 244, 180],
     ];
     let last = 0;
     const onMove = (e) => {
@@ -52,14 +52,18 @@ export function Sparks() {
     window.addEventListener("mousemove", onMove, { passive: true });
 
     const star = (x, y, r, rot) => {
-      // a four-point sparkle
+      // a tiny filled five-point star
       ctx.beginPath();
-      for (let k = 0; k < 4; k++) {
-        const a = rot + (k * Math.PI) / 2;
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      for (let k = 0; k < 10; k++) {
+        const rr = k % 2 ? r * 0.45 : r;
+        const a = rot + (k * Math.PI) / 5 - Math.PI / 2;
+        const px = x + Math.cos(a) * rr;
+        const py = y + Math.sin(a) * rr;
+        if (k === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
       }
-      ctx.stroke();
+      ctx.closePath();
+      ctx.fill();
     };
 
     const draw = (t) => {
@@ -71,16 +75,12 @@ export function Sparks() {
         p.vy += 0.045; // gravity
         p.rot += p.spin;
         p.life *= 0.945;
-        // twinkle: each fleck flickers on its own rhythm
+        // twinkle: each little star flickers on its own rhythm
         const tw = 0.55 + 0.45 * Math.sin(t * 0.02 + p.phase);
         const a = p.life * tw;
         const [r, g, b] = p.tone;
-        ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.lineWidth = 1;
-        star(p.x, p.y, p.size * (0.6 + p.life), p.rot);
-        // a bright core dot
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.4, 1.4);
+        star(p.x, p.y, p.size * (0.7 + p.life), p.rot);
       }
       raf = requestAnimationFrame(draw);
     };
@@ -162,49 +162,51 @@ export function useHum() {
   return { humOn: on, toggleHum: toggle };
 }
 
-/* ---------- minimal floating nav ---------- */
+/* ---------- readable museum nav: clear buttons on gallery paper ---------- */
 const NAV = [
-  { id: "projects", label: "memories" },
-  { id: "skills", label: "skills" },
-  { id: "experience", label: "exhibit" },
-  { id: "contact", label: "core" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "skills", label: "Skills" },
+  { id: "contact", label: "Contact" },
 ];
 
 export function MindNav({ humOn, toggleHum }) {
-  // mix-blend-difference lets the same white type read as ink on the white
-  // gallery and as bone on the dark interior — one nav for both worlds.
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-4 mix-blend-difference sm:px-8">
-      <a
-        href="#top"
-        onClick={(e) => {
-          e.preventDefault();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-        className="font-display text-lg font-semibold tracking-tight text-white"
-      >
-        KB
-      </a>
-      <nav className="hidden items-center gap-6 md:flex">
-        {NAV.map((n) => (
-          <a
-            key={n.id}
-            href={`#${n.id}`}
-            className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/60 transition-colors hover:text-white"
-          >
-            {n.label}
-          </a>
-        ))}
-      </nav>
-      <button
-        onClick={toggleHum}
-        aria-label={humOn ? "Mute ambient sound" : "Enable ambient sound"}
-        className={`flex h-9 w-9 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
-          humOn ? "border-white text-white" : "border-white/30 text-white/60 hover:border-white/70"
-        }`}
-      >
-        {humOn ? "◉" : "◌"}
-      </button>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#1c1a170f] bg-[#f2efe8]/85 backdrop-blur-sm">
+      <div className="flex items-center justify-between gap-3 px-5 py-3 sm:px-8">
+        <a
+          href="#top"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="shrink-0 font-display text-lg font-semibold tracking-tight text-[#171411]"
+        >
+          Keneisha <span className="text-[#a4622e]">Baid</span>
+        </a>
+        <nav className="flex items-center gap-1.5 overflow-x-auto sm:gap-2.5">
+          {NAV.map((n) => (
+            <a
+              key={n.id}
+              href={`#${n.id}`}
+              className="whitespace-nowrap rounded-full border border-[#1c1a171f] bg-white/60 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#3a352c] transition-colors hover:border-[#a4622e] hover:text-[#a4622e] sm:px-4"
+            >
+              {n.label}
+            </a>
+          ))}
+        </nav>
+        <button
+          onClick={toggleHum}
+          aria-label={humOn ? "Mute ambient sound" : "Enable ambient sound"}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
+            humOn
+              ? "border-[#a4622e] text-[#a4622e]"
+              : "border-[#1c1a1726] text-[#5d5749] hover:border-[#a4622e]/60"
+          }`}
+        >
+          {humOn ? "◉" : "◌"}
+        </button>
+      </div>
     </header>
   );
 }

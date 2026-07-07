@@ -117,3 +117,29 @@ input.seesaw::-moz-range-thumb {
 .rail::-webkit-scrollbar-thumb:hover {
   background: #a4622e;
 }
+
+/* Gilded painting frames for the museum pieces */
+.painting-frame {
+  padding: 11px;
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg, #c9a35c 0%, #e9cf8f 28%, #b08442 55%, #dcbd78 82%, #a97f3c 100%);
+  box-shadow:
+    0 16px 38px rgba(28, 26, 23, 0.18),
+    0 3px 8px rgba(28, 26, 23, 0.12),
+    inset 0 0 0 1px rgba(92, 62, 20, 0.55),
+    inset 0 0 0 3px rgba(255, 240, 200, 0.35);
+}
+.painting-mat {
+  background: #faf8f2;
+  padding: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(28, 26, 23, 0.14),
+    inset 0 0 16px rgba(28, 26, 23, 0.07);
+}
+.painting-plaque {
+  display: inline-block;
+  border: 1px solid rgba(28, 26, 23, 0.14);
+  background: linear-gradient(180deg, #efe8d8, #e4dac4);
+  box-shadow: 0 1px 2px rgba(28, 26, 23, 0.12);
+}

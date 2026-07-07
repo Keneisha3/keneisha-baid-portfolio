@@ -66,6 +66,24 @@ function ProjectMedia({ p }) {
   return null;
 }
 
+/* ---------- a framed painting, hung on the museum wall ---------- */
+function Painting({ children, plaque }) {
+  return (
+    <figure>
+      <div className="painting-frame">
+        <div className="painting-mat">{children}</div>
+      </div>
+      {plaque && (
+        <figcaption className="mt-3 flex justify-center">
+          <span className="painting-plaque rounded-sm px-3.5 py-1 font-mono text-[9px] uppercase tracking-[0.28em] text-[#4a4234]">
+            {plaque}
+          </span>
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 /* ---------- shared type primitives ---------- */
 const BONE = "text-[#171411]";
 const DIM = "text-[#5d5749]";
@@ -521,10 +539,12 @@ export function ProjectNeurons() {
               {p.description}
             </p>
 
-            {/* the case: real material on top, the instrument beneath */}
-            <div className="mt-5 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2] shadow-[0_1px_2px_rgba(28,26,23,0.07),0_12px_36px_rgba(28,26,23,0.07)]">
-              <ProjectMedia p={p} />
-              <div className="p-5">{art?.el}</div>
+            {/* the piece itself, framed and hung */}
+            <div className="mt-6">
+              <Painting plaque={`mem.${String(i + 1).padStart(2, "0")} — ${art?.label ?? "a plain record"}`}>
+                <ProjectMedia p={p} />
+                <div className="pt-4">{art?.el}</div>
+              </Painting>
             </div>
 
             <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5">
@@ -599,7 +619,7 @@ function JobPhoto({ src, alt }) {
       alt={alt}
       onError={() => setOk(false)}
       loading="lazy"
-      className="mb-5 h-44 w-full rounded-md border border-[#1c1a1714] object-cover shadow-[0_1px_2px_rgba(28,26,23,0.07),0_10px_30px_rgba(28,26,23,0.07)]"
+      className="mb-4 h-44 w-full rounded-sm object-cover"
     />
   );
 }
@@ -621,30 +641,32 @@ export function MuseumExhibit() {
       </header>
 
       {chronological.map((e, i) => (
-        <article key={`${e.company}-${e.role}`} className="w-[min(84vw,28rem)] shrink-0">
-          <div className="flex items-baseline gap-4">
-            <span
-              className="pointer-events-none select-none font-display text-6xl font-medium leading-none text-transparent"
-              style={{ WebkitTextStroke: "1.2px #1c1a172e" }}
-            >
-              {String(i + 1).padStart(2, "0")}
+        <article key={`${e.company}-${e.role}`} className="relative w-[min(84vw,28rem)] shrink-0">
+          {/* the timeline: a continuous thread with a station at each room */}
+          <div className="relative mb-7 h-8">
+            <span className="absolute -left-12 -right-12 top-1/2 h-px bg-[#1c1a1726]" />
+            <span className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-[#a4622e] bg-[#f2efe8] shadow-[0_0_0_3px_rgba(242,239,232,1)]" />
+            <span className="absolute left-7 top-1/2 -translate-y-1/2 font-mono text-[11px] uppercase tracking-[0.25em] text-[#a4622e]">
+              {e.period}
             </span>
-            <p className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CU}`}>{e.period}</p>
           </div>
-          <h3 className="mt-3 font-display text-[1.6rem] font-medium leading-snug text-[#171411]">
+
+          <h3 className="mb-5 font-display text-[1.6rem] font-medium leading-snug text-[#171411]">
             {e.role}
             <span className="block text-lg italic text-[#5d5749]">at {e.company}</span>
           </h3>
-          <div className="mt-4">
+
+          <Painting plaque={`acq. ${String(i + 1).padStart(2, "0")} · ${e.company}`}>
             <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />
-          </div>
-          <ul className="space-y-3.5 border-l-2 border-[#d98a4a]/40 pl-5">
-            {e.bullets.map((b, j) => (
-              <li key={j} className="text-[15px] leading-[1.75] text-[#3f3930]">
-                {b}
-              </li>
-            ))}
-          </ul>
+            <ul className="space-y-3.5">
+              {e.bullets.map((b, j) => (
+                <li key={j} className="flex gap-3 text-[15px] leading-[1.75] text-[#3f3930]">
+                  <span className="mt-[3px] font-mono text-[10px] text-[#a4622e]">◆</span>
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </Painting>
         </article>
       ))}
     </Rail>
