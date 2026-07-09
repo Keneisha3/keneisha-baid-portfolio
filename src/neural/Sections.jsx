@@ -4,6 +4,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
 
+/* The eleven stations of the walk: six project paintings, five rooms. */
+export const STATION_COUNT = () => PROJECTS.length + EXPERIENCE.length;
+
 /* ---------- horizontal gallery rail with an honest, visible scroll bar.
    Browsing sideways is optional: scroll the bar (or swipe/drag) to walk the
    room, or simply continue down the page past it. ---------- */
@@ -777,5 +780,70 @@ export function CoreTerminal() {
         </p>
       </footer>
     </section>
+  );
+}
+
+/* =====================================================================
+   THE WALK — one wall label per painting, shown beside the 3D frame as
+   the visitor passes it. Stations 0–5 are projects, 6–10 the rooms.
+===================================================================== */
+export function StationPanel({ index }) {
+  const jobs = [...EXPERIENCE].reverse();
+  if (index < PROJECTS.length) {
+    const p = PROJECTS[index];
+    const art = ARTIFACTS.find((a) => a.match.test(p.title));
+    return (
+      <div className="max-h-[78vh] overflow-y-auto rounded-md bg-[#f6f2e8]/95 p-5 shadow-[0_18px_50px_rgba(28,26,23,0.22)] backdrop-blur-sm">
+        <div className={`flex items-baseline justify-between ${RULE} pt-2`}>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+            mem.{String(index + 1).padStart(2, "0")} · {art?.label ?? "a plain record"}
+          </span>
+          <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
+            {p.status ? "◈ forming" : "consolidated"}
+          </span>
+        </div>
+        <h3 className="mt-3 font-display text-xl font-medium leading-snug text-[#171411]">
+          {p.title}
+        </h3>
+        <p className="mt-2 text-[13.5px] leading-[1.65] text-[#48423a]">{p.description}</p>
+        <div className="mt-4 overflow-hidden rounded-sm border border-[#1c1a1714] bg-[#faf8f2]">
+          <ProjectMedia p={p} />
+          <div className="p-4">{art?.el}</div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5">
+          <Links links={p.links} />
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#a09a8c]">
+            {p.tech.slice(0, 3).join(" · ")}
+          </span>
+        </div>
+      </div>
+    );
+  }
+  const i = index - PROJECTS.length;
+  const e = jobs[i];
+  if (!e) return null;
+  return (
+    <div className="max-h-[78vh] overflow-y-auto rounded-md bg-[#f6f2e8]/95 p-5 shadow-[0_18px_50px_rgba(28,26,23,0.22)] backdrop-blur-sm">
+      <div className={`flex items-baseline justify-between ${RULE} pt-2`}>
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+          acq.{String(i + 1).padStart(2, "0")} · {e.company}
+        </span>
+        <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${CU}`}>{e.period}</span>
+      </div>
+      <h3 className="mt-3 font-display text-xl font-medium leading-snug text-[#171411]">
+        {e.role}
+        <span className="block text-base italic text-[#5d5749]">at {e.company}</span>
+      </h3>
+      <div className="mt-4">
+        <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />
+      </div>
+      <ul className="space-y-3 border-l-2 border-[#d98a4a]/40 pl-4">
+        {e.bullets.map((b, j) => (
+          <li key={j} className="text-[13.5px] leading-[1.65] text-[#3f3930]">
+            {b}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

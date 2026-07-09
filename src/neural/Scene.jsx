@@ -9,6 +9,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Center, ContactShadows, PointerLockControls } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
+import { JOURNEY, walkT } from "./journey";
 
 const GALLERY = new THREE.Color("#f2efe8"); // warm daylight
 const STONE_DARK = new THREE.Color("#e9e3d7"); // deeper in the building
@@ -210,6 +211,90 @@ function Exhibit({ url, height = 1.2, position, rotationY = 0, material = null }
   );
 }
 
+/* A painted plate — the artwork inside a wall frame, drawn on canvas. */
+function makePlateTexture({ num, title, sub }) {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 640;
+  const g = c.getContext("2d");
+  // linen ground
+  g.fillStyle = "#f4eee0";
+  g.fillRect(0, 0, 512, 640);
+  for (let i = 0; i < 640; i += 3) {
+    g.fillStyle = i % 6 ? "rgba(120,100,70,0.03)" : "rgba(255,255,255,0.05)";
+    g.fillRect(0, i, 512, 1);
+  }
+  // gilt keyline
+  g.strokeStyle = "#b08a4a";
+  g.lineWidth = 3;
+  g.strokeRect(26, 26, 460, 588);
+  g.strokeStyle = "rgba(176,138,74,0.5)";
+  g.lineWidth = 1;
+  g.strokeRect(38, 38, 436, 564);
+  // catalogue number
+  g.fillStyle = "#a4622e";
+  g.font = "600 26px 'IBM Plex Mono', monospace";
+  g.textAlign = "center";
+  g.fillText(num, 256, 120);
+  // title, wrapped
+  g.fillStyle = "#241f18";
+  g.font = "500 44px Fraunces, Georgia, serif";
+  const words = String(title).split(" ");
+  let line = "", lines = [];
+  for (const w of words) {
+    if (g.measureText(line + " " + w).width > 380 && line) {
+      lines.push(line);
+      line = w;
+    } else line = line ? line + " " + w : w;
+  }
+  lines.push(line);
+  lines.slice(0, 4).forEach((l, i) => g.fillText(l, 256, 230 + i * 56));
+  // motif
+  g.strokeStyle = "#a4622e";
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(176, 470);
+  g.lineTo(336, 470);
+  g.stroke();
+  g.beginPath();
+  g.arc(256, 470, 6, 0, Math.PI * 2);
+  g.fillStyle = "#a4622e";
+  g.fill();
+  // subtitle
+  g.fillStyle = "#6b6459";
+  g.font = "500 20px 'IBM Plex Mono', monospace";
+  const sub2 = String(sub).slice(0, 40);
+  g.fillText(sub2.toUpperCase(), 256, 530);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/* A framed painting on the wall: scanned frame + painted plate. */
+function WallPainting({ frameUrl, plate, position, rotationY, height = 1.7 }) {
+  const { scene } = useGLTF(frameUrl);
+  const obj = useMemo(() => scene.clone(true), [scene]);
+  const s = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(obj);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    return height / (size.y || 1);
+  }, [obj, height]);
+  const tex = useMemo(() => makePlateTexture(plate), [plate]);
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <Center>
+        <primitive object={obj} scale={s} />
+      </Center>
+      {/* the artwork, sitting just proud of the wall inside the frame */}
+      <mesh position={[0, 0, 0.05]}>
+        <planeGeometry args={[height * 0.62, height * 0.78]} />
+        <meshStandardMaterial map={tex} roughness={0.85} />
+      </mesh>
+    </group>
+  );
+}
+
 /* Wall-hung version: centred on its own middle so it can hang at eye height. */
 function WallFrame({ url, height = 1.4, position, rotationY = 0 }) {
   const { scene } = useGLTF(url);
@@ -245,6 +330,21 @@ function Pedestal({ position, h = 1.0, children }) {
   );
 }
 
+/* plate copy for the eleven paintings */
+import { PROJECTS, EXPERIENCE } from "../data/portfolio";
+const PLATES = [
+  ...PROJECTS.map((p, i) => ({
+    num: "MEM." + String(i + 1).padStart(2, "0"),
+    title: p.title,
+    sub: p.tech?.slice(0, 2).join(" · ") || "",
+  })),
+  ...[...EXPERIENCE].reverse().map((e, i) => ({
+    num: "ACQ." + String(i + 1).padStart(2, "0"),
+    title: e.role,
+    sub: e.company + " — " + e.period,
+  })),
+];
+
 /* ---------- the building and everything in it ---------- */
 function Building({ scrollRef }) {
   const { scene } = useGLTF("/models/sponza/Sponza_c.gltf");
@@ -262,7 +362,10 @@ function Building({ scrollRef }) {
     HALL_DIMS.ready = true;
     return { y: -box.min.y, cx: center.x, cz: center.z };
   }, [scene]);
-  useEffect(() => setReady(true), [fit]);
+  useEffect(() => {
+    setReady(true);
+    window.dispatchEvent(new Event("kb:loaded"));
+  }, [fit]);
 
   const marble = useMemo(
     () => new THREE.MeshStandardMaterial({ color: "#e6e0d2", roughness: 0.62 }),
@@ -359,10 +462,30 @@ function Building({ scrollRef }) {
         </Pedestal>
       ))}
 
-      {/* the scanned frames on the walls */}
+      {/* the scanned frames on the walls (decor between stations) */}
       {frames.map((f, i) => (
-        <WallFrame key={`f${i}`} url={f.url} height={1.45} position={[f.x, 2.2, f.z]} rotationY={f.r} />
+        <WallFrame key={`f${i}`} url={f.url} height={1.45} position={[f.x, 3.4, f.z]} rotationY={f.r} />
       ))}
+
+      {/* THE COLLECTION — eleven paintings, one per project and per room */}
+      {Array.from({ length: JOURNEY.stations }).map((_, i) => {
+        const tt = (i + 0.5) / JOURNEY.stations;
+        const z = walkStart - tt * (walkStart - walkEnd);
+        const left = i % 2 === 0;
+        return (
+          <WallPainting
+            key={`st${i}`}
+            frameUrl={
+              i % 3 === 0
+                ? "/models/fancy_picture_frame_01/fancy_picture_frame_01_1k.gltf"
+                : "/models/hanging_picture_frame_02/hanging_picture_frame_02_1k.gltf"
+            }
+            plate={PLATES[i] || { num: "—", title: "…", sub: "" }}
+            position={[left ? -frameW : frameW, 1.85, z]}
+            rotationY={left ? Math.PI / 2 : -Math.PI / 2}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -436,7 +559,7 @@ function Director({ scrollRef }) {
     const sr = SR();
 
     // deeper into the building, slightly warmer and dimmer
-    const dark = ramp(p, 0.26, 0.36);
+    const dark = ramp(p, JOURNEY.split - 0.05, JOURNEY.split + 0.04);
     bg.copy(GALLERY).lerp(STONE_DARK, dark);
     scene.background = bg;
     if (scene.fog) {
@@ -447,10 +570,10 @@ function Director({ scrollRef }) {
 
     const fissure = new THREE.Vector3(HALL_X, PLINTH_H + 1.12, sr + 0.05);
 
-    if (p < 0.34) {
+    if (p < JOURNEY.split) {
       // Movement I: the sculpture room — approach, then zoom into the fissure
-      const a = ease(clamp01(p / 0.18));
-      const d = ease(clamp01((p - 0.18) / 0.16));
+      const a = ease(clamp01(p / (JOURNEY.split * 0.55)));
+      const d = ease(clamp01((p - JOURNEY.split * 0.55) / (JOURNEY.split * 0.45)));
       const px = THREE.MathUtils.lerp(HALL_X + 0.15, fissure.x, d) + pointer.x * 0.1 * (1 - d);
       const py =
         THREE.MathUtils.lerp(THREE.MathUtils.lerp(1.35, 1.55, a), fissure.y, d) +
@@ -463,7 +586,7 @@ function Director({ scrollRef }) {
       camera.updateProjectionMatrix();
     } else {
       // Movement II: strolling the rest of the palazzo
-      const t = ease(clamp01((p - 0.34) / 0.66));
+      const t = walkT(p);
       const L = HALL_DIMS.len;
       const walkStart = sr - 3;
       const walkEnd = -L / 2 + 3;
