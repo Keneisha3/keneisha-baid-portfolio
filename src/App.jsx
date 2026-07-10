@@ -25,25 +25,14 @@ function detectLite() {
   return false;
 }
 
-/* The name plate over the hero. */
+/* The name plate over the hero — nothing but the name. */
 function Hero() {
   return (
     <section className="relative h-[220vh]">
-      <div className="pointer-events-none sticky top-0 flex h-screen flex-col justify-between py-16">
-        <div className="rise px-6 text-center sm:px-12">
-          <p className="font-mono text-[10px] uppercase tracking-[0.45em] text-[#a09a8c]">
-            collection № 01
-          </p>
-          <h1 className="mt-4 font-display text-4xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
-            Keneisha Baid
-          </h1>
-          <p className="mt-3 font-display text-sm italic text-[#6b6459] sm:text-base">
-            Management Engineering, University of Waterloo — a working mind, 2022–present.
-          </p>
-        </div>
-        <p className="rise text-center font-mono text-[10px] uppercase tracking-[0.35em] text-[#6b6459]">
-          scroll — the marble is breaking
-        </p>
+      <div className="pointer-events-none sticky top-0 flex h-screen items-start justify-center pt-20">
+        <h1 className="rise px-6 text-center font-display text-4xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
+          Keneisha Baid
+        </h1>
       </div>
     </section>
   );
@@ -80,15 +69,10 @@ export default function App() {
       <div className="relative min-h-screen bg-[#f2efe8] text-[#3a352c]">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-          <p className="font-mono text-xs uppercase tracking-[0.4em] text-[#a4622e]">collection № 01</p>
-          <h1 className="mt-3 font-display text-5xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
+          <h1 className="font-display text-5xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
             Keneisha Baid
           </h1>
-          <p className="mt-4 max-w-md text-sm text-[#6b6459]">
-            Management Engineering · University of Waterloo. Data, products, and
-            the occasional beautiful obsession.
-          </p>
-          <a
+          <
             href="#projects"
             className="mt-10 rounded-full border border-[#a4622e]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#a4622e] transition-colors hover:bg-[#a4622e]/10"
           >
