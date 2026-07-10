@@ -17,7 +17,7 @@ function Rail({ children, id }) {
         {children}
       </div>
       <p className="mt-3 px-[7vw] font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-        ⟷ slide the bar to walk the room — or keep scrolling down to move on
+        ⟷ slide to browse — or keep scrolling down
       </p>
     </section>
   );
@@ -507,11 +507,11 @@ export function ProjectNeurons() {
     <Rail id="projects">
       {/* the wing's wall label opens the room */}
       <header className="w-[min(70vw,20rem)] shrink-0">
-        <Kicker>exhibition I — the works</Kicker>
+        <Kicker>the projects</Kicker>
         <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Six memories,
           <br />
-          <span className="italic text-[#5d5749]">walk among them.</span>
+          <span className="italic text-[#5d5749]">things I have made.</span>
         </h2>
         <p className="mt-6 text-[15px] leading-relaxed text-[#5d5749]">
           Each is stored differently, the way real memories are. Slide through
@@ -571,7 +571,7 @@ export function SkillTerminals() {
     <section id="skills" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
-          <Kicker>exhibition III — the workshop</Kicker>
+          <Kicker>the toolkit</Kicker>
           <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
             Tools, catalogued
             <br />
@@ -632,7 +632,7 @@ export function MuseumExhibit() {
   return (
     <Rail id="experience">
       <header className="w-[min(70vw,18rem)] shrink-0 pt-2">
-        <Kicker>exhibition II — the acquisitions</Kicker>
+        <Kicker>the experience</Kicker>
         <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
           Five rooms
           <br />
