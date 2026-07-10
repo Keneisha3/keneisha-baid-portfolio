@@ -72,7 +72,7 @@ export default function App() {
           <h1 className="font-display text-5xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
             Keneisha Baid
           </h1>
-          <
+          <a
             href="#projects"
             className="mt-10 rounded-full border border-[#a4622e]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#a4622e] transition-colors hover:bg-[#a4622e]/10"
           >
