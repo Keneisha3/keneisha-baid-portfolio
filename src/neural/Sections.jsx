@@ -502,64 +502,119 @@ const ARTIFACTS = [
   { match: /markov/i, label: "an automaton", el: <ArtifactAutomaton /> },
 ];
 
-export function ProjectNeurons() {
+/* ---------- a clean-cut horizontal filmstrip of cards ---------- */
+function Filmstrip({ id, corner, caption, items }) {
+  const [open, setOpen] = useState(null);
   return (
-    <Rail id="projects">
-      {/* the wing's wall label opens the room */}
-      <header className="w-[min(70vw,20rem)] shrink-0">
-        <Kicker>the projects</Kicker>
-        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
-          Six memories,
-          <br />
-          <span className="italic text-[#5d5749]">things I have made.</span>
-        </h2>
-        <p className="mt-6 text-[15px] leading-relaxed text-[#5d5749]">
-          Each is stored differently, the way real memories are. Slide through
-          the room at your own pace — everything here can be touched.
-        </p>
-        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-          → the gallery continues
-        </p>
-      </header>
+    <section id={id} className="relative min-h-screen border-t border-[#00000010] py-16">
+      {/* corner labels */}
+      <div className="flex items-start justify-between px-8 sm:px-14">
+        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+          {corner}
+        </span>
+        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+          {String(items.length).padStart(2, "0")} works
+        </span>
+      </div>
 
-      {PROJECTS.map((p, i) => {
-        const art = ARTIFACTS.find((a) => a.match.test(p.title));
-        return (
-          <article key={p.title} className="w-[min(86vw,32rem)] shrink-0">
-            <div className={`flex items-baseline justify-between ${RULE} pt-3`}>
+      {/* the strip, centred in the white */}
+      <div className="flex min-h-[62vh] items-center">
+        <div className="no-scrollbar flex w-full items-stretch gap-5 overflow-x-auto px-8 py-6 sm:px-14">
+          {items.map((it, i) => (
+            <button
+              key={i}
+              onClick={() => setOpen(i)}
+              className="group relative w-[150px] shrink-0 text-left sm:w-[172px]"
+            >
+              <div className="relative aspect-[3/4] overflow-hidden bg-[#f4f2ee] ring-1 ring-[#00000010] transition-all duration-300 group-hover:-translate-y-2 group-hover:ring-[#00000030]">
+                {it.thumb}
+                <span className="absolute left-2 top-2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#171411]/60">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </div>
+              <p className="mt-3 font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-[#171411]">
+                {it.title}
+              </p>
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#a09a8c]">
+                {it.meta}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* footer caption, like the reference */}
+      <p className="px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
+        {caption}
+      </p>
+
+      {/* expanded view */}
+      {open !== null && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-white/90 p-4 backdrop-blur-sm"
+          onClick={() => setOpen(null)}
+        >
+          <div
+            className="max-h-[88vh] w-full max-w-2xl overflow-y-auto border border-[#00000012] bg-white p-6 shadow-[0_30px_80px_rgba(0,0,0,0.14)] sm:p-9"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between">
               <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-                mem.{String(i + 1).padStart(2, "0")} · {art?.label ?? "a plain record"}
+                {corner} · {String(open + 1).padStart(2, "0")}
               </span>
-              <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
-                {p.status ? "◈ forming" : "consolidated"}
-              </span>
+              <button
+                onClick={() => setOpen(null)}
+                className="font-mono text-sm text-[#5d5749] hover:text-[#171411]"
+              >
+                ✕
+              </button>
             </div>
+            {items[open].detail}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
-            <h3 className="mt-3 font-display text-2xl font-medium leading-snug text-[#171411]">
-              {p.title}
-            </h3>
-            <p className="mt-2 text-[14px] leading-[1.7] text-[#48423a] [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] overflow-hidden">
-              {p.description}
-            </p>
-
-            {/* the piece itself, framed and hung */}
-            <div className="mt-6">
-              <Painting plaque={`mem.${String(i + 1).padStart(2, "0")} — ${art?.label ?? "a plain record"}`}>
-                <ProjectMedia p={p} />
-                <div className="pt-4">{art?.el}</div>
-              </Painting>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1.5">
-              <Links links={p.links} />
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
-                {p.tech.slice(0, 3).join(" · ")}
-              </span>
-            </div>
-          </article>
-        );
-      })}
-    </Rail>
+export function ProjectNeurons() {
+  const items = PROJECTS.map((p, i) => {
+    const art = ARTIFACTS.find((a) => a.match.test(p.title));
+    return {
+      title: p.title,
+      meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
+      thumb: (
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e9e5dd] p-3">
+          <span className="text-center font-display text-sm font-medium leading-tight text-[#5d5749]">
+            {p.title}
+          </span>
+        </div>
+      ),
+      detail: (
+        <div>
+          <h3 className="font-display text-2xl font-medium text-[#171411]">{p.title}</h3>
+          <p className="mt-2 text-[15px] leading-[1.7] text-[#48423a]">{p.description}</p>
+          <div className="mt-6 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2]">
+            <ProjectMedia p={p} />
+            <div className="p-5">{art?.el}</div>
+          </div>
+          <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <Links links={p.links} />
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
+              {p.tech.join(" · ")}
+            </span>
+          </div>
+        </div>
+      ),
+    };
+  });
+  return (
+    <Filmstrip
+      id="projects"
+      corner="Work"
+      caption="Selected projects — click any piece to open it. Data, machine learning, and product work, 2023–2026."
+      items={items}
+    />
   );
 }
 
@@ -628,51 +683,54 @@ function JobPhoto({ src, alt }) {
 }
 
 export function MuseumExhibit() {
-  const chronological = [...EXPERIENCE].reverse(); // oldest room first
+  const chronological = [...EXPERIENCE].reverse(); // oldest first
+  const items = chronological.map((e, i) => ({
+    title: e.role,
+    meta: e.company,
+    thumb: e.img ? (
+      <img src={e.img} alt={e.company} loading="lazy" className="h-full w-full object-cover" />
+    ) : (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e9e5dd] p-3 text-center">
+        <span className="font-display text-base font-medium text-[#171411]">{e.company}</span>
+        <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#a09a8c]">
+          {e.period}
+        </span>
+      </div>
+    ),
+    detail: (
+      <div>
+        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#a4622e]">
+          {e.period}
+        </span>
+        <h3 className="mt-2 font-display text-2xl font-medium text-[#171411]">
+          {e.role} <span className="italic text-[#5d5749]">at {e.company}</span>
+        </h3>
+        {e.img && (
+          <img
+            src={e.img}
+            alt={e.company}
+            loading="lazy"
+            className="mt-5 h-52 w-full rounded-sm object-cover"
+          />
+        )}
+        <ul className="mt-5 space-y-3.5">
+          {e.bullets.map((b, j) => (
+            <li key={j} className="flex gap-3 text-[15px] leading-[1.75] text-[#3f3930]">
+              <span className="mt-[3px] font-mono text-[10px] text-[#a4622e]">◆</span>
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ),
+  }));
   return (
-    <Rail id="experience">
-      <header className="w-[min(70vw,18rem)] shrink-0 pt-2">
-        <Kicker>the experience</Kicker>
-        <h2 className="mt-5 font-display text-4xl font-medium leading-[1.12] text-[#171411] sm:text-5xl">
-          Five rooms
-          <br />
-          <span className="italic text-[#5d5749]">that shaped the mind.</span>
-        </h2>
-        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-          → in order of acquisition, 2023 to now
-        </p>
-      </header>
-
-      {chronological.map((e, i) => (
-        <article key={`${e.company}-${e.role}`} className="relative w-[min(84vw,28rem)] shrink-0">
-          {/* the timeline: a continuous thread with a station at each room */}
-          <div className="relative mb-7 h-8">
-            <span className="absolute -left-12 -right-12 top-1/2 h-px bg-[#1c1a1726]" />
-            <span className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border-2 border-[#a4622e] bg-[#f2efe8] shadow-[0_0_0_3px_rgba(242,239,232,1)]" />
-            <span className="absolute left-7 top-1/2 -translate-y-1/2 font-mono text-[11px] uppercase tracking-[0.25em] text-[#a4622e]">
-              {e.period}
-            </span>
-          </div>
-
-          <h3 className="mb-5 font-display text-[1.6rem] font-medium leading-snug text-[#171411]">
-            {e.role}
-            <span className="block text-lg italic text-[#5d5749]">at {e.company}</span>
-          </h3>
-
-          <Painting plaque={`acq. ${String(i + 1).padStart(2, "0")} · ${e.company}`}>
-            <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />
-            <ul className="space-y-3.5">
-              {e.bullets.map((b, j) => (
-                <li key={j} className="flex gap-3 text-[15px] leading-[1.75] text-[#3f3930]">
-                  <span className="mt-[3px] font-mono text-[10px] text-[#a4622e]">◆</span>
-                  {b}
-                </li>
-              ))}
-            </ul>
-          </Painting>
-        </article>
-      ))}
-    </Rail>
+    <Filmstrip
+      id="experience"
+      corner="Experience"
+      caption="Five roles, in order — Capital Power, Greenhouse Juice, Pratt & Whitney, Creospark. Click any to read more."
+      items={items}
+    />
   );
 }
 

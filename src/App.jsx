@@ -10,6 +10,9 @@ import ChatWidget from "./components/ChatWidget";
 
 const NeuralCanvas = lazy(() => import("./neural/Scene"));
 
+// Marble hero is hidden for now (kept in the codebase). Set true to bring it back.
+const SHOW_MARBLE = false;
+
 // Lite mode: weak/failed WebGL, reduced-motion, tiny mobile, or ?lite.
 function detectLite() {
   try {
@@ -32,7 +35,7 @@ function Hero() {
     <section className="relative h-[220vh]">
       <div className="sticky top-0 h-screen">
         {/* soft wash so the type reads crisp over the faint marble */}
-        <div className="pointer-events-none absolute inset-0 bg-[#f2efe8]/45" />
+        <div className="pointer-events-none absolute inset-0 bg-white/70" />
         {/* corner labels */}
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between px-8 py-8 sm:px-14">
           <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17]">
@@ -107,7 +110,7 @@ export default function App() {
 
   if (lite) {
     return (
-      <div className="relative min-h-screen bg-[#f2efe8] text-[#3a352c]">
+      <div className="relative min-h-screen bg-white text-[#3a352c]">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
           <h1 className="font-display text-5xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
@@ -127,13 +130,15 @@ export default function App() {
   }
 
   return (
-    <div className="relative bg-[#f2efe8] text-[#3a352c]">
-      {/* the breaking marble — fixed behind the hero only */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <Suspense fallback={<div className="h-full w-full bg-[#f2efe8]" />}>
-          <NeuralCanvas scrollRef={heroRef} />
-        </Suspense>
-      </div>
+    <div className="relative bg-white text-[#3a352c]">
+      {/* the breaking marble — hidden for now (code kept). Flip SHOW_MARBLE to re-enable. */}
+      {SHOW_MARBLE && (
+        <div className="pointer-events-none fixed inset-0 z-0">
+          <Suspense fallback={<div className="h-full w-full bg-white" />}>
+            <NeuralCanvas scrollRef={heroRef} />
+          </Suspense>
+        </div>
+      )}
 
       <Sparks />
       {/* the persistent nav only after the editorial intro */}
@@ -149,7 +154,7 @@ export default function App() {
         <Hero />
 
         {/* the reading sections sit on a solid surface above the 3D */}
-        <main className="relative bg-[#f2efe8]">
+        <main className="relative bg-white">
           {Sections}
         </main>
       </div>
