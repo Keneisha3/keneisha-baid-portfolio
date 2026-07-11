@@ -540,6 +540,47 @@ const ARTIFACTS = [
 ];
 
 /* ---------- a clean-cut horizontal filmstrip of cards ---------- */
+/* Ornate frame PNGs (transparent, with an empty centre). Drop the files into
+   public/frames/ as frame-1.png … frame-5.png and they'll wrap each project.
+   Until the files exist, a clean fallback border is shown instead. */
+const ART_FRAMES = [
+  "/frames/frame-1.png",
+  "/frames/frame-2.png",
+  "/frames/frame-3.png",
+  "/frames/frame-4.png",
+  "/frames/frame-5.png",
+];
+
+/* Puts `children` inside an ornate frame image; the artwork sits in the frame's
+   open centre. `inset` is the % of the frame that is border on each side. */
+function FramedThumb({ frameSrc, inset = 20, children }) {
+  const [framed, setFramed] = useState(Boolean(frameSrc));
+  return (
+    <div className="relative h-full w-full bg-white">
+      {/* the artwork, inset to sit in the frame's window */}
+      <div
+        className="absolute overflow-hidden bg-white"
+        style={{
+          inset: framed ? `${inset}%` : "6%",
+          boxShadow: framed ? "none" : "inset 0 0 0 1px rgba(17,17,17,0.14)",
+        }}
+      >
+        <div className="flex h-full w-full items-center justify-center">{children}</div>
+      </div>
+      {/* the frame on top */}
+      {framed && (
+        <img
+          src={frameSrc}
+          alt=""
+          aria-hidden="true"
+          onError={() => setFramed(false)}
+          className="pointer-events-none absolute inset-0 h-full w-full object-fill"
+        />
+      )}
+    </div>
+  );
+}
+
 function Filmstrip({ id, corner, caption, items }) {
   const [open, setOpen] = useState(null);
   return (
@@ -630,21 +671,11 @@ export function ProjectNeurons() {
       title: p.title,
       meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
       thumb: (
-        <div className="flex h-full w-full flex-col justify-between bg-white p-3">
-          <div className="flex items-center justify-end">
-            <span className="rounded-full border border-[#1c1a1714] px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-[#5d5749]">
-              more details
-            </span>
+        <FramedThumb frameSrc={ART_FRAMES[i % ART_FRAMES.length]}>
+          <div className="h-full w-full overflow-hidden">
+            <div className="min-h-[150px]">{preview}</div>
           </div>
-          <div className="mt-3 flex-1 rounded-[3px] border border-[#1c1a1710] bg-[#fbfaf8] p-2.5">
-            <div className="overflow-hidden rounded-[2px] border border-[#1c1a1710] bg-white p-2">
-              <div className="min-h-[180px]">{preview}</div>
-            </div>
-            <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.18em] text-[#8a8578]">
-              {p.tech.slice(0, 2).join(" · ")}
-            </p>
-          </div>
-        </div>
+        </FramedThumb>
       ),
       detail: (
         <div>
@@ -759,45 +790,56 @@ function JobThumbnail({ src, alt, company, period }) {
 }
 
 export function MuseumExhibit() {
-  const chronological = [...EXPERIENCE].reverse(); // oldest first
-  const items = chronological.map((e, i) => ({
-    title: e.role,
-    meta: e.company,
-    thumb: (
-      <JobThumbnail
-        src={e.img}
-        alt={e.company}
-        company={e.company}
-        period={e.period}
-      />
-    ),
-    detail: (
-      <div>
-        <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#a4622e]">
-          {e.period}
+  const chronological = [...EXPERIENCE].reverse(); // oldest → newest
+  return (
+    <section id="experience" className="relative min-h-screen bg-white py-16">
+      {/* corner labels */}
+      <div className="flex items-start justify-between px-8 sm:px-14">
+        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+          Experience
         </span>
-        <h3 className="mt-2 font-sans text-2xl font-medium text-[#171411]">
-          {e.role} <span className="text-[#5d5749]">at {e.company}</span>
-        </h3>
-        <JobPhoto src={e.img} alt={e.company} />
-        <ul className="mt-5 space-y-3.5">
-          {e.bullets.map((b, j) => (
-            <li key={j} className="flex gap-3 text-[15px] leading-[1.75] text-[#3f3930]">
-              <span className="mt-[3px] font-mono text-[10px] text-[#a4622e]">◆</span>
-              {b}
+        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+          {String(chronological.length).padStart(2, "0")} roles
+        </span>
+      </div>
+
+      <div className="mx-auto mt-16 max-w-3xl px-8 sm:px-14">
+        <ol className="relative border-l border-black/15">
+          {chronological.map((e, i) => (
+            <li key={`${e.company}-${e.role}`} className="relative pb-14 pl-8 last:pb-0">
+              {/* node on the line */}
+              <span className="absolute -left-[6.5px] top-1.5 h-3 w-3 rounded-full border-2 border-black bg-white" />
+              <span className="absolute -left-[26px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
+                {String(chronological.length - i).padStart(2, "0")}
+              </span>
+
+              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50">
+                {e.period}
+              </p>
+              <h3 className="mt-1.5 font-sans text-xl font-medium text-black">
+                {e.role}
+                <span className="text-black/45"> · {e.company}</span>
+              </h3>
+
+              {e.img && <JobPhoto src={e.img} alt={e.company} />}
+
+              <ul className="mt-3 space-y-2.5">
+                {e.bullets.map((b, j) => (
+                  <li key={j} className="flex gap-3 text-[14.5px] leading-[1.7] text-black/70">
+                    <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-black/40" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
-    ),
-  }));
-  return (
-    <Filmstrip
-      id="experience"
-      corner="Experience"
-      caption="Five roles, in order — Capital Power, Greenhouse Juice, Pratt & Whitney, Creospark. Click any to read more."
-      items={items}
-    />
+
+      <p className="mt-6 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
+        Capital Power · Greenhouse Juice · Pratt &amp; Whitney · Creospark — 2023 to 2026.
+      </p>
+    </section>
   );
 }
 
