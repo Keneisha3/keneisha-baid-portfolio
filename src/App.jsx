@@ -41,7 +41,7 @@ function Hero() {
               Management Engineering
             </span>
             <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#5d5749]">
-              Waterloo
+              University of Waterloo
             </span>
           </div>
           <a
