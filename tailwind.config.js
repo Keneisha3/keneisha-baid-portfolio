@@ -41,6 +41,7 @@ export default {
         sans: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
         display: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
         mono: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        wordmark: ["\"Jost\"", "\"Century Gothic\"", "ui-sans-serif", "sans-serif"],
       },
     },
   },

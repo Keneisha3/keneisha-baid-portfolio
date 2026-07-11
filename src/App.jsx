@@ -54,7 +54,7 @@ function Hero() {
 
         {/* the name, dead centre, wide and thin */}
         <div className="flex h-full items-center justify-center px-6">
-          <h1 className="rise select-none text-center font-sans text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
+          <h1 className="rise select-none text-center font-wordmark text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
             Keneisha&nbsp;&nbsp;Baid
           </h1>
         </div>
@@ -102,7 +102,7 @@ export default function App() {
       <div className="relative min-h-screen bg-white text-[#3a352c]">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-sans text-5xl font-medium uppercase tracking-tight text-[#1c1a17] sm:text-6xl">
+          <h1 className="font-wordmark text-5xl font-light uppercase tracking-[0.3em] text-[#1c1a17] sm:text-6xl">
             Keneisha Baid
           </h1>
           <a
