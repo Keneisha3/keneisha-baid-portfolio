@@ -20,41 +20,94 @@ export const ROLES = [
 // Grouped so the toolkit reads cleanly instead of one long wall of pills.
 export const TOOLKIT = [
   {
-    group: "Languages",
-    items: ["Python", "JavaScript", "TypeScript", "Java", "R", "SQL"],
+    group: "Cloud & Infrastructure",
+    items: ["AWS", "Azure", "GCP", "CI/CD Pipelines", "Docker", "Linux", "Shell Scripting"],
   },
   {
-    group: "Machine learning & data",
+    group: "Systems & Platform Tools",
     items: [
-      "Pandas",
-      "NumPy",
-      "scikit-learn",
-      "TensorFlow",
-      "Keras",
-      "Matplotlib",
-      "Seaborn",
-      "Jupyter",
-      "yfinance",
+      "SharePoint Framework (SPFx)",
+      "Power Platform",
+      "Power Automate",
+      "Power BI",
+      "Git",
+      "Jira",
+      "Trello",
     ],
   },
   {
-    group: "Web & backend",
-    items: ["React", "Node.js", "Express.js", "REST APIs", "HTML & CSS", "Tailwind CSS"],
+    group: "Programming Languages",
+    items: [
+      "Python",
+      "Pandas",
+      "NumPy",
+      "scikit-learn",
+      "Matplotlib",
+      "JavaScript",
+      "TypeScript",
+      "SQL",
+      "R",
+      "ggplot2",
+      "dplyr",
+    ],
   },
   {
-    group: "Platforms & tools",
+    group: "Automation & Systems Engineering",
     items: [
-      "Power BI",
-      "Power Automate",
-      "Power Apps",
-      "SharePoint",
-      "SPFx",
-      "Git",
-      "GitHub",
-      "Jira",
-      "Figma",
-      "Excel & VBA",
+      "Workflow Automation",
+      "System Integration",
+      "Requirements Gathering",
+      "Process Mapping",
+      "Data Pipelines",
+      "Monitoring",
+    ],
+  },
+  {
+    group: "Analytical Tools",
+    items: [
+      "Microsoft Excel",
+      "VBA",
+      "Pivot Tables",
+      "Macros",
       "Microsoft Project",
+      "Time Series Analysis",
+    ],
+  },
+  {
+    group: "Frameworks & Tools",
+    items: [
+      "React",
+      "Node.js",
+      "Git",
+      "Jira",
+      "Trello",
+      "Figma",
+      "SharePoint Framework (SPFx)",
+      "Power Platform",
+      "Power Automate",
+      "Power BI",
+    ],
+  },
+  {
+    group: "Business Analysis & AI",
+    items: [
+      "Requirements Gathering",
+      "Stakeholder Engagement",
+      "Process Mapping",
+      "Workflow Automation",
+      "Machine Learning",
+      "Predictive Analytics",
+      "Data Visualization",
+    ],
+  },
+  {
+    group: "Education",
+    items: [
+      "University of Waterloo",
+      "September 2022 – Present",
+      "Bachelor of Science in Management Engineering",
+      "President, Institute of Industrial & Systems Engineers (IISE)",
+      "Relevant Coursework: Machine Learning, Statistical Analysis, Modeling in Operations Research, Financial Economics",
     ],
   },
 ];
@@ -64,7 +117,7 @@ export const EXPERIENCE = [
     company: "Creospark",
     role: "Business Analyst",
     period: "Jan 2026 – Apr 2026",
-    img: "/photos/work/creospark-office.jpg",
+    img: "",
     color: "#EC4899",
     bullets: [
       "Led stakeholder engagement across 3 digital transformation projects using Power Platform, SharePoint, Power BI, Power Automate, React, and Jira, improving operational efficiency by 24%.",
@@ -75,7 +128,7 @@ export const EXPERIENCE = [
     company: "Creospark",
     role: "Software Developer",
     period: "May 2025 – Aug 2025",
-    img: "/photos/work/creospark-team.jpg",
+    img: "",
     color: "#FB7185",
     bullets: [
       "Built enterprise SPFx web parts using TypeScript, React, and SharePoint APIs, improving platform usability by 27%.",
@@ -139,6 +192,13 @@ export const PROJECTS = [
     ],
   },
   {
+    title: "Financial Analyst Research",
+    description: 
+    "Produced a macroeconomic research report comparing the Nikkei 225 and Dow Jones Industrial Average. Analyzed monetary policy divergence, USD/JPY dynamics, sector drivers, market correlations, geopolitical shocks, and probabilistic forecasts using event studies, statistical analysis, and Monte Carlo simulation.",
+    tech: ["Python", "Machine Learning", "Statistical / Economic Analysis"],
+    links: [{ label: "Github", href: "https://github.com/Keneisha3/Cross-Market-Index-Comparison.git" }],
+  },
+  {
     title: "FamFlow UX Prototype",
     figma: "https://www.figma.com/proto/8M19jiQgJ7S0Xjvf2Uf2zf/FamFlow-Vertical-Prototype-Medium-Fidelity?node-id=0-1&t=zerNLS0qXjv6pjou-1",
     description:
@@ -149,13 +209,6 @@ export const PROJECTS = [
       { label: "Prototype · vertical", href: "https://www.figma.com/proto/8M19jiQgJ7S0Xjvf2Uf2zf/FamFlow-Vertical-Prototype-Medium-Fidelity?node-id=0-1&t=zerNLS0qXjv6pjou-1" },
       { label: "Prototype · horizontal", href: "https://www.figma.com/proto/Y2vhHKGHsuPIQlu5ngxLjK/FamFlow-Horizontal-Prototype-Medium-Fidelity?node-id=0-1&t=0TEMj7fXe1wzjwTF-1" },
     ],
-  },
-  {
-    title: "Financial Analyst Research",
-    description: 
-    "Produced a macroeconomic research report comparing the Nikkei 225 and Dow Jones Industrial Average. Analyzed monetary policy divergence, USD/JPY dynamics, sector drivers, market correlations, geopolitical shocks, and probabilistic forecasts using event studies, statistical analysis, and Monte Carlo simulation.",
-    tech: ["Python", "Machine Learning", "Statistical / Economic Analysis"],
-    links: [{ label: "Github", href: "https://github.com/Keneisha3/Cross-Market-Index-Comparison.git" }],
   },
   {
     title: "Markov Chain Model",
@@ -314,9 +367,9 @@ export const CHAT_KB = [
       "Outside of work she swims, plays electric guitar, travels (Paris and Venice are favourites), keeps Drake on repeat while coding, and rewatches Suits and Industry.",
   },
   {
-    keywords: ["ploid", "hire", "hiring", "role", "fit", "why", "good"],
+    keywords: ["hire", "hiring", "role", "fit", "why", "good"],
     answer:
-      "She's applying to Ploid and is a strong fit for data/product/fintech roles, her quant projects (ATR Signal, Electionomics) and her ML work at Pratt & Whitney show she can ship real, measurable results.",
+      "She's applying to role and is a strong fit for data/product/fintech roles, her quant projects (ATR Signal, Electionomics) and her ML work at Pratt & Whitney show she can ship real, measurable results.",
   },
   {
     keywords: ["contact", "email", "reach", "linkedin", "github", "connect", "hire me"],

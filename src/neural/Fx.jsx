@@ -22,40 +22,43 @@ export function Sparks() {
     resize();
     window.addEventListener("resize", resize);
 
-    // glitter palette: yellows only — buttercup, gold, lemon, pale starlight
+    // colorful confetti palette: bright, playful, and slightly translucent
     const TONES = [
-      [255, 214, 64],
-      [255, 199, 44],
-      [255, 232, 122],
-      [255, 244, 180],
+      [255, 94, 117],
+      [124, 224, 132],
+      [99, 201, 255],
+      [255, 210, 82],
+      [191, 133, 255],
+      [255, 150, 78],
+      [255, 255, 255],
     ];
     let last = 0;
     const onMove = (e) => {
       const now = performance.now();
-      if (now - last < 22 || parts.length > 220) return; // throttle
+      if (now - last < 18 || parts.length > 260) return; // throttle
       last = now;
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 4; i++) {
         parts.push({
-          x: e.clientX + (Math.random() - 0.5) * 6,
-          y: e.clientY + (Math.random() - 0.5) * 6,
-          vx: (Math.random() - 0.5) * 1.8,
-          vy: (Math.random() - 0.5) * 1.4 + 0.3, // glitter falls
+          x: e.clientX + (Math.random() - 0.5) * 7,
+          y: e.clientY + (Math.random() - 0.5) * 7,
+          vx: (Math.random() - 0.5) * 2.2,
+          vy: (Math.random() - 0.5) * 1.6 + 0.45,
           life: 1,
-          size: 1.4 + Math.random() * 2.2,
+          size: 2 + Math.random() * 3.2,
           rot: Math.random() * Math.PI,
-          spin: (Math.random() - 0.5) * 0.3,
+          spin: (Math.random() - 0.5) * 0.45,
           tone: TONES[(Math.random() * TONES.length) | 0],
           phase: Math.random() * Math.PI * 2,
+          shape: Math.random() > 0.5 ? "burst" : "chip",
         });
       }
     };
     window.addEventListener("mousemove", onMove, { passive: true });
 
-    const star = (x, y, r, rot) => {
-      // a tiny filled five-point star
+    const burst = (x, y, r, rot) => {
       ctx.beginPath();
       for (let k = 0; k < 10; k++) {
-        const rr = k % 2 ? r * 0.45 : r;
+        const rr = k % 2 ? r * 0.48 : r;
         const a = rot + (k * Math.PI) / 5 - Math.PI / 2;
         const px = x + Math.cos(a) * rr;
         const py = y + Math.sin(a) * rr;
@@ -66,21 +69,32 @@ export function Sparks() {
       ctx.fill();
     };
 
+    const chip = (x, y, r, rot) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.fillRect(-r * 0.8, -r * 0.35, r * 1.6, r * 0.7);
+      ctx.restore();
+    };
+
     const draw = (t) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       parts = parts.filter((p) => p.life > 0.03);
       for (const p of parts) {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.045; // gravity
+        p.vy += 0.035;
         p.rot += p.spin;
-        p.life *= 0.945;
-        // twinkle: each little star flickers on its own rhythm
-        const tw = 0.55 + 0.45 * Math.sin(t * 0.02 + p.phase);
+        p.life *= 0.955;
+        const tw = 0.5 + 0.5 * Math.sin(t * 0.028 + p.phase);
         const a = p.life * tw;
         const [r, g, b] = p.tone;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        star(p.x, p.y, p.size * (0.7 + p.life), p.rot);
+        if (p.shape === "burst") {
+          burst(p.x, p.y, p.size * (0.55 + p.life), p.rot);
+        } else {
+          chip(p.x, p.y, p.size * (0.5 + p.life), p.rot);
+        }
       }
       raf = requestAnimationFrame(draw);
     };
@@ -172,7 +186,7 @@ const NAV = [
 
 export function MindNav({ humOn, toggleHum }) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#1c1a170f] bg-[#f2efe8]/85 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#1c1a170f] bg-white/95 backdrop-blur-sm">
       <div className="flex items-center justify-between gap-3 px-5 py-3 sm:px-8">
         <a
           href="#top"
@@ -180,7 +194,7 @@ export function MindNav({ humOn, toggleHum }) {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="shrink-0 font-display text-lg font-semibold tracking-tight text-[#171411]"
+          className="shrink-0 font-sans text-lg font-semibold tracking-tight text-[#171411]"
         >
           Keneisha <span className="text-[#a4622e]">Baid</span>
         </a>
@@ -189,7 +203,7 @@ export function MindNav({ humOn, toggleHum }) {
             <a
               key={n.id}
               href={`#${n.id}`}
-              className="whitespace-nowrap rounded-full border border-[#1c1a171f] bg-white/60 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#3a352c] transition-colors hover:border-[#a4622e] hover:text-[#a4622e] sm:px-4"
+              className="whitespace-nowrap rounded-full border border-[#1c1a171f] bg-white px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#3a352c] transition-colors hover:border-[#a4622e] hover:text-[#a4622e] sm:px-4"
             >
               {n.label}
             </a>

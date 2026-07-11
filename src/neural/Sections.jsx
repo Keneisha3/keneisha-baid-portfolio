@@ -29,13 +29,20 @@ function ProjectMedia({ p }) {
   const figma = p.figma || p.links?.find((l) => /figma/i.test(l.label))?.href;
   if (figma)
     return (
-      <iframe
-        title={`${p.title} — Figma`}
-        src={`https://www.figma.com/embed?embed_host=portfolio&url=${encodeURIComponent(figma)}`}
-        className="h-80 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
-        loading="lazy"
-        allowFullScreen
-      />
+      <div className="w-full bg-white">
+        <iframe
+          title={`${p.title} — Figma`}
+          src={`https://www.figma.com/embed?embed_host=portfolio&url=${encodeURIComponent(figma)}`}
+          className="h-80 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+          loading="lazy"
+          allowFullScreen
+        />
+        {/famflow/i.test(p.title) && (
+          <p className="px-3 pb-3 pt-2 font-sans text-[10px] italic tracking-[0.12em] text-[#6b6459]">
+            hover to load if the prototype does not appear automatically
+          </p>
+        )}
+      </div>
     );
   const pdf = p.links?.find((l) => /pdf|presentation/i.test(l.label))?.href;
   if (pdf)
@@ -137,10 +144,10 @@ export function Landing({ onSkip }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[#a09a8c]">
           collection № 01
         </p>
-        <h1 className="mt-3 font-display text-3xl font-medium leading-snug text-[#1c1a17] sm:text-4xl">
+        <h1 className="mt-3 font-sans text-3xl font-medium leading-snug text-[#1c1a17] sm:text-4xl">
           Keneisha Baid
         </h1>
-        <p className="mt-2 font-display text-sm italic text-[#6b6459]">
+        <p className="mt-2 font-sans text-sm text-[#6b6459]">
           Management Engineering, University of Waterloo.
           <br />
           Portrait of a working mind — marble and light, 2022–present.
@@ -243,12 +250,15 @@ const BENCH = [
 function ArtifactBench() {
   const [sel, setSel] = useState(3);
   return (
-    <div>
+    <div onClick={(e) => e.stopPropagation()}>
       <div className="flex flex-wrap gap-x-5 gap-y-1">
         {BENCH.map(([name], i) => (
           <button
             key={name}
-            onClick={() => setSel(i)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSel(i);
+            }}
             className={`font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${
               sel === i ? CY : FAINT
             } hover:text-[#6b6459]`}
@@ -263,7 +273,7 @@ function ArtifactBench() {
           <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM}`}>
             coefficient of determination
           </span>
-          <span className={`font-display text-3xl ${sel === 3 ? BONE : DIM}`}>
+          <span className={`font-sans text-3xl ${sel === 3 ? BONE : DIM}`}>
             R² = {BENCH[sel][1].toFixed(3)}
           </span>
         </div>
@@ -323,6 +333,33 @@ function ArtifactStoryboard() {
         <span className={`font-mono text-[10px] uppercase tracking-[0.25em] ${DIM}`}>
           frame — {FRAMES[f].k}
         </span>
+      </div>
+    </div>
+  );
+}
+
+function ArtifactSlides() {
+  return (
+    <div className="rounded-sm border border-[#1c1a1714] bg-[#faf7f1] p-3">
+      <div className="mb-3 flex items-center justify-between">
+        <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM}`}>
+          presentation deck
+        </span>
+        <span className={`font-mono text-[10px] uppercase tracking-[0.25em] ${FAINT}`}>
+          5 slides
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {FRAMES.map((fr, i) => (
+          <div key={fr.k} className="rounded-sm border border-[#1c1a1714] bg-white p-2">
+            <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#1c1a1714] bg-[#faf7f1]">
+              {fr.draw}
+            </svg>
+            <span className={`mt-2 block font-mono text-[9px] uppercase tracking-[0.18em] ${FAINT}`}>
+              {String(i + 1).padStart(2, "0")} · {fr.k}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -404,7 +441,7 @@ function ArtifactAutomaton() {
               stroke={s === i ? "#a4622e" : "#a09a8c"}
               strokeWidth={s === i ? 1.5 : 1}
             />
-            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="IBM Plex Mono" fill={s === i ? "#1c1a17" : "#6b6459"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fill={s === i ? "#1c1a17" : "#6b6459"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
               {st.k}
             </text>
           </g>
@@ -506,7 +543,7 @@ const ARTIFACTS = [
 function Filmstrip({ id, corner, caption, items }) {
   const [open, setOpen] = useState(null);
   return (
-    <section id={id} className="relative min-h-screen border-t border-[#00000010] py-16">
+    <section id={id} className="relative min-h-screen bg-white py-16">
       {/* corner labels */}
       <div className="flex items-start justify-between px-8 sm:px-14">
         <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
@@ -521,12 +558,20 @@ function Filmstrip({ id, corner, caption, items }) {
       <div className="flex min-h-[62vh] items-center">
         <div className="no-scrollbar flex w-full items-stretch gap-5 overflow-x-auto px-8 py-6 sm:px-14">
           {items.map((it, i) => (
-            <button
+            <div
               key={i}
+              role="button"
+              tabIndex={0}
               onClick={() => setOpen(i)}
-              className="group relative w-[150px] shrink-0 text-left sm:w-[172px]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpen(i);
+                }
+              }}
+              className="group relative w-[240px] shrink-0 cursor-pointer text-left sm:w-[320px]"
             >
-              <div className="relative aspect-[3/4] overflow-hidden bg-[#f4f2ee] ring-1 ring-[#00000010] transition-all duration-300 group-hover:-translate-y-2 group-hover:ring-[#00000030]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-white ring-1 ring-[#00000010] transition-all duration-300 group-hover:-translate-y-1 group-hover:ring-[#00000022]">
                 {it.thumb}
                 <span className="absolute left-2 top-2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#171411]/60">
                   {String(i + 1).padStart(2, "0")}
@@ -538,7 +583,7 @@ function Filmstrip({ id, corner, caption, items }) {
               <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#a09a8c]">
                 {it.meta}
               </p>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -580,14 +625,25 @@ function Filmstrip({ id, corner, caption, items }) {
 export function ProjectNeurons() {
   const items = PROJECTS.map((p, i) => {
     const art = ARTIFACTS.find((a) => a.match.test(p.title));
+    const preview = /famflow/i.test(p.title) ? <ProjectMedia p={p} /> : art?.el;
     return {
       title: p.title,
       meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
       thumb: (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e9e5dd] p-3">
-          <span className="text-center font-display text-sm font-medium leading-tight text-[#5d5749]">
-            {p.title}
-          </span>
+        <div className="flex h-full w-full flex-col justify-between bg-white p-3">
+          <div className="flex items-center justify-end">
+            <span className="rounded-full border border-[#1c1a1714] px-2 py-0.5 font-mono text-[7px] uppercase tracking-[0.2em] text-[#5d5749]">
+              more details
+            </span>
+          </div>
+          <div className="mt-3 flex-1 rounded-[3px] border border-[#1c1a1710] bg-[#fbfaf8] p-2.5">
+            <div className="overflow-hidden rounded-[2px] border border-[#1c1a1710] bg-white p-2">
+              <div className="min-h-[180px]">{preview}</div>
+            </div>
+            <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.18em] text-[#8a8578]">
+              {p.tech.slice(0, 2).join(" · ")}
+            </p>
+          </div>
         </div>
       ),
       detail: (
@@ -596,7 +652,7 @@ export function ProjectNeurons() {
           <p className="mt-2 text-[15px] leading-[1.7] text-[#48423a]">{p.description}</p>
           <div className="mt-6 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2]">
             <ProjectMedia p={p} />
-            <div className="p-5">{art?.el}</div>
+            {!/famflow/i.test(p.title) && <div className="p-5">{art?.el}</div>}
           </div>
           <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
             <Links links={p.links} />
@@ -627,30 +683,29 @@ export function SkillTerminals() {
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
           <Kicker>the toolkit</Kicker>
-          <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
-            Tools, catalogued
-            <br />
-            <span className="italic">without ceremony.</span>
+          <h2 className={`mt-4 font-sans text-3xl font-medium leading-tight ${BONE}`}>
+            Tools & Skills
           </h2>
         </div>
       </header>
 
       <div>
         {TOOLKIT.map((cat, ci) => (
-          <div key={cat.group} className={`${RULE} grid gap-2 py-6 md:grid-cols-12`}>
+          <div key={cat.group} className={`${RULE} grid gap-3 py-6 md:grid-cols-12`}>
             <div className="md:col-span-4">
               <span className={`font-mono text-[10px] uppercase tracking-[0.35em] ${DIM}`}>
                 {String(ci + 1).padStart(2, "0")} · {cat.group}
               </span>
             </div>
-            <p className={`md:col-span-7 font-display text-base leading-loose ${BONE}`}>
-              {cat.items.map((tool, i) => (
-                <span key={tool}>
-                  <span className="cursor-default transition-colors hover:text-[#d98a4a]">{tool}</span>
-                  {i < cat.items.length - 1 && <span className={FAINT}> · </span>}
-                </span>
+            <ul className="md:col-span-7 flex flex-wrap gap-2">
+              {cat.items.map((tool) => (
+                <li key={tool}>
+                  <span className="inline-flex rounded-full border border-black/15 bg-white px-2.5 py-1 font-sans text-[13px] leading-none text-black transition-colors hover:border-black/40">
+                    {tool}
+                  </span>
+                </li>
               ))}
-            </p>
+            </ul>
             <span className={`hidden font-mono text-[10px] md:col-span-1 md:block md:text-right ${FAINT}`}>
               {cat.items.length}
             </span>
@@ -682,37 +737,49 @@ function JobPhoto({ src, alt }) {
   );
 }
 
+function JobThumbnail({ src, alt, company, period }) {
+  const [ok, setOk] = useState(true);
+  if (!src || !ok) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-white p-3 text-center">
+        <span className="font-sans text-[13px] font-medium leading-tight text-[#171411]">{company}</span>
+        <span className="mt-1 font-mono text-[8px] uppercase tracking-[0.2em] text-[#a09a8c]">{period}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setOk(false)}
+      loading="lazy"
+      className="h-full w-full object-cover"
+    />
+  );
+}
+
 export function MuseumExhibit() {
   const chronological = [...EXPERIENCE].reverse(); // oldest first
   const items = chronological.map((e, i) => ({
     title: e.role,
     meta: e.company,
-    thumb: e.img ? (
-      <img src={e.img} alt={e.company} loading="lazy" className="h-full w-full object-cover" />
-    ) : (
-      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e9e5dd] p-3 text-center">
-        <span className="font-display text-base font-medium text-[#171411]">{e.company}</span>
-        <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-[#a09a8c]">
-          {e.period}
-        </span>
-      </div>
+    thumb: (
+      <JobThumbnail
+        src={e.img}
+        alt={e.company}
+        company={e.company}
+        period={e.period}
+      />
     ),
     detail: (
       <div>
         <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#a4622e]">
           {e.period}
         </span>
-        <h3 className="mt-2 font-display text-2xl font-medium text-[#171411]">
-          {e.role} <span className="italic text-[#5d5749]">at {e.company}</span>
+        <h3 className="mt-2 font-sans text-2xl font-medium text-[#171411]">
+          {e.role} <span className="text-[#5d5749]">at {e.company}</span>
         </h3>
-        {e.img && (
-          <img
-            src={e.img}
-            alt={e.company}
-            loading="lazy"
-            className="mt-5 h-52 w-full rounded-sm object-cover"
-          />
-        )}
+        <JobPhoto src={e.img} alt={e.company} />
         <ul className="mt-5 space-y-3.5">
           {e.bullets.map((b, j) => (
             <li key={j} className="flex gap-3 text-[15px] leading-[1.75] text-[#3f3930]">
@@ -746,7 +813,7 @@ const TERM = [
   { t: "  github     github.com/Keneisha3", href: PROFILE.github },
   { t: `  playlist   what this mind runs on ♪`, href: `https://open.spotify.com/playlist/${PLAYLIST.spotifyId}` },
   { t: "keneisha@core:~$ status", c: true },
-  { t: "  listening — fintech · data · product" },
+  { t: "  something cool - listening · builiding · reading · creating" },
 ];
 
 export function CoreTerminal() {
@@ -780,15 +847,6 @@ export function CoreTerminal() {
       <div className="grid gap-10 md:grid-cols-12">
         <header className="md:col-span-4">
           <Kicker>the core</Kicker>
-          <h2 className={`mt-4 font-display text-3xl font-medium leading-tight ${BONE}`}>
-            Every signal
-            <br />
-            <span className="italic">ends here.</span>
-          </h2>
-          <p className={`mt-4 text-sm leading-relaxed ${DIM}`}>
-            The central processor takes external input. It responds quickly to
-            interesting problems.
-          </p>
         </header>
 
         <div className="md:col-span-8" ref={onEnter}>
@@ -831,11 +889,6 @@ export function CoreTerminal() {
             surface again ↑
           </button>
         </div>
-        <p className={`mt-4 font-display text-xs italic ${FAINT}`}>
-          End of the collection. Sculpture scans: Poly Haven (CC0) · palazzo:
-          “Sponza” © Crytek, CC BY 3.0 — the cracks, light, and everything
-          inside them: the artist's own.
-        </p>
       </footer>
     </section>
   );
@@ -860,7 +913,7 @@ export function StationPanel({ index }) {
             {p.status ? "◈ forming" : "consolidated"}
           </span>
         </div>
-        <h3 className="mt-3 font-display text-xl font-medium leading-snug text-[#171411]">
+        <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#171411]">
           {p.title}
         </h3>
         <p className="mt-2 text-[13.5px] leading-[1.65] text-[#48423a]">{p.description}</p>
@@ -888,9 +941,9 @@ export function StationPanel({ index }) {
         </span>
         <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${CU}`}>{e.period}</span>
       </div>
-      <h3 className="mt-3 font-display text-xl font-medium leading-snug text-[#171411]">
+      <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#171411]">
         {e.role}
-        <span className="block text-base italic text-[#5d5749]">at {e.company}</span>
+        <span className="block text-base text-[#5d5749]">at {e.company}</span>
       </h3>
       <div className="mt-4">
         <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />

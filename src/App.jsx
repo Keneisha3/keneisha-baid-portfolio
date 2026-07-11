@@ -33,42 +33,31 @@ function detectLite() {
 function Hero() {
   return (
     <section className="relative h-[220vh]">
-      <div className="sticky top-0 h-screen">
-        {/* soft wash so the type reads crisp over the faint marble */}
-        <div className="pointer-events-none absolute inset-0 bg-white/70" />
+      <div className="sticky top-0 h-screen bg-white">
         {/* corner labels */}
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between px-8 py-8 sm:px-14">
-          <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17]">
-            Management Engineering
-          </span>
-          <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
-            Waterloo · 2026
-          </span>
+          <div className="flex flex-col gap-1 text-left">
+            <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17]">
+              Management Engineering
+            </span>
+            <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#5d5749]">
+              Waterloo
+            </span>
+          </div>
+          <a
+            href="#contact"
+            className="pointer-events-auto font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17] transition-colors hover:text-[#555555]"
+          >
+            Contact Me
+          </a>
         </div>
 
         {/* the name, dead centre, wide and thin */}
         <div className="flex h-full items-center justify-center px-6">
-          <h1 className="rise select-none text-center font-sans text-3xl font-light uppercase tracking-[0.28em] text-[#171411] sm:text-5xl sm:tracking-[0.42em]">
+          <h1 className="rise select-none text-center font-sans text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
             Keneisha&nbsp;&nbsp;Baid
           </h1>
         </div>
-
-        {/* quiet bottom nav */}
-        <nav className="absolute inset-x-0 bottom-10 flex items-center justify-center gap-8">
-          {[
-            ["Projects", "#projects"],
-            ["Experience", "#experience"],
-            ["Contact", "#contact"],
-          ].map(([label, href]) => (
-            <a
-              key={href}
-              href={href}
-              className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#5d5749] transition-colors hover:text-[#171411]"
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
       </div>
     </section>
   );
@@ -113,7 +102,7 @@ export default function App() {
       <div className="relative min-h-screen bg-white text-[#3a352c]">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-display text-5xl font-medium tracking-tight text-[#1c1a17] sm:text-6xl">
+          <h1 className="font-sans text-5xl font-medium uppercase tracking-tight text-[#1c1a17] sm:text-6xl">
             Keneisha Baid
           </h1>
           <a
@@ -140,7 +129,6 @@ export default function App() {
         </div>
       )}
 
-      <Sparks />
       {/* the persistent nav only after the editorial intro */}
       <div
         className={`transition-opacity duration-500 ${
@@ -149,6 +137,8 @@ export default function App() {
       >
         <MindNav humOn={humOn} toggleHum={toggleHum} />
       </div>
+
+      <Sparks />
 
       <div className="relative z-10">
         <Hero />

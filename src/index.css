@@ -13,8 +13,8 @@ html {
 body {
   margin: 0;
   background-color: #ffffff;
-  color: #3a352c;
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: #111111;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -24,19 +24,19 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #eae5da;
+  background: #f3f3f3;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbbfa9;
+  background: #111111;
   border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a4622e;
+  background: #52525b;
 }
 
 ::selection {
-  background: #a4622e;
-  color: #fff;
+  background: #111111;
+  color: #ffffff;
 }
 
 /* One-shot reveal for the landing wall label (mount only, not scroll-driven) */
@@ -69,7 +69,7 @@ input.seesaw {
   -webkit-appearance: none;
   appearance: none;
   height: 1px;
-  background: #1c1a1726;
+  background: rgba(17, 17, 17, 0.24);
   outline: none;
   cursor: ew-resize;
 }
@@ -79,17 +79,17 @@ input.seesaw::-webkit-slider-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #d98a4a;
+  background: #111111;
   border: 1px solid #020204;
-  box-shadow: 0 0 12px rgba(217, 138, 74, 0.6);
+  box-shadow: 0 0 12px rgba(17, 17, 17, 0.4);
 }
 input.seesaw::-moz-range-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #d98a4a;
+  background: #111111;
   border: 1px solid #020204;
-  box-shadow: 0 0 12px rgba(217, 138, 74, 0.6);
+  box-shadow: 0 0 12px rgba(17, 17, 17, 0.4);
 }
 
 /* caption shown during the cable descent — static, faint */
@@ -100,58 +100,42 @@ input.seesaw::-moz-range-thumb {
 /* Gallery rails: an honest horizontal scroll bar */
 .rail {
   scrollbar-width: thin;
-  scrollbar-color: #a4622e #e4ddd0;
+  scrollbar-color: #111111 #f3f3f3;
 }
 .rail::-webkit-scrollbar {
   height: 9px;
 }
 .rail::-webkit-scrollbar-track {
-  background: #e9e3d7;
+  background: #f3f3f3;
   border-radius: 6px;
   margin: 0 7vw;
 }
 .rail::-webkit-scrollbar-thumb {
-  background: #c99c66;
+  background: #111111;
   border-radius: 6px;
 }
 .rail::-webkit-scrollbar-thumb:hover {
-  background: #a4622e;
+  background: #52525b;
 }
 
-/* Carved gilded frames for the museum pieces — matched to the scanned
-   frames hanging in the 3D building. Layered profile: dark bronze outer
-   edge, beaded gold moulding, bright fillet, then the linen mat. */
+/* Monochrome gallery frames for the project pieces */
 .painting-frame {
   padding: 15px;
   border-radius: 2px;
-  background:
-    /* beading along the moulding */
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 240, 200, 0.22) 0 3px,
-      rgba(90, 58, 18, 0.22) 3px 6px
-    ),
-    /* carved gold body */
-    linear-gradient(135deg, #b8863f 0%, #ecd394 22%, #9c7434 48%, #e6c887 72%, #8a6226 100%);
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.15);
   box-shadow:
-    0 22px 44px rgba(28, 26, 23, 0.22),
-    0 4px 10px rgba(28, 26, 23, 0.14),
-    inset 0 0 0 2px rgba(70, 44, 12, 0.65),
-    inset 0 0 0 4px rgba(255, 244, 208, 0.5),
-    inset 0 0 0 6px rgba(122, 84, 30, 0.45),
-    inset 0 0 0 7px rgba(255, 236, 190, 0.3);
+    0 22px 44px rgba(17, 17, 17, 0.10),
+    0 4px 10px rgba(17, 17, 17, 0.08);
 }
 .painting-mat {
-  background: #faf8f2;
+  background: #ffffff;
   padding: 16px;
-  box-shadow:
-    inset 0 0 0 1px rgba(28, 26, 23, 0.16),
-    inset 0 0 0 2px rgba(200, 168, 110, 0.35),
-    inset 0 0 18px rgba(28, 26, 23, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.12);
 }
 .painting-plaque {
   display: inline-block;
-  border: 1px solid rgba(28, 26, 23, 0.14);
-  background: linear-gradient(180deg, #efe8d8, #e4dac4);
-  box-shadow: 0 1px 2px rgba(28, 26, 23, 0.12);
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  background: #fafafa;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
 }
