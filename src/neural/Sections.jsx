@@ -617,7 +617,7 @@ function Filmstrip({ id, corner, caption, items }) {
                   setOpen(i);
                 }
               }}
-              className="group relative w-[280px] shrink-0 cursor-pointer text-left sm:w-[360px]"
+              className="group relative w-[78vw] shrink-0 cursor-pointer text-left sm:w-[42vw] lg:w-[26vw]"
             >
               <div className="relative aspect-[4/5] transition-transform duration-300 group-hover:-translate-y-1.5">
                 {it.thumb}
