@@ -811,7 +811,7 @@ export function MuseumExhibit() {
       <div className="mx-auto mt-16 max-w-3xl px-8 sm:px-14">
         <ol className="relative border-l border-black/15">
           {chronological.map((e, i) => (
-            <li key={`${e.company}-${e.role}`} className="relative pb-14 pl-8 last:pb-0">
+            <li key={`${e.company}-${e.role}`} className="relative pb-14 pl-4 last:pb-0">
               {/* node on the line */}
               <span className="absolute -left-[6.5px] top-1.5 h-3 w-3 rounded-full border-2 border-black bg-white" />
               <span className="absolute -left-[26px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
