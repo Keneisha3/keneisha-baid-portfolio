@@ -559,16 +559,20 @@ const ART_FRAMES = [
 function FramedThumb({ frame, children }) {
   const [framed, setFramed] = useState(Boolean(frame));
   return (
-    <div className="relative h-full w-full bg-white">
-      {/* the artwork, inset to sit in the frame's window */}
+    <div className="relative h-full w-full">
+      {/* the canvas sits inside the frame's window, with a small white mat so
+          the ornate frame clearly surrounds — and is larger than — the artwork */}
       <div
-        className="absolute overflow-hidden bg-white"
-        style={{
-          inset: framed ? frame.inset : "6%",
-          boxShadow: framed ? "none" : "inset 0 0 0 1px rgba(17,17,17,0.14)",
-        }}
+        className="absolute overflow-hidden"
+        style={{ inset: framed ? frame.inset : "6%" }}
       >
-        <div className="flex h-full w-full items-center justify-center">{children}</div>
+        <div
+          className={`flex h-full w-full items-center justify-center overflow-hidden bg-white ${
+            framed ? "p-[6%]" : "ring-1 ring-[#00000014]"
+          }`}
+        >
+          {children}
+        </div>
       </div>
       {/* the frame on top — white multiplies away, leaving the ornament */}
       {framed && (
@@ -613,15 +617,13 @@ function Filmstrip({ id, corner, caption, items }) {
                   setOpen(i);
                 }
               }}
-              className="group relative w-[240px] shrink-0 cursor-pointer text-left sm:w-[320px]"
+              className="group relative w-[280px] shrink-0 cursor-pointer text-left sm:w-[360px]"
             >
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-white ring-1 ring-[#00000010] transition-all duration-300 group-hover:-translate-y-1 group-hover:ring-[#00000022]">
+              <div className="relative aspect-[4/5] transition-transform duration-300 group-hover:-translate-y-1.5">
                 {it.thumb}
-                <span className="absolute left-2 top-2 font-mono text-[9px] uppercase tracking-[0.2em] text-[#171411]/60">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
               </div>
-              <p className="mt-3 font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-[#171411]">
+              <p className="mt-4 font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-[#171411]">
+                <span className="text-[#b9b2a4]">{String(i + 1).padStart(2, "0")} — </span>
                 {it.title}
               </p>
               <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#a09a8c]">
