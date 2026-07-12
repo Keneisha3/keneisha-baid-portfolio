@@ -540,41 +540,42 @@ const ARTIFACTS = [
 ];
 
 /* ---------- a clean-cut horizontal filmstrip of cards ---------- */
-/* Ornate frame PNGs (transparent, with an empty centre). Drop the files into
-   public/frames/ as frame-1.png … frame-5.png and they'll wrap each project.
-   Until the files exist, a clean fallback border is shown instead. */
+/* Ornate frames — white-background JPGs. `mix-blend-multiply` on a white page
+   drops the white surround + window, leaving only the coloured frame; the
+   artwork shows through the transparent-looking centre. `inset` is the % from
+   each edge to the frame's window (tuned per image's border thickness). */
 const ART_FRAMES = [
-  "/frames/frame-1.png",
-  "/frames/frame-2.png",
-  "/frames/frame-3.png",
-  "/frames/frame-4.png",
-  "/frames/frame-5.png",
+  { src: "/frames/frame-1.jpg", inset: "20% 16%" }, // green baroque
+  { src: "/frames/frame-2.jpg", inset: "17% 15%" }, // periwinkle
+  { src: "/frames/frame-3.jpg", inset: "18% 16%" }, // sky blue
+  { src: "/frames/frame-4.jpg", inset: "22% 20%" }, // antique white
+  { src: "/frames/frame-5.jpg", inset: "19% 17%" }, // navy + gold
 ];
 
-/* Puts `children` inside an ornate frame image; the artwork sits in the frame's
-   open centre. `inset` is the % of the frame that is border on each side. */
-function FramedThumb({ frameSrc, inset = 20, children }) {
-  const [framed, setFramed] = useState(Boolean(frameSrc));
+/* Puts `children` inside an ornate frame image; the artwork sits in the
+   frame's window. */
+function FramedThumb({ frame, children }) {
+  const [framed, setFramed] = useState(Boolean(frame));
   return (
     <div className="relative h-full w-full bg-white">
       {/* the artwork, inset to sit in the frame's window */}
       <div
         className="absolute overflow-hidden bg-white"
         style={{
-          inset: framed ? `${inset}%` : "6%",
+          inset: framed ? frame.inset : "6%",
           boxShadow: framed ? "none" : "inset 0 0 0 1px rgba(17,17,17,0.14)",
         }}
       >
         <div className="flex h-full w-full items-center justify-center">{children}</div>
       </div>
-      {/* the frame on top */}
+      {/* the frame on top — white multiplies away, leaving the ornament */}
       {framed && (
         <img
-          src={frameSrc}
+          src={frame.src}
           alt=""
           aria-hidden="true"
           onError={() => setFramed(false)}
-          className="pointer-events-none absolute inset-0 h-full w-full object-fill"
+          className="pointer-events-none absolute inset-0 h-full w-full object-fill mix-blend-multiply"
         />
       )}
     </div>
@@ -671,7 +672,7 @@ export function ProjectNeurons() {
       title: p.title,
       meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
       thumb: (
-        <FramedThumb frameSrc={ART_FRAMES[i % ART_FRAMES.length]}>
+        <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
           <div className="h-full w-full overflow-hidden">
             <div className="min-h-[150px]">{preview}</div>
           </div>
