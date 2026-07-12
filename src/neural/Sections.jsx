@@ -544,12 +544,14 @@ const ARTIFACTS = [
    drops the white surround + window, leaving only the coloured frame; the
    artwork shows through the transparent-looking centre. `inset` is the % from
    each edge to the frame's window (tuned per image's border thickness). */
+/* Images are normalized to identical 800x1000 canvases with the frame filling
+   edge-to-edge; each inset is that frame's measured window (top right bottom left). */
 const ART_FRAMES = [
-  { src: "/frames/frame-1.jpg", inset: "20% 16%" }, // green baroque
-  { src: "/frames/frame-2.jpg", inset: "17% 15%" }, // periwinkle
-  { src: "/frames/frame-3.jpg", inset: "18% 16%" }, // sky blue
-  { src: "/frames/frame-4.jpg", inset: "22% 20%" }, // antique white
-  { src: "/frames/frame-5.jpg", inset: "19% 17%" }, // navy + gold
+  { src: "/frames/frame-1.jpg", inset: "21.3% 26.3% 21% 25.9%" }, // green baroque
+  { src: "/frames/frame-2.jpg", inset: "13.2% 17.4% 13.4% 17.4%" }, // periwinkle
+  { src: "/frames/frame-3.jpg", inset: "16.6% 20% 16.1% 19.8%" }, // sky blue
+  { src: "/frames/frame-4.jpg", inset: "20% 21.6% 19.7% 20.4%" }, // antique white
+  { src: "/frames/frame-5.jpg", inset: "12% 17% 12.4% 16.8%" }, // navy + gold
 ];
 
 /* Puts `children` inside an ornate frame image; the artwork sits in the
