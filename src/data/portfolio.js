@@ -242,16 +242,24 @@ export const PLAYLIST = {
   caption: "What's usually playing while I work.",
 };
 
-// Favourite songs for the 3D cover stack. Album art + 30s previews load
-// automatically from Apple's iTunes Search API by title + artist — just edit
-// this list and the covers follow. (These are placeholders — swap for yours.)
+// Favourite songs for the 3D cover stack — pulled from my Spotify playlist.
+// Album art + 30s previews load automatically from Apple's iTunes Search API
+// by title + artist, so editing this list is all it takes.
 export const FAVE_SONGS = [
-  { title: "Hold On, We're Going Home", artist: "Drake" },
-  { title: "Passionfruit", artist: "Drake" },
-  { title: "Innerbloom", artist: "RÜFÜS DU SOL" },
-  { title: "Pink + White", artist: "Frank Ocean" },
-  { title: "Cry For Me", artist: "The Weeknd" },
-  { title: "Come Together", artist: "The Beatles" },
+  { title: "Headlines", artist: "Drake" },
+  { title: "Shabang", artist: "Drake" },
+  { title: "Silence - John Summit Remix", artist: "Delerium, Sarah McLachlan, John Summit" },
+  { title: "Dreams - 2004 Remaster", artist: "Fleetwood Mac" },
+  { title: "I'm On Fire", artist: "Bruce Springsteen" },
+  { title: "Gypsy", artist: "Fleetwood Mac" },
+  { title: "Piece Of Heaven", artist: "Tame Impala" },
+  { title: "Everlasting Light", artist: "The Black Keys" },
+  { title: "Mr. Brightside", artist: "The Killers" },
+  { title: "E85", artist: "Don Toliver" },
+  { title: "COMË N GO", artist: "Yeat" },
+  { title: "Purple Rain", artist: "Prince" },
+  { title: "Return of the Mack", artist: "Mark Morrison" },
+  { title: "Wicked Game", artist: "Chris Isaak" },
 ];
 
 export const INTERESTS = [

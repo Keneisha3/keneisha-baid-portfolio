@@ -923,8 +923,15 @@ function itunesLookup(term) {
   });
 }
 
-/* A tilted 3D stack of album covers; click one to flatten it and play a
-   30-second preview. */
+/* clean a title for search: drop "- 2004 Remaster", "- ... Remix/Version" etc. */
+function searchTerm(s) {
+  const t = s.title.replace(/\s*-\s*.*$/i, "").trim();
+  const a = s.artist.split(",")[0].trim();
+  return `${t} ${a}`;
+}
+
+/* A tilted, scrollable 3D stack of album covers. Hover (or scroll a cover to
+   centre) flattens and lifts it; click plays a 30-second preview. */
 function AlbumStack({ songs }) {
   const [tracks, setTracks] = useState(() =>
     songs.map((s) => ({ ...s, art: null, preview: null }))
@@ -937,7 +944,7 @@ function AlbumStack({ songs }) {
     let alive = true;
     Promise.all(
       songs.map(async (s) => {
-        const r = await itunesLookup(`${s.title} ${s.artist}`);
+        const r = await itunesLookup(searchTerm(s));
         return {
           ...s,
           art: r?.artworkUrl100?.replace("100x100bb", "600x600bb") || null,
@@ -972,71 +979,85 @@ function AlbumStack({ songs }) {
       a.src = t.preview;
       a.play().catch(() => {});
       setPlaying(i);
-    } else if (t.preview === null && t.art === null) {
-      // still loading — ignore
     }
   };
 
   return (
-    <div className="rounded-xl bg-[#0b0b0d] p-5 ring-1 ring-black/20" style={{ perspective: "1100px" }}>
-      <div className="flex flex-col items-center gap-3" style={{ transformStyle: "preserve-3d" }}>
-        {tracks.map((t, i) => {
-          const isActive = active === i;
-          const isPlaying = playing === i;
-          return (
-            <button
-              key={t.title}
-              type="button"
-              onClick={() => toggle(i)}
-              onMouseEnter={() => setActive(i)}
-              onMouseLeave={() => setActive(null)}
-              onFocus={() => setActive(i)}
-              onBlur={() => setActive(null)}
-              className="group relative w-full max-w-[420px] focus:outline-none"
-              style={{
-                transform: isActive
-                  ? "rotateX(0deg) translateZ(40px) scale(1.02)"
-                  : "rotateX(46deg)",
-                transformOrigin: "center bottom",
-                transition: "transform 400ms cubic-bezier(0.22,1,0.36,1)",
-                marginBottom: isActive ? "0px" : "-34px",
-                zIndex: isActive ? 50 : i,
-              }}
-            >
-              {/* the cover */}
-              <div
-                className="relative aspect-[16/6] w-full overflow-hidden rounded-md ring-1 ring-white/10"
+    <div className="rounded-xl bg-[#0b0b0d] p-4 ring-1 ring-black/20">
+      {/* scrollable viewport — the 3D column lives inside */}
+      <div
+        className="album-scroll h-[430px] overflow-y-auto overflow-x-hidden px-2 py-6"
+        style={{ perspective: "1000px" }}
+      >
+        <div className="flex flex-col items-center" style={{ transformStyle: "preserve-3d" }}>
+          {tracks.map((t, i) => {
+            const isActive = active === i;
+            const isPlaying = playing === i;
+            return (
+              <button
+                key={t.title + i}
+                type="button"
+                onClick={() => toggle(i)}
+                onMouseEnter={() => setActive(i)}
+                onMouseLeave={() => setActive((cur) => (cur === i ? null : cur))}
+                onFocus={() => setActive(i)}
+                onBlur={() => setActive((cur) => (cur === i ? null : cur))}
+                className="group relative w-full max-w-[440px] shrink-0 focus:outline-none"
                 style={{
-                  backgroundImage: t.art ? `url(${t.art})` : "none",
-                  backgroundColor: t.art ? "transparent" : "#1c1c22",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center 35%",
-                  boxShadow: isActive
-                    ? "0 26px 50px rgba(0,0,0,0.55)"
-                    : "0 14px 26px rgba(0,0,0,0.5)",
+                  transform: isActive
+                    ? "rotateX(0deg) translateZ(60px) scale(1.04)"
+                    : "rotateX(52deg) translateZ(0)",
+                  transformOrigin: "center bottom",
+                  transition:
+                    "transform 450ms cubic-bezier(0.22,1,0.36,1), margin 450ms cubic-bezier(0.22,1,0.36,1)",
+                  marginBottom: isActive ? "12px" : "-40px",
+                  marginTop: isActive ? "12px" : "0px",
+                  zIndex: isActive ? 50 : i,
                 }}
               >
-                {/* label bar */}
-                <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/75 to-transparent px-3 pb-6 pt-2">
-                  <span className="truncate font-sans text-[13px] font-semibold text-white">
-                    {t.title}
-                    <span className="ml-1.5 font-normal text-white/70">{t.artist}</span>
-                  </span>
+                <div
+                  className="relative aspect-[16/7] w-full overflow-hidden rounded-md ring-1 ring-white/10"
+                  style={{
+                    backgroundImage: t.art ? `url(${t.art})` : "none",
+                    backgroundColor: t.art ? "transparent" : "#1c1c22",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center 38%",
+                    boxShadow: isActive
+                      ? "0 30px 55px rgba(0,0,0,0.6)"
+                      : "0 16px 28px rgba(0,0,0,0.55)",
+                    filter: isActive ? "brightness(1.06)" : "brightness(0.9)",
+                    transition: "filter 400ms ease, box-shadow 400ms ease",
+                  }}
+                >
+                  {/* subtle sheen sweep on hover */}
+                  <span
+                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{
+                      background:
+                        "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)",
+                    }}
+                  />
+                  {/* label bar */}
+                  <div className="absolute inset-x-0 top-0 flex items-center gap-2 bg-gradient-to-b from-black/80 to-transparent px-3 pb-6 pt-2">
+                    <span className="truncate font-sans text-[13px] font-semibold text-white drop-shadow">
+                      {t.title.replace(/\s*-\s*.*$/i, "")}
+                      <span className="ml-1.5 font-normal text-white/70">{t.artist.split(",")[0]}</span>
+                    </span>
+                  </div>
+                  {isActive && (
+                    <span className="absolute bottom-2 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[11px] text-black">
+                      {isPlaying ? "❚❚" : t.preview ? "▶" : "♪"}
+                    </span>
+                  )}
                 </div>
-                {/* play indicator when flattened */}
-                {isActive && (
-                  <span className="absolute bottom-2 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[12px] text-black">
-                    {isPlaying ? "❚❚" : "▶"}
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <audio ref={audioRef} preload="none" />
-      <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
-        hover to lift · click to play a preview
+      <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
+        scroll the stack · hover to lift · click to play
       </p>
     </div>
   );
