@@ -3,6 +3,7 @@ import {
   ProjectNeurons,
   SkillTerminals,
   MuseumExhibit,
+  AboutMe,
   CoreTerminal,
 } from "./neural/Sections";
 import { Sparks, useHum, MindNav } from "./neural/Fx";
@@ -92,6 +93,7 @@ export default function App() {
     <>
       <ProjectNeurons />
       <MuseumExhibit />
+      <AboutMe />
       <SkillTerminals />
       <CoreTerminal />
     </>

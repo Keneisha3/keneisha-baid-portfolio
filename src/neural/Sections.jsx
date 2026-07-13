@@ -2,7 +2,7 @@
    bench instruments, not web cards. Asymmetric, typographic, hairline rules.
    Every project is a different artifact with its own interaction. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST } from "../data/portfolio";
+import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS } from "../data/portfolio";
 
 /* The eleven stations of the walk: six project paintings, five rooms. */
 export const STATION_COUNT = () => PROJECTS.length + EXPERIENCE.length;
@@ -888,6 +888,120 @@ export function MuseumExhibit() {
       <p className="mt-10 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
         Capital Power · Greenhouse Juice · Pratt &amp; Whitney · Creospark — 2023 to 2026.
       </p>
+    </section>
+  );
+}
+
+/* =====================================================================
+   ABOUT — a short bio, an interactive music player, and the things
+   that fill the hours outside the desk.
+===================================================================== */
+/* one interest card — image with a caption that lifts in on hover/tap */
+function InterestCard({ item, active, onToggle }) {
+  const [ok, setOk] = useState(true);
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="group relative aspect-[4/5] w-full overflow-hidden rounded-[3px] bg-[#f4f2ee] text-left ring-1 ring-black/10 transition-transform duration-300 hover:-translate-y-1"
+    >
+      {ok ? (
+        <img
+          src={item.img}
+          alt={item.title}
+          loading="lazy"
+          onError={() => setOk(false)}
+          className="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e6e2d8]" />
+      )}
+      {/* label bar always visible at the bottom */}
+      <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2.5 pt-8">
+        <span className="font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white">
+          {item.title}
+        </span>
+        <span className="font-mono text-[14px] leading-none text-white/70">
+          {active ? "–" : "+"}
+        </span>
+      </span>
+      {/* the blurb slides up over the image when open */}
+      <span
+        className="absolute inset-0 flex items-end bg-black/70 p-4 text-[13px] leading-[1.6] text-white transition-opacity duration-300"
+        style={{ opacity: active ? 1 : 0 }}
+      >
+        {item.blurb}
+      </span>
+    </button>
+  );
+}
+
+export function AboutMe() {
+  const [open, setOpen] = useState(null);
+  return (
+    <section id="about" className="relative min-h-screen bg-white py-16">
+      {/* corner labels */}
+      <div className="flex items-start justify-between px-8 sm:px-14">
+        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+          About
+        </span>
+        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+          Off the clock
+        </span>
+      </div>
+
+      <div className="mx-auto mt-16 grid max-w-5xl gap-12 px-8 sm:px-14 lg:grid-cols-2">
+        {/* bio + music */}
+        <div>
+          <h2 className="font-sans text-2xl font-medium leading-snug text-black sm:text-3xl">
+            Engineer by training,
+            <br />
+            <span className="text-black/45">builder by instinct.</span>
+          </h2>
+          <p className="mt-5 max-w-md text-[15px] leading-[1.75] text-black/70">
+            I&rsquo;m a Management Engineering student at Waterloo who likes turning
+            messy problems into things people can actually use — data pipelines,
+            models, and interfaces. When I&rsquo;m not building, I&rsquo;m usually in
+            the pool, on the guitar, or somewhere with good espresso.
+          </p>
+
+          {/* interactive music */}
+          <div className="mt-9">
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+              ♪ {PLAYLIST.caption}
+            </p>
+            <div className="overflow-hidden rounded-xl ring-1 ring-black/10">
+              <iframe
+                title="Keneisha's playlist"
+                src={`https://open.spotify.com/embed/${PLAYLIST.type}/${PLAYLIST.spotifyId}?utm_source=generator&theme=0`}
+                width="100%"
+                height="352"
+                frameBorder="0"
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                className="block"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* interactive interests grid */}
+        <div>
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+            a few of my favourite things — tap to peek
+          </p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {INTERESTS.map((it, i) => (
+              <InterestCard
+                key={it.title}
+                item={it}
+                active={open === i}
+                onToggle={() => setOpen(open === i ? null : i)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
