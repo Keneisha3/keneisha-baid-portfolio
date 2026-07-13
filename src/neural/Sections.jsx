@@ -796,6 +796,8 @@ function JobThumbnail({ src, alt, company, period }) {
 
 export function MuseumExhibit() {
   const chronological = [...EXPERIENCE].reverse(); // oldest → newest
+  // newest role open by default; click a node/row to expand another
+  const [active, setActive] = useState(chronological.length - 1);
   return (
     <section id="experience" className="relative min-h-screen bg-white py-16">
       {/* corner labels */}
@@ -804,44 +806,85 @@ export function MuseumExhibit() {
           Experience
         </span>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
-          {String(chronological.length).padStart(2, "0")} roles
+          {String(chronological.length).padStart(2, "0")} roles · tap to expand
         </span>
       </div>
 
       <div className="mx-auto mt-16 max-w-3xl px-8 sm:px-14">
         <ol className="relative border-l border-black/15">
-          {chronological.map((e, i) => (
-            <li key={`${e.company}-${e.role}`} className="relative pb-14 pl-4 last:pb-0">
-              {/* node on the line */}
-              <span className="absolute -left-[6.5px] top-1.5 h-3 w-3 rounded-full border-2 border-black bg-white" />
-              <span className="absolute -left-[26px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
-                {String(chronological.length - i).padStart(2, "0")}
-              </span>
+          {chronological.map((e, i) => {
+            const open = active === i;
+            return (
+              <li key={`${e.company}-${e.role}`} className="relative pb-8 pl-6 last:pb-0">
+                {/* node on the line — fills when active */}
+                <span
+                  className={`absolute -left-[6.5px] top-1.5 h-3 w-3 rounded-full border-2 border-black transition-colors duration-300 ${
+                    open ? "bg-black" : "bg-white"
+                  }`}
+                />
+                <span className="absolute -left-[28px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
+                  {String(chronological.length - i).padStart(2, "0")}
+                </span>
 
-              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50">
-                {e.period}
-              </p>
-              <h3 className="mt-1.5 font-sans text-xl font-medium text-black">
-                {e.role}
-                <span className="text-black/45"> · {e.company}</span>
-              </h3>
+                {/* the always-visible header row toggles this entry */}
+                <button
+                  type="button"
+                  onClick={() => setActive(open ? -1 : i)}
+                  className="group block w-full text-left"
+                  aria-expanded={open}
+                >
+                  <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50">
+                    {e.period}
+                  </p>
+                  <h3
+                    className={`mt-1.5 flex items-center gap-2 font-sans text-xl font-medium transition-colors ${
+                      open ? "text-black" : "text-black/55 group-hover:text-black"
+                    }`}
+                  >
+                    <span>
+                      {e.role}
+                      <span className="text-black/40"> · {e.company}</span>
+                    </span>
+                    <span
+                      className={`ml-auto font-mono text-sm text-black/40 transition-transform duration-300 ${
+                        open ? "rotate-45" : "rotate-0 group-hover:text-black"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </h3>
+                </button>
 
-              {e.img && <JobPhoto src={e.img} alt={e.company} />}
-
-              <ul className="mt-3 space-y-2.5">
-                {e.bullets.map((b, j) => (
-                  <li key={j} className="flex gap-3 text-[14.5px] leading-[1.7] text-black/70">
-                    <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-black/40" />
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+                {/* the expanding detail */}
+                <div
+                  className="grid transition-all duration-500 ease-out"
+                  style={{
+                    gridTemplateRows: open ? "1fr" : "0fr",
+                    opacity: open ? 1 : 0,
+                  }}
+                >
+                  <div className="overflow-hidden">
+                    <div className="pt-4">
+                      {e.img && <JobPhoto src={e.img} alt={e.company} />}
+                      <ul className="space-y-2.5">
+                        {e.bullets.map((b, j) => (
+                          <li key={j} className="flex gap-3 text-[14.5px] leading-[1.7] text-black/70">
+                            <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-black/40" />
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       </div>
 
-      <p className="mt-6 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
+      <p className="mt-10 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
         Capital Power · Greenhouse Juice · Pratt &amp; Whitney · Creospark — 2023 to 2026.
       </p>
     </section>
