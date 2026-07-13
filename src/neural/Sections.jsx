@@ -2,7 +2,7 @@
    bench instruments, not web cards. Asymmetric, typographic, hairline rules.
    Every project is a different artifact with its own interaction. */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS } from "../data/portfolio";
+import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS, FAVE_SONGS } from "../data/portfolio";
 
 /* The eleven stations of the walk: six project paintings, five rooms. */
 export const STATION_COUNT = () => PROJECTS.length + EXPERIENCE.length;
@@ -896,6 +896,151 @@ export function MuseumExhibit() {
    ABOUT — a short bio, an interactive music player, and the things
    that fill the hours outside the desk.
 ===================================================================== */
+
+/* Pull album art + a 30s preview from Apple's public iTunes Search API.
+   JSONP (script callback) sidesteps CORS; no key required. */
+function itunesLookup(term) {
+  return new Promise((resolve) => {
+    const cb = "itcb_" + Math.random().toString(36).slice(2);
+    const s = document.createElement("script");
+    const done = (data) => {
+      resolve(data?.results?.[0] || null);
+      delete window[cb];
+      s.remove();
+    };
+    window[cb] = done;
+    s.onerror = () => {
+      resolve(null);
+      delete window[cb];
+      s.remove();
+    };
+    s.src =
+      "https://itunes.apple.com/search?media=music&entity=song&limit=1&callback=" +
+      cb +
+      "&term=" +
+      encodeURIComponent(term);
+    document.body.appendChild(s);
+  });
+}
+
+/* A tilted 3D stack of album covers; click one to flatten it and play a
+   30-second preview. */
+function AlbumStack({ songs }) {
+  const [tracks, setTracks] = useState(() =>
+    songs.map((s) => ({ ...s, art: null, preview: null }))
+  );
+  const [active, setActive] = useState(null); // hovered/focused card
+  const [playing, setPlaying] = useState(null);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(
+      songs.map(async (s) => {
+        const r = await itunesLookup(`${s.title} ${s.artist}`);
+        return {
+          ...s,
+          art: r?.artworkUrl100?.replace("100x100bb", "600x600bb") || null,
+          preview: r?.previewUrl || null,
+        };
+      })
+    ).then((t) => {
+      if (alive) setTracks(t);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []); // eslint-disable-line
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    const onEnd = () => setPlaying(null);
+    a.addEventListener("ended", onEnd);
+    return () => a.removeEventListener("ended", onEnd);
+  }, []);
+
+  const toggle = (i) => {
+    const a = audioRef.current;
+    const t = tracks[i];
+    if (playing === i) {
+      a?.pause();
+      setPlaying(null);
+      return;
+    }
+    if (a && t.preview) {
+      a.src = t.preview;
+      a.play().catch(() => {});
+      setPlaying(i);
+    } else if (t.preview === null && t.art === null) {
+      // still loading — ignore
+    }
+  };
+
+  return (
+    <div className="rounded-xl bg-[#0b0b0d] p-5 ring-1 ring-black/20" style={{ perspective: "1100px" }}>
+      <div className="flex flex-col items-center gap-3" style={{ transformStyle: "preserve-3d" }}>
+        {tracks.map((t, i) => {
+          const isActive = active === i;
+          const isPlaying = playing === i;
+          return (
+            <button
+              key={t.title}
+              type="button"
+              onClick={() => toggle(i)}
+              onMouseEnter={() => setActive(i)}
+              onMouseLeave={() => setActive(null)}
+              onFocus={() => setActive(i)}
+              onBlur={() => setActive(null)}
+              className="group relative w-full max-w-[420px] focus:outline-none"
+              style={{
+                transform: isActive
+                  ? "rotateX(0deg) translateZ(40px) scale(1.02)"
+                  : "rotateX(46deg)",
+                transformOrigin: "center bottom",
+                transition: "transform 400ms cubic-bezier(0.22,1,0.36,1)",
+                marginBottom: isActive ? "0px" : "-34px",
+                zIndex: isActive ? 50 : i,
+              }}
+            >
+              {/* the cover */}
+              <div
+                className="relative aspect-[16/6] w-full overflow-hidden rounded-md ring-1 ring-white/10"
+                style={{
+                  backgroundImage: t.art ? `url(${t.art})` : "none",
+                  backgroundColor: t.art ? "transparent" : "#1c1c22",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center 35%",
+                  boxShadow: isActive
+                    ? "0 26px 50px rgba(0,0,0,0.55)"
+                    : "0 14px 26px rgba(0,0,0,0.5)",
+                }}
+              >
+                {/* label bar */}
+                <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/75 to-transparent px-3 pb-6 pt-2">
+                  <span className="truncate font-sans text-[13px] font-semibold text-white">
+                    {t.title}
+                    <span className="ml-1.5 font-normal text-white/70">{t.artist}</span>
+                  </span>
+                </div>
+                {/* play indicator when flattened */}
+                {isActive && (
+                  <span className="absolute bottom-2 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[12px] text-black">
+                    {isPlaying ? "❚❚" : "▶"}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <audio ref={audioRef} preload="none" />
+      <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
+        hover to lift · click to play a preview
+      </p>
+    </div>
+  );
+}
 /* one interest card — image with a caption that lifts in on hover/tap */
 function InterestCard({ item, active, onToggle }) {
   const [ok, setOk] = useState(true);
@@ -965,23 +1110,22 @@ export function AboutMe() {
             the pool, on the guitar, or somewhere with good espresso.
           </p>
 
-          {/* interactive music */}
+          {/* interactive music — a 3D stack of favourite covers */}
           <div className="mt-9">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-              ♪ {PLAYLIST.caption}
-            </p>
-            <div className="overflow-hidden rounded-xl ring-1 ring-black/10">
-              <iframe
-                title="Keneisha's playlist"
-                src={`https://open.spotify.com/embed/${PLAYLIST.type}/${PLAYLIST.spotifyId}?utm_source=generator&theme=0`}
-                width="100%"
-                height="352"
-                frameBorder="0"
-                loading="lazy"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                className="block"
-              />
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+                ♪ on heavy rotation
+              </p>
+              <a
+                href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+              >
+                full playlist ↗
+              </a>
             </div>
+            <AlbumStack songs={FAVE_SONGS} />
           </div>
         </div>
 

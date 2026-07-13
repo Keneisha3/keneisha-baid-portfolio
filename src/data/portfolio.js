@@ -242,6 +242,18 @@ export const PLAYLIST = {
   caption: "What's usually playing while I work.",
 };
 
+// Favourite songs for the 3D cover stack. Album art + 30s previews load
+// automatically from Apple's iTunes Search API by title + artist — just edit
+// this list and the covers follow. (These are placeholders — swap for yours.)
+export const FAVE_SONGS = [
+  { title: "Hold On, We're Going Home", artist: "Drake" },
+  { title: "Passionfruit", artist: "Drake" },
+  { title: "Innerbloom", artist: "RÜFÜS DU SOL" },
+  { title: "Pink + White", artist: "Frank Ocean" },
+  { title: "Cry For Me", artist: "The Weeknd" },
+  { title: "Come Together", artist: "The Beatles" },
+];
+
 export const INTERESTS = [
   {
     title: "Swimming",
