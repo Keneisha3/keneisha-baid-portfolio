@@ -795,9 +795,9 @@ function JobThumbnail({ src, alt, company, period }) {
 }
 
 export function MuseumExhibit() {
-  const chronological = [...EXPERIENCE].reverse(); // oldest → newest
+  const chronological = [...EXPERIENCE]; // newest → oldest (newest at top)
   // newest role open by default; click a node/row to expand another
-  const [active, setActive] = useState(chronological.length - 1);
+  const [active, setActive] = useState(0);
   return (
     <section id="experience" className="relative min-h-screen bg-white py-16">
       {/* corner labels */}
@@ -825,6 +825,7 @@ export function MuseumExhibit() {
                 <span className="absolute -left-[28px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
                   {String(chronological.length - i).padStart(2, "0")}
                 </span>
+                {/* number: newest = highest, oldest = 01 */}
 
                 {/* the always-visible header row toggles this entry */}
                 <button
