@@ -906,7 +906,7 @@ const VINYL_IMG = "/music/vinyl.png";
 /* Top piece: the wooden player photo (static housing) with a real record
    spinning on its platter. Falls back to a plain spinning CSS disc if the
    images are missing. The overlay position is tuned to the photo's platter. */
-const PLATTER = { x: "44%", y: "48%", size: "60%" }; // centre + diameter on the photo
+const PLATTER = { x: "50.5%", y: "47.5%", size: "61%" }; // measured from the photo's label centroid
 function TopTurntable() {
   const [ok, setOk] = useState(true);
   if (!ok) return <Vinyl spin />;
