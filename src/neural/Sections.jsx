@@ -897,6 +897,44 @@ export function MuseumExhibit() {
    that fill the hours outside the desk.
 ===================================================================== */
 
+/* Optional real images — drop these files in and they replace the CSS discs:
+   public/music/turntable.png  → the record player shown at the top
+   public/music/vinyl.png      → the record peeking behind each album cover */
+const TURNTABLE_IMG = "/music/turntable.png";
+const VINYL_IMG = "/music/vinyl.png";
+
+/* Top piece: the turntable photo if present, else a plain spinning CSS disc. */
+function TopTurntable() {
+  const [ok, setOk] = useState(true);
+  if (ok)
+    return (
+      <img
+        src={TURNTABLE_IMG}
+        alt=""
+        aria-hidden="true"
+        onError={() => setOk(false)}
+        className="h-full w-full object-contain"
+      />
+    );
+  return <Vinyl spin />;
+}
+
+/* The disc behind an album cover: the vinyl photo if present, else CSS disc. */
+function AlbumDisc({ spin }) {
+  const [ok, setOk] = useState(true);
+  if (ok)
+    return (
+      <img
+        src={VINYL_IMG}
+        alt=""
+        aria-hidden="true"
+        onError={() => setOk(false)}
+        className={`h-full w-full object-contain ${spin ? "vinyl-spin" : ""}`}
+      />
+    );
+  return <Vinyl spin={spin} />;
+}
+
 /* A vinyl record: grooved black disc, a sheen sweep, an album-art centre
    label, and a spindle hole. Fills its parent; spins when `spin`. */
 function Vinyl({ art, spin = false }) {
@@ -1004,16 +1042,18 @@ function AlbumStack({ songs }) {
           {/* turntable — a spinning record whose lower half tucks behind the
               first cover, like a disc slid into its sleeve */}
           <div
-            className="pointer-events-none relative flex w-full max-w-[260px] justify-center"
+            className="pointer-events-none relative flex w-full max-w-[260px] justify-center overflow-hidden"
             style={{
               transform: "rotateX(48deg)",
               transformOrigin: "center bottom",
-              marginBottom: "-90px",
+              // only a thin sliver of the disc/player peeks above the first cover
+              height: "34px",
+              marginBottom: "-4px",
               zIndex: 0,
             }}
           >
-            <div className="relative aspect-square w-[74%]">
-              <Vinyl spin />
+            <div className="relative aspect-square w-[72%] shrink-0">
+              <TopTurntable />
             </div>
           </div>
 
@@ -1050,7 +1090,7 @@ function AlbumStack({ songs }) {
                       transition: "right 500ms cubic-bezier(0.22,1,0.36,1)",
                     }}
                   >
-                    <Vinyl art={t.art} spin={isActive} />
+                    <AlbumDisc spin={isActive} />
                   </div>
                   {/* thickness — an extruded edge sitting just behind the face */}
                   <div
