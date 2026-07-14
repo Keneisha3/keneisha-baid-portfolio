@@ -182,7 +182,7 @@ const NAV = [
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Skills" },
   { id: "contact", label: "Contact" },
-  { id: "life", label: "Life" },
+  { id: "life", label: "About Me" },
 ];
 
 export function MindNav({ humOn, toggleHum }) {

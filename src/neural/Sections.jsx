@@ -1197,7 +1197,7 @@ export function AboutMe() {
       {/* corner labels */}
       <div className="flex items-start justify-between px-8 sm:px-14">
         <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
-          About
+          About Me
         </span>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
           Off the clock
