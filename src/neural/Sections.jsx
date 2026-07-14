@@ -748,9 +748,6 @@ export function SkillTerminals() {
           </div>
         ))}
       </div>
-      <p className={`mt-8 font-mono text-[10px] uppercase tracking-[0.25em] ${FAINT}`}>
-        an honest inventory — several still being learned
-      </p>
     </section>
   );
 }
