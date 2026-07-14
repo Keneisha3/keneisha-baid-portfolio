@@ -897,6 +897,49 @@ export function MuseumExhibit() {
    that fill the hours outside the desk.
 ===================================================================== */
 
+/* A vinyl record: grooved black disc, a sheen sweep, an album-art centre
+   label, and a spindle hole. Fills its parent; spins when `spin`. */
+function Vinyl({ art, spin = false }) {
+  return (
+    <div className={`absolute inset-0 rounded-full ${spin ? "vinyl-spin" : ""}`}>
+      {/* grooves */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          background:
+            "repeating-radial-gradient(circle at 50% 50%, #050505 0px, #050505 1.4px, #1b1b1b 2.8px, #131313 4.2px)",
+          boxShadow:
+            "inset 0 0 26px rgba(0,0,0,0.9), 0 12px 26px rgba(0,0,0,0.6)",
+        }}
+      />
+      {/* light sheen */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          background:
+            "conic-gradient(from 210deg, rgba(255,255,255,0.10), transparent 22%, rgba(255,255,255,0.12) 50%, transparent 74%, rgba(255,255,255,0.10))",
+        }}
+      />
+      {/* centre label = album art */}
+      <div
+        className="absolute overflow-hidden rounded-full ring-1 ring-black/40"
+        style={{
+          inset: "33%",
+          backgroundImage: art ? `url(${art})` : "none",
+          backgroundColor: art ? "transparent" : "#b23b3b",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      {/* spindle hole */}
+      <div
+        className="absolute rounded-full bg-[#0b0b0d] ring-1 ring-white/15"
+        style={{ inset: "47.5%" }}
+      />
+    </div>
+  );
+}
+
 /* A scrollable 3D stack of real album covers (art + previews baked from the
    Spotify playlist). Each cover is a slab with visible thickness; hover lifts
    and squares it up, click plays the 30-second preview. */
@@ -958,6 +1001,22 @@ function AlbumStack({ songs }) {
           className="flex flex-col items-center"
           style={{ transformStyle: "preserve-3d" }}
         >
+          {/* turntable — a spinning record whose lower half tucks behind the
+              first cover, like a disc slid into its sleeve */}
+          <div
+            className="pointer-events-none relative flex w-full max-w-[260px] justify-center"
+            style={{
+              transform: "rotateX(48deg)",
+              transformOrigin: "center bottom",
+              marginBottom: "-58px",
+              zIndex: 0,
+            }}
+          >
+            <div className="relative aspect-square w-[74%]">
+              <Vinyl art={songs[0]?.art} spin />
+            </div>
+          </div>
+
           {songs.map((t, i) => {
             const isActive = active === i;
             const isPlaying = playing === i;
@@ -975,11 +1034,24 @@ function AlbumStack({ songs }) {
                   transition: "transform 480ms cubic-bezier(0.22,1,0.36,1)",
                   // fixed overlap — never reflows on hover, so hit-mapping stays stable
                   marginBottom: "-86px",
-                  zIndex: isActive ? 50 : i,
+                  zIndex: isActive ? 50 : i + 1,
                 }}
               >
                 {/* the slab: a square cover with a thick side edge for depth */}
                 <div className="relative aspect-square w-full" style={{ transformStyle: "preserve-3d" }}>
+                  {/* the CD, peeking from the right of the sleeve — slides out
+                      and spins when the card is active */}
+                  <div
+                    className="absolute aspect-square"
+                    style={{
+                      top: "7%",
+                      height: "86%",
+                      right: isActive ? "-30%" : "-15%",
+                      transition: "right 500ms cubic-bezier(0.22,1,0.36,1)",
+                    }}
+                  >
+                    <Vinyl art={t.art} spin={isActive} />
+                  </div>
                   {/* thickness — an extruded edge sitting just behind the face */}
                   <div
                     className="absolute inset-0 rounded-[5px] bg-black/70"
