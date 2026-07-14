@@ -118,8 +118,8 @@ function BoredShark() {
         onError={() => setOk(false)}
         className="w-full transition-transform duration-300 group-hover:-translate-y-1"
       />
-      {/* the word, out of the mouth (left side of the shark) */}
-      <span className="absolute left-[3%] top-[38%] -rotate-6 font-cursive text-2xl font-bold text-[#171411] drop-shadow-sm sm:text-3xl">
+      {/* the word, spoken out of the open mouth */}
+      <span className="absolute left-[15%] top-[46%] -rotate-6 font-cursive text-2xl font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.9)] sm:text-3xl">
         bored?
       </span>
     </a>
