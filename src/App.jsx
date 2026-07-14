@@ -110,8 +110,8 @@ function BoredShark() {
         className="w-full transition-transform duration-300 group-hover:-translate-y-1"
       />
       {/* the words, spoken out of the open mouth */}
-      <span className="absolute left-[10%] top-[44%] w-[58%] -rotate-6 font-mono text-[12px] font-semibold uppercase leading-tight tracking-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95)] sm:text-[15px]">
-        Bored? Click me.
+      <span className="absolute left-[14%] top-[60%] w-[44%] -rotate-6 font-mono text-[12px] font-semibold leading-tight tracking-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95)] sm:text-[15px]">
+        click me
       </span>
     </a>
   );
