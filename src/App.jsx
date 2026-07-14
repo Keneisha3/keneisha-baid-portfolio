@@ -53,21 +53,25 @@ function Hero() {
           </a>
         </div>
 
-        {/* the name, dead centre, wide and thin, with a quiet scroll arrow */}
-        <div className="flex h-full flex-col items-center justify-center px-6">
+        {/* the name, dead centre, wide and thin */}
+        <div className="flex h-full items-center justify-center px-6">
           <h1 className="rise select-none text-center font-wordmark text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
             Keneisha&nbsp;&nbsp;Baid
           </h1>
+        </div>
+
+        {/* the cursive line + arrow, sitting low, both leading to Projects */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-14 flex flex-col items-center gap-5 px-6">
           <a
             href="#projects"
-            className="pointer-events-auto mt-6 max-w-md text-center font-cursive text-xl leading-snug text-[#5d5749] transition-colors hover:text-[#171411]"
+            className="pointer-events-auto max-w-md text-center font-cursive text-xl leading-snug text-[#5d5749] transition-colors hover:text-[#171411]"
           >
             I like to build things that make hard decisions a little easier.
           </a>
           <a
             href="#projects"
             aria-label="Scroll down"
-            className="pointer-events-auto mt-16 animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
+            className="pointer-events-auto animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
           >
             ↓
           </a>
@@ -80,15 +84,45 @@ function Hero() {
             <span className="font-semibold">Perpetual learner.</span>{" "}
             <span className="font-semibold">Problem-solver.</span>
           </p>
-          <a
-            href="#life"
-            className="mt-4 inline-block rounded-full border border-[#171411]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171411] transition-colors hover:bg-[#171411] hover:text-white"
-          >
-            bored?
-          </a>
         </div>
+
+        {/* bottom-right: "bored?" coming out of the shark's mouth → About Me */}
+        <BoredShark />
       </div>
     </section>
+  );
+}
+
+/* "bored?" spoken out of the shark's open mouth. Falls back to a plain
+   pill if public/shark.png hasn't been added yet. */
+function BoredShark() {
+  const [ok, setOk] = useState(true);
+  if (!ok)
+    return (
+      <a
+        href="#life"
+        className="pointer-events-auto absolute bottom-10 right-8 rounded-full border border-[#171411]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171411] transition-colors hover:bg-[#171411] hover:text-white sm:right-14"
+      >
+        bored?
+      </a>
+    );
+  return (
+    <a
+      href="#life"
+      aria-label="Bored? — About me"
+      className="group pointer-events-auto absolute bottom-3 right-2 block w-36 sm:w-52"
+    >
+      <img
+        src="/shark.png"
+        alt=""
+        onError={() => setOk(false)}
+        className="w-full transition-transform duration-300 group-hover:-translate-y-1"
+      />
+      {/* the word, out of the mouth (left side of the shark) */}
+      <span className="absolute left-[3%] top-[38%] -rotate-6 font-cursive text-2xl font-bold text-[#171411] drop-shadow-sm sm:text-3xl">
+        bored?
+      </span>
+    </a>
   );
 }
 
