@@ -61,7 +61,7 @@ function Hero() {
           <a
             href="#projects"
             aria-label="Scroll down"
-            className="pointer-events-auto mt-8 animate-bounce text-xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
+            className="pointer-events-auto mt-24 animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
           >
             ↓
           </a>
