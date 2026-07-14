@@ -64,7 +64,7 @@ function Hero() {
         <div className="pointer-events-none absolute inset-x-0 bottom-14 flex flex-col items-center gap-5 px-6">
           <a
             href="#projects"
-            className="pointer-events-auto max-w-md text-center font-cursive text-xl leading-snug text-[#5d5749] transition-colors hover:text-[#171411]"
+            className="pointer-events-auto max-w-md text-center font-sans text-[15px] leading-relaxed text-[#5d5749] transition-colors hover:text-[#171411]"
           >
             I like to build things that make hard decisions a little easier.
           </a>
@@ -75,15 +75,6 @@ function Hero() {
           >
             ↓
           </a>
-        </div>
-
-        {/* bottom-left: the blurb (bold + cursive) and the About Me button */}
-        <div className="pointer-events-auto absolute bottom-10 left-8 max-w-[17rem] text-left sm:left-14 sm:max-w-sm">
-          <p className="font-sans text-[15px] leading-relaxed text-[#171411]">
-            <span className="font-semibold">Curious by default.</span>{" "}
-            <span className="font-semibold">Perpetual learner.</span>{" "}
-            <span className="font-semibold">Problem-solver.</span>
-          </p>
         </div>
 
         {/* bottom-right: "bored?" coming out of the shark's mouth → About Me */}
@@ -118,9 +109,9 @@ function BoredShark() {
         onError={() => setOk(false)}
         className="w-full transition-transform duration-300 group-hover:-translate-y-1"
       />
-      {/* the word, spoken out of the open mouth */}
-      <span className="absolute left-[15%] top-[46%] -rotate-6 font-cursive text-2xl font-bold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.9)] sm:text-3xl">
-        bored?
+      {/* the words, spoken out of the open mouth */}
+      <span className="absolute left-[10%] top-[44%] w-[58%] -rotate-6 font-mono text-[12px] font-semibold uppercase leading-tight tracking-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95)] sm:text-[15px]">
+        Bored? Click me.
       </span>
     </a>
   );
