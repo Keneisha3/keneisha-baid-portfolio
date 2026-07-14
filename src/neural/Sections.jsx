@@ -1205,20 +1205,8 @@ export function AboutMe() {
       </div>
 
       <div className="mx-auto mt-16 grid max-w-5xl gap-12 px-8 sm:px-14 lg:grid-cols-2">
-        {/* bio + music */}
+        {/* music */}
         <div>
-          <h2 className="font-sans text-2xl font-medium leading-snug text-black sm:text-3xl">
-            Engineer by training,
-            <br />
-            <span className="text-black/45">builder by instinct.</span>
-          </h2>
-          <p className="mt-5 max-w-md text-[15px] leading-[1.75] text-black/70">
-            I&rsquo;m a Management Engineering student at Waterloo who likes turning
-            messy problems into things people can actually use — data pipelines,
-            models, and interfaces. When I&rsquo;m not building, I&rsquo;m usually in
-            the pool, on the guitar, or somewhere with good espresso.
-          </p>
-
           {/* interactive music — a 3D stack of favourite covers */}
           <div className="mt-9">
             <div className="mb-3 flex items-baseline justify-between gap-3">

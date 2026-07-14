@@ -59,6 +59,35 @@ function Hero() {
             Keneisha&nbsp;&nbsp;Baid
           </h1>
         </div>
+
+        {/* bottom-left: the blurb (bold + cursive) and the About Me button */}
+        <div className="pointer-events-auto absolute bottom-10 left-8 max-w-[17rem] text-left sm:left-14 sm:max-w-sm">
+          <p className="font-sans text-[15px] leading-relaxed text-[#171411]">
+            <span className="font-semibold">Curious by default.</span>{" "}
+            <span className="font-cursive text-2xl font-semibold text-[#a4622e]">
+              Perpetual learner.
+            </span>{" "}
+            <span className="font-semibold">Problem-solver.</span>
+          </p>
+          <p className="mt-1.5 font-cursive text-xl leading-tight text-[#5d5749]">
+            I like to build things that make hard decisions a little easier.
+          </p>
+          <a
+            href="#life"
+            className="mt-4 inline-block rounded-full border border-[#171411]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171411] transition-colors hover:bg-[#171411] hover:text-white"
+          >
+            About Me →
+          </a>
+        </div>
+
+        {/* bottom-right: a gentler way to say "scroll" */}
+        <a
+          href="#projects"
+          className="pointer-events-auto absolute bottom-10 right-8 flex items-center gap-2 sm:right-14"
+        >
+          <span className="font-cursive text-xl text-[#5d5749]">wander on down</span>
+          <span className="animate-bounce text-[#5d5749]">↓</span>
+        </a>
       </div>
     </section>
   );
