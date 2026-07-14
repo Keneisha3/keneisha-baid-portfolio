@@ -1057,17 +1057,6 @@ function AlbumStack({ songs }) {
           className="flex flex-col items-center"
           style={{ transformStyle: "preserve-3d" }}
         >
-          {/* turntable — a spinning record whose lower half tucks behind the
-              first cover, like a disc slid into its sleeve */}
-          <div
-            className="pointer-events-none relative z-0 flex w-full justify-center"
-            style={{ marginBottom: "-56px" }}
-          >
-            <div className="relative aspect-square w-[78vw] shrink-0 drop-shadow-[0_18px_30px_rgba(0,0,0,0.55)] sm:w-[42vw] lg:w-[26vw]">
-              <TopTurntable />
-            </div>
-          </div>
-
           {songs.map((t, i) => {
             const isActive = active === i;
             const isPlaying = playing === i;
