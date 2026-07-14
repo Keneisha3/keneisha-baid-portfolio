@@ -1307,7 +1307,7 @@ export function CoreTerminal() {
     <section id="contact" className="relative mx-auto max-w-5xl px-6 py-32 pb-44 sm:px-12">
       <div className="grid gap-10 md:grid-cols-12">
         <header className="md:col-span-4">
-          <Kicker>the core</Kicker>
+          <Kicker>Contact Me — Terminal</Kicker>
         </header>
 
         <div className="md:col-span-8" ref={onEnter}>
