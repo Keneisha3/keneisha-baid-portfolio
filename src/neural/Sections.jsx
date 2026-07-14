@@ -903,11 +903,15 @@ export function MuseumExhibit() {
 const TURNTABLE_IMG = "/music/turntable.png";
 const VINYL_IMG = "/music/vinyl.png";
 
-/* Top piece: the turntable photo if present, else a plain spinning CSS disc. */
+/* Top piece: the wooden player photo (static housing) with a real record
+   spinning on its platter. Falls back to a plain spinning CSS disc if the
+   images are missing. The overlay position is tuned to the photo's platter. */
+const PLATTER = { x: "44%", y: "48%", size: "60%" }; // centre + diameter on the photo
 function TopTurntable() {
   const [ok, setOk] = useState(true);
-  if (ok)
-    return (
+  if (!ok) return <Vinyl spin />;
+  return (
+    <div className="relative h-full w-full">
       <img
         src={TURNTABLE_IMG}
         alt=""
@@ -915,8 +919,22 @@ function TopTurntable() {
         onError={() => setOk(false)}
         className="h-full w-full object-contain"
       />
-    );
-  return <Vinyl spin />;
+      {/* the record, spinning on the platter */}
+      <div
+        className="absolute"
+        style={{
+          left: PLATTER.x,
+          top: PLATTER.y,
+          width: PLATTER.size,
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <div className="vinyl-spin aspect-square">
+          <img src={VINYL_IMG} alt="" aria-hidden="true" className="h-full w-full object-contain" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* The disc behind an album cover: the vinyl photo if present, else CSS disc. */
