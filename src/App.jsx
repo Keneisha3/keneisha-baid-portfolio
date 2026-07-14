@@ -64,9 +64,7 @@ function Hero() {
         <div className="pointer-events-auto absolute bottom-10 left-8 max-w-[17rem] text-left sm:left-14 sm:max-w-sm">
           <p className="font-sans text-[15px] leading-relaxed text-[#171411]">
             <span className="font-semibold">Curious by default.</span>{" "}
-            <span className="font-cursive text-2xl font-semibold text-[#a4622e]">
-              Perpetual learner.
-            </span>{" "}
+            <span className="font-semibold">Perpetual learner.</span>{" "}
             <span className="font-semibold">Problem-solver.</span>
           </p>
           <p className="mt-1.5 font-cursive text-xl leading-tight text-[#5d5749]">
