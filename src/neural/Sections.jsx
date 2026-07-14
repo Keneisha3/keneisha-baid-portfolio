@@ -897,67 +897,13 @@ export function MuseumExhibit() {
    that fill the hours outside the desk.
 ===================================================================== */
 
-/* Pull album art + a 30s preview from Apple's public iTunes Search API.
-   JSONP (script callback) sidesteps CORS; no key required. */
-function itunesLookup(term) {
-  return new Promise((resolve) => {
-    const cb = "itcb_" + Math.random().toString(36).slice(2);
-    const s = document.createElement("script");
-    const done = (data) => {
-      resolve(data?.results?.[0] || null);
-      delete window[cb];
-      s.remove();
-    };
-    window[cb] = done;
-    s.onerror = () => {
-      resolve(null);
-      delete window[cb];
-      s.remove();
-    };
-    s.src =
-      "https://itunes.apple.com/search?media=music&entity=song&limit=1&callback=" +
-      cb +
-      "&term=" +
-      encodeURIComponent(term);
-    document.body.appendChild(s);
-  });
-}
-
-/* clean a title for search: drop "- 2004 Remaster", "- ... Remix/Version" etc. */
-function searchTerm(s) {
-  const t = s.title.replace(/\s*-\s*.*$/i, "").trim();
-  const a = s.artist.split(",")[0].trim();
-  return `${t} ${a}`;
-}
-
-/* A tilted, scrollable 3D stack of album covers. Hover (or scroll a cover to
-   centre) flattens and lifts it; click plays a 30-second preview. */
+/* A scrollable 3D stack of real album covers (art + previews baked from the
+   Spotify playlist). Each cover is a slab with visible thickness; hover lifts
+   and squares it up, click plays the 30-second preview. */
 function AlbumStack({ songs }) {
-  const [tracks, setTracks] = useState(() =>
-    songs.map((s) => ({ ...s, art: null, preview: null }))
-  );
-  const [active, setActive] = useState(null); // hovered/focused card
+  const [active, setActive] = useState(null);
   const [playing, setPlaying] = useState(null);
   const audioRef = useRef(null);
-
-  useEffect(() => {
-    let alive = true;
-    Promise.all(
-      songs.map(async (s) => {
-        const r = await itunesLookup(searchTerm(s));
-        return {
-          ...s,
-          art: r?.artworkUrl100?.replace("100x100bb", "600x600bb") || null,
-          preview: r?.previewUrl || null,
-        };
-      })
-    ).then((t) => {
-      if (alive) setTracks(t);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []); // eslint-disable-line
 
   useEffect(() => {
     const a = audioRef.current;
@@ -969,7 +915,7 @@ function AlbumStack({ songs }) {
 
   const toggle = (i) => {
     const a = audioRef.current;
-    const t = tracks[i];
+    const t = songs[i];
     if (playing === i) {
       a?.pause();
       setPlaying(null);
@@ -982,15 +928,19 @@ function AlbumStack({ songs }) {
     }
   };
 
+  const cleanTitle = (s) => s.replace(/\s*-\s*.*$/i, "");
+
   return (
     <div className="rounded-xl bg-[#0b0b0d] p-4 ring-1 ring-black/20">
-      {/* scrollable viewport — the 3D column lives inside */}
       <div
-        className="album-scroll h-[430px] overflow-y-auto overflow-x-hidden px-2 py-6"
-        style={{ perspective: "1000px" }}
+        className="album-scroll h-[440px] overflow-y-auto overflow-x-hidden px-2 py-8"
+        style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
       >
-        <div className="flex flex-col items-center" style={{ transformStyle: "preserve-3d" }}>
-          {tracks.map((t, i) => {
+        <div
+          className="flex flex-col items-center"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          {songs.map((t, i) => {
             const isActive = active === i;
             const isPlaying = playing === i;
             return (
@@ -999,56 +949,73 @@ function AlbumStack({ songs }) {
                 type="button"
                 onClick={() => toggle(i)}
                 onMouseEnter={() => setActive(i)}
-                onMouseLeave={() => setActive((cur) => (cur === i ? null : cur))}
+                onMouseLeave={() => setActive((c) => (c === i ? null : c))}
                 onFocus={() => setActive(i)}
-                onBlur={() => setActive((cur) => (cur === i ? null : cur))}
-                className="group relative w-full max-w-[440px] shrink-0 focus:outline-none"
+                onBlur={() => setActive((c) => (c === i ? null : c))}
+                className="group relative w-full max-w-[300px] shrink-0 focus:outline-none"
                 style={{
+                  transformStyle: "preserve-3d",
                   transform: isActive
-                    ? "rotateX(0deg) translateZ(60px) scale(1.04)"
-                    : "rotateX(52deg) translateZ(0)",
+                    ? "rotateX(6deg) translateZ(70px) scale(1.05)"
+                    : "rotateX(58deg)",
                   transformOrigin: "center bottom",
                   transition:
-                    "transform 450ms cubic-bezier(0.22,1,0.36,1), margin 450ms cubic-bezier(0.22,1,0.36,1)",
-                  marginBottom: isActive ? "12px" : "-40px",
-                  marginTop: isActive ? "12px" : "0px",
+                    "transform 500ms cubic-bezier(0.22,1,0.36,1), margin 500ms cubic-bezier(0.22,1,0.36,1)",
+                  marginBottom: isActive ? "26px" : "-118px",
+                  marginTop: isActive ? "26px" : "0px",
                   zIndex: isActive ? 50 : i,
                 }}
               >
-                <div
-                  className="relative aspect-[16/7] w-full overflow-hidden rounded-md ring-1 ring-white/10"
-                  style={{
-                    backgroundImage: t.art ? `url(${t.art})` : "none",
-                    backgroundColor: t.art ? "transparent" : "#1c1c22",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center 38%",
-                    boxShadow: isActive
-                      ? "0 30px 55px rgba(0,0,0,0.6)"
-                      : "0 16px 28px rgba(0,0,0,0.55)",
-                    filter: isActive ? "brightness(1.06)" : "brightness(0.9)",
-                    transition: "filter 400ms ease, box-shadow 400ms ease",
-                  }}
-                >
-                  {/* subtle sheen sweep on hover */}
-                  <span
-                    className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background:
-                        "linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)",
-                    }}
+                {/* the slab: a square cover with a thick side edge for depth */}
+                <div className="relative aspect-square w-full" style={{ transformStyle: "preserve-3d" }}>
+                  {/* thickness — an extruded edge sitting just behind the face */}
+                  <div
+                    className="absolute inset-0 rounded-[5px] bg-black/70"
+                    style={{ transform: "translateZ(-14px)" }}
                   />
-                  {/* label bar */}
-                  <div className="absolute inset-x-0 top-0 flex items-center gap-2 bg-gradient-to-b from-black/80 to-transparent px-3 pb-6 pt-2">
-                    <span className="truncate font-sans text-[13px] font-semibold text-white drop-shadow">
-                      {t.title.replace(/\s*-\s*.*$/i, "")}
-                      <span className="ml-1.5 font-normal text-white/70">{t.artist.split(",")[0]}</span>
-                    </span>
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-[14px] rounded-b-[5px] bg-black/80"
+                    style={{ transform: "rotateX(-90deg)", transformOrigin: "bottom" }}
+                  />
+                  {/* the cover face */}
+                  <div
+                    className="absolute inset-0 overflow-hidden rounded-[5px] ring-1 ring-white/10"
+                    style={{
+                      backgroundImage: t.art ? `url(${t.art})` : "none",
+                      backgroundColor: t.art ? "transparent" : "#1c1c22",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      boxShadow: isActive
+                        ? "0 40px 70px rgba(0,0,0,0.65)"
+                        : "0 24px 40px rgba(0,0,0,0.6)",
+                      filter: isActive ? "brightness(1.05)" : "brightness(0.82)",
+                      transition: "filter 400ms ease, box-shadow 400ms ease",
+                    }}
+                  >
+                    {/* sheen sweep on hover */}
+                    <span
+                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      style={{
+                        background:
+                          "linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.22) 50%, transparent 68%)",
+                      }}
+                    />
+                    {/* play indicator */}
+                    {isActive && (
+                      <span className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[12px] text-black shadow">
+                        {isPlaying ? "❚❚" : t.preview ? "▶" : "♪"}
+                      </span>
+                    )}
+                    {/* title bar */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2.5 pt-8">
+                      <p className="truncate font-sans text-[13px] font-semibold leading-tight text-white">
+                        {cleanTitle(t.title)}
+                      </p>
+                      <p className="truncate font-sans text-[11px] text-white/70">
+                        {t.artist.split(",")[0]}
+                      </p>
+                    </div>
                   </div>
-                  {isActive && (
-                    <span className="absolute bottom-2 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[11px] text-black">
-                      {isPlaying ? "❚❚" : t.preview ? "▶" : "♪"}
-                    </span>
-                  )}
                 </div>
               </button>
             );
@@ -1135,7 +1102,7 @@ export function AboutMe() {
           <div className="mt-9">
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-                ♪ on heavy rotation
+                ♪ cds in my ears
               </p>
               <a
                 href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}

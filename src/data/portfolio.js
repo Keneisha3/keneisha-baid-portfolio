@@ -246,20 +246,90 @@ export const PLAYLIST = {
 // Album art + 30s previews load automatically from Apple's iTunes Search API
 // by title + artist, so editing this list is all it takes.
 export const FAVE_SONGS = [
-  { title: "Headlines", artist: "Drake" },
-  { title: "Shabang", artist: "Drake" },
-  { title: "Silence - John Summit Remix", artist: "Delerium, Sarah McLachlan, John Summit" },
-  { title: "Dreams - 2004 Remaster", artist: "Fleetwood Mac" },
-  { title: "I'm On Fire", artist: "Bruce Springsteen" },
-  { title: "Gypsy", artist: "Fleetwood Mac" },
-  { title: "Piece Of Heaven", artist: "Tame Impala" },
-  { title: "Everlasting Light", artist: "The Black Keys" },
-  { title: "Mr. Brightside", artist: "The Killers" },
-  { title: "E85", artist: "Don Toliver" },
-  { title: "COMË N GO", artist: "Yeat" },
-  { title: "Purple Rain", artist: "Prince" },
-  { title: "Return of the Mack", artist: "Mark Morrison" },
-  { title: "Wicked Game", artist: "Chris Isaak" },
+  {
+    title: "Headlines",
+    artist: "Drake",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c7ea04a9b455e3f68ef82550",
+    preview: "https://p.scdn.co/mp3-preview/570ddea0adb2c0bff50a1f0447a0e643c084fbe6",
+  },
+  {
+    title: "Shabang",
+    artist: "Drake",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fe9d3ab9adb1d3b59835b81c",
+    preview: "https://p.scdn.co/mp3-preview/306dfed2c87a5869e1d35be1d03e44123086836a",
+  },
+  {
+    title: "Silence - John Summit Remix",
+    artist: "Delerium, Sarah McLachlan, John Summit",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e026f1ad698de95b08df9b5a590",
+    preview: "https://p.scdn.co/mp3-preview/c94dc9b6f36fe5d7261cdf17e6430ae1d84f7ed2",
+  },
+  {
+    title: "Dreams - 2004 Remaster",
+    artist: "Fleetwood Mac",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0257df7ce0eac715cf70e519a7",
+    preview: "https://p.scdn.co/mp3-preview/30d63954de3ee9c0bc3600a4560260cb252d4fbd",
+  },
+  {
+    title: "I'm On Fire",
+    artist: "Bruce Springsteen",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02a43a6482e327d623bb0c0f77",
+    preview: "https://p.scdn.co/mp3-preview/e9bb2268bc574f78cb700ad364fa087fe3fd04bb",
+  },
+  {
+    title: "Gypsy",
+    artist: "Fleetwood Mac",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02813da91820fd194cbee5bdce",
+    preview: "https://p.scdn.co/mp3-preview/a230542c1dbed632215115c55983815fa3ae7697",
+  },
+  {
+    title: "Piece Of Heaven",
+    artist: "Tame Impala",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02208500450dcd0fd294d7bd3b",
+    preview: "https://p.scdn.co/mp3-preview/e038160c80047bc0c7b2a56803b392af015daa15",
+  },
+  {
+    title: "Everlasting Light",
+    artist: "The Black Keys",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0243f5bd543a2a1ab37fb40a8b",
+    preview: "https://p.scdn.co/mp3-preview/8f4df6d0dcf76a3e5730cabfa72ca9808fd7fd70",
+  },
+  {
+    title: "Mr. Brightside",
+    artist: "The Killers",
+    art: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02ccdddd46119a4ff53eaf1f5d",
+    preview: "https://p.scdn.co/mp3-preview/848b1bd5544e82f62f9cfcec65362d0f5369781f",
+  },
+  {
+    title: "E85",
+    artist: "Don Toliver",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0225c28f3c9fbdbab1a88dd619",
+    preview: "https://p.scdn.co/mp3-preview/6531864966b2fc846a74a9bc161d9bf4563ec2e9",
+  },
+  {
+    title: "COMË N GO",
+    artist: "Yeat",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e35aad7bbe4508513f36fd58",
+    preview: "https://p.scdn.co/mp3-preview/2eee774e0688dedbc348414f4c9636fde150c9b9",
+  },
+  {
+    title: "Purple Rain",
+    artist: "Prince",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e2829416e5011fb749cc3fde",
+    preview: "https://p.scdn.co/mp3-preview/81bd92ac70dc7b6dd32aabfb186fe67857147834",
+  },
+  {
+    title: "Return of the Mack",
+    artist: "Mark Morrison",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0201841d493ec3808242042c0f",
+    preview: "https://p.scdn.co/mp3-preview/456989fb9b32c4525f0668676ad5067d20479b4a",
+  },
+  {
+    title: "Wicked Game",
+    artist: "Chris Isaak",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02ad0e25c1c366d63bcbae4073",
+    preview: "https://p.scdn.co/mp3-preview/116da575b713d8fe2c698dbb3bbd31c065bff4c3",
+  },
 ];
 
 export const INTERESTS = [
