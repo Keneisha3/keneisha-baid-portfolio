@@ -60,8 +60,14 @@ function Hero() {
           </h1>
           <a
             href="#projects"
+            className="pointer-events-auto mt-6 max-w-md text-center font-cursive text-xl leading-snug text-[#5d5749] transition-colors hover:text-[#171411]"
+          >
+            I like to build things that make hard decisions a little easier.
+          </a>
+          <a
+            href="#projects"
             aria-label="Scroll down"
-            className="pointer-events-auto mt-24 animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
+            className="pointer-events-auto mt-16 animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
           >
             ↓
           </a>
@@ -73,9 +79,6 @@ function Hero() {
             <span className="font-semibold">Curious by default.</span>{" "}
             <span className="font-semibold">Perpetual learner.</span>{" "}
             <span className="font-semibold">Problem-solver.</span>
-          </p>
-          <p className="mt-1.5 font-cursive text-xl leading-tight text-[#5d5749]">
-            I like to build things that make hard decisions a little easier.
           </p>
           <a
             href="#life"
