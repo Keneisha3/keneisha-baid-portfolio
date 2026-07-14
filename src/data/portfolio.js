@@ -247,30 +247,6 @@ export const PLAYLIST = {
 // by title + artist, so editing this list is all it takes.
 export const FAVE_SONGS = [
   {
-    title: "Headlines",
-    artist: "Drake",
-    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c7ea04a9b455e3f68ef82550",
-    preview: "https://p.scdn.co/mp3-preview/570ddea0adb2c0bff50a1f0447a0e643c084fbe6",
-  },
-  {
-    title: "Shabang",
-    artist: "Drake",
-    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fe9d3ab9adb1d3b59835b81c",
-    preview: "https://p.scdn.co/mp3-preview/306dfed2c87a5869e1d35be1d03e44123086836a",
-  },
-  {
-    title: "Silence - John Summit Remix",
-    artist: "Delerium, Sarah McLachlan, John Summit",
-    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e026f1ad698de95b08df9b5a590",
-    preview: "https://p.scdn.co/mp3-preview/c94dc9b6f36fe5d7261cdf17e6430ae1d84f7ed2",
-  },
-  {
-    title: "Dreams - 2004 Remaster",
-    artist: "Fleetwood Mac",
-    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0257df7ce0eac715cf70e519a7",
-    preview: "https://p.scdn.co/mp3-preview/30d63954de3ee9c0bc3600a4560260cb252d4fbd",
-  },
-  {
     title: "I'm On Fire",
     artist: "Bruce Springsteen",
     art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02a43a6482e327d623bb0c0f77",
@@ -283,6 +259,18 @@ export const FAVE_SONGS = [
     preview: "https://p.scdn.co/mp3-preview/a230542c1dbed632215115c55983815fa3ae7697",
   },
   {
+    title: "Headlines",
+    artist: "Drake",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c7ea04a9b455e3f68ef82550",
+    preview: "https://p.scdn.co/mp3-preview/570ddea0adb2c0bff50a1f0447a0e643c084fbe6",
+  },
+  {
+    title: "Dreams - 2004 Remaster",
+    artist: "Fleetwood Mac",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0257df7ce0eac715cf70e519a7",
+    preview: "https://p.scdn.co/mp3-preview/30d63954de3ee9c0bc3600a4560260cb252d4fbd",
+  },
+  {
     title: "Piece Of Heaven",
     artist: "Tame Impala",
     art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02208500450dcd0fd294d7bd3b",
@@ -293,6 +281,18 @@ export const FAVE_SONGS = [
     artist: "The Black Keys",
     art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0243f5bd543a2a1ab37fb40a8b",
     preview: "https://p.scdn.co/mp3-preview/8f4df6d0dcf76a3e5730cabfa72ca9808fd7fd70",
+  },
+  {
+    title: "Shabang",
+    artist: "Drake",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fe9d3ab9adb1d3b59835b81c",
+    preview: "https://p.scdn.co/mp3-preview/306dfed2c87a5869e1d35be1d03e44123086836a",
+  },
+  {
+    title: "Silence - John Summit Remix",
+    artist: "Delerium, Sarah McLachlan, John Summit",
+    art: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e026f1ad698de95b08df9b5a590",
+    preview: "https://p.scdn.co/mp3-preview/c94dc9b6f36fe5d7261cdf17e6430ae1d84f7ed2",
   },
   {
     title: "Mr. Brightside",
