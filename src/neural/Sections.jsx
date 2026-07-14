@@ -926,7 +926,7 @@ function Vinyl({ art, spin = false }) {
         style={{
           inset: "33%",
           backgroundImage: art ? `url(${art})` : "none",
-          backgroundColor: art ? "transparent" : "#b23b3b",
+          backgroundColor: art ? "transparent" : "#1a1a1a",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -1008,12 +1008,12 @@ function AlbumStack({ songs }) {
             style={{
               transform: "rotateX(48deg)",
               transformOrigin: "center bottom",
-              marginBottom: "-58px",
+              marginBottom: "-90px",
               zIndex: 0,
             }}
           >
             <div className="relative aspect-square w-[74%]">
-              <Vinyl art={songs[0]?.art} spin />
+              <Vinyl spin />
             </div>
           </div>
 
