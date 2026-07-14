@@ -952,17 +952,18 @@ function AlbumStack({ songs }) {
                 onMouseLeave={() => setActive((c) => (c === i ? null : c))}
                 onFocus={() => setActive(i)}
                 onBlur={() => setActive((c) => (c === i ? null : c))}
-                className="group relative w-full max-w-[300px] shrink-0 focus:outline-none"
+                className="group relative w-full max-w-[260px] shrink-0 focus:outline-none"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isActive
-                    ? "rotateX(6deg) translateZ(70px) scale(1.05)"
-                    : "rotateX(58deg)",
+                    ? "rotateX(4deg) translateZ(60px) scale(1.04)"
+                    : "rotateX(46deg)",
                   transformOrigin: "center bottom",
                   transition:
                     "transform 500ms cubic-bezier(0.22,1,0.36,1), margin 500ms cubic-bezier(0.22,1,0.36,1)",
-                  marginBottom: isActive ? "26px" : "-118px",
-                  marginTop: isActive ? "26px" : "0px",
+                  // gentle overlap: each card keeps a large, fully-hoverable face
+                  marginBottom: isActive ? "22px" : "-84px",
+                  marginTop: isActive ? "22px" : "0px",
                   zIndex: isActive ? 50 : i,
                 }}
               >
@@ -1000,20 +1001,19 @@ function AlbumStack({ songs }) {
                           "linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.22) 50%, transparent 68%)",
                       }}
                     />
-                    {/* play indicator */}
-                    {isActive && (
-                      <span className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[12px] text-black shadow">
+                    {/* title bar — at the TOP, the part that peeks above the next card */}
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/85 to-transparent px-3 pb-8 pt-2.5">
+                      <span className="min-w-0">
+                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-white">
+                          {cleanTitle(t.title)}
+                        </span>
+                        <span className="block truncate font-sans text-[11px] text-white/70">
+                          {t.artist.split(",")[0]}
+                        </span>
+                      </span>
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] text-black shadow">
                         {isPlaying ? "❚❚" : t.preview ? "▶" : "♪"}
                       </span>
-                    )}
-                    {/* title bar */}
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2.5 pt-8">
-                      <p className="truncate font-sans text-[13px] font-semibold leading-tight text-white">
-                        {cleanTitle(t.title)}
-                      </p>
-                      <p className="truncate font-sans text-[11px] text-white/70">
-                        {t.artist.split(",")[0]}
-                      </p>
                     </div>
                   </div>
                 </div>
