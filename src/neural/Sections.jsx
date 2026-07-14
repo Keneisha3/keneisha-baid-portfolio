@@ -1042,17 +1042,9 @@ function AlbumStack({ songs }) {
           {/* turntable — a spinning record whose lower half tucks behind the
               first cover, like a disc slid into its sleeve */}
           <div
-            className="pointer-events-none relative flex w-full max-w-[260px] justify-center overflow-hidden"
-            style={{
-              transform: "rotateX(48deg)",
-              transformOrigin: "center bottom",
-              // only a thin sliver of the disc/player peeks above the first cover
-              height: "34px",
-              marginBottom: "-4px",
-              zIndex: 0,
-            }}
+            className="pointer-events-none relative z-0 mb-1 flex w-full justify-center"
           >
-            <div className="relative aspect-square w-[72%] shrink-0">
+            <div className="relative aspect-square w-[62%] max-w-[190px] drop-shadow-[0_18px_30px_rgba(0,0,0,0.55)]">
               <TopTurntable />
             </div>
           </div>
