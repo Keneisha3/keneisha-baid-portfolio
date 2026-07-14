@@ -904,6 +904,7 @@ function AlbumStack({ songs }) {
   const [active, setActive] = useState(null);
   const [playing, setPlaying] = useState(null);
   const audioRef = useRef(null);
+  const cardRefs = useRef([]);
 
   useEffect(() => {
     const a = audioRef.current;
@@ -913,15 +914,29 @@ function AlbumStack({ songs }) {
     return () => a.removeEventListener("ended", onEnd);
   }, []);
 
-  const toggle = (i) => {
+  // Which card is under a given pointer Y? The front-most (highest index) whose
+  // box contains Y wins — this is what the eye reads as "the card here", and it
+  // works regardless of the 3D transforms that break normal hover hit-testing.
+  const cardAt = (clientY) => {
+    let hit = null;
+    cardRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (clientY >= r.top && clientY <= r.bottom) hit = i;
+    });
+    return hit;
+  };
+
+  const play = (i) => {
     const a = audioRef.current;
     const t = songs[i];
+    if (i == null) return;
     if (playing === i) {
       a?.pause();
       setPlaying(null);
       return;
     }
-    if (a && t.preview) {
+    if (a && t?.preview) {
       a.src = t.preview;
       a.play().catch(() => {});
       setPlaying(i);
@@ -935,6 +950,9 @@ function AlbumStack({ songs }) {
       <div
         className="album-scroll h-[440px] overflow-y-auto overflow-x-hidden px-2 py-8"
         style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
+        onMouseMove={(e) => setActive(cardAt(e.clientY))}
+        onMouseLeave={() => setActive(null)}
+        onClick={(e) => play(cardAt(e.clientY))}
       >
         <div
           className="flex flex-col items-center"
@@ -944,26 +962,19 @@ function AlbumStack({ songs }) {
             const isActive = active === i;
             const isPlaying = playing === i;
             return (
-              <button
+              <div
                 key={t.title + i}
-                type="button"
-                onClick={() => toggle(i)}
-                onMouseEnter={() => setActive(i)}
-                onMouseLeave={() => setActive((c) => (c === i ? null : c))}
-                onFocus={() => setActive(i)}
-                onBlur={() => setActive((c) => (c === i ? null : c))}
-                className="group relative w-full max-w-[260px] shrink-0 focus:outline-none"
+                ref={(el) => (cardRefs.current[i] = el)}
+                className="group relative w-full max-w-[260px] shrink-0 cursor-pointer"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isActive
-                    ? "rotateX(4deg) translateZ(60px) scale(1.04)"
-                    : "rotateX(46deg)",
+                    ? "rotateX(6deg) translateZ(60px) scale(1.05)"
+                    : "rotateX(48deg)",
                   transformOrigin: "center bottom",
-                  transition:
-                    "transform 500ms cubic-bezier(0.22,1,0.36,1), margin 500ms cubic-bezier(0.22,1,0.36,1)",
-                  // gentle overlap: each card keeps a large, fully-hoverable face
-                  marginBottom: isActive ? "22px" : "-84px",
-                  marginTop: isActive ? "22px" : "0px",
+                  transition: "transform 480ms cubic-bezier(0.22,1,0.36,1)",
+                  // fixed overlap — never reflows on hover, so hit-mapping stays stable
+                  marginBottom: "-86px",
                   zIndex: isActive ? 50 : i,
                 }}
               >
@@ -989,14 +1000,15 @@ function AlbumStack({ songs }) {
                       boxShadow: isActive
                         ? "0 40px 70px rgba(0,0,0,0.65)"
                         : "0 24px 40px rgba(0,0,0,0.6)",
-                      filter: isActive ? "brightness(1.05)" : "brightness(0.82)",
+                      filter: isActive ? "brightness(1.05)" : "brightness(0.8)",
                       transition: "filter 400ms ease, box-shadow 400ms ease",
                     }}
                   >
                     {/* sheen sweep on hover */}
                     <span
-                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      className="pointer-events-none absolute inset-0 transition-opacity duration-300"
                       style={{
+                        opacity: isActive ? 1 : 0,
                         background:
                           "linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.22) 50%, transparent 68%)",
                       }}
@@ -1017,7 +1029,7 @@ function AlbumStack({ songs }) {
                     </div>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
