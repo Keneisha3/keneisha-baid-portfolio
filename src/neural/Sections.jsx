@@ -592,11 +592,11 @@ function Filmstrip({ id, corner, caption, items }) {
   const [open, setOpen] = useState(null);
   return (
     <section id={id} className="relative min-h-screen bg-white py-16">
-      {/* corner labels */}
-      <div className="flex items-start justify-between px-8 sm:px-14">
-        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+      {/* section heading */}
+      <div className="flex items-baseline justify-between px-8 sm:px-14">
+        <h2 className="font-sans text-4xl font-semibold tracking-tight text-[#171411] sm:text-5xl">
           {corner}
-        </span>
+        </h2>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
           {String(items.length).padStart(2, "0")} works
         </span>
@@ -703,7 +703,7 @@ export function ProjectNeurons() {
   return (
     <Filmstrip
       id="projects"
-      corner="Work"
+      corner="Projects"
       caption="Selected projects — click any piece to open it. Data, machine learning, and product work, 2023–2026."
       items={items}
     />
@@ -800,11 +800,11 @@ export function MuseumExhibit() {
   const [active, setActive] = useState(0);
   return (
     <section id="experience" className="relative min-h-screen bg-white py-16">
-      {/* corner labels */}
-      <div className="flex items-start justify-between px-8 sm:px-14">
-        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+      {/* section heading */}
+      <div className="flex items-baseline justify-between px-8 sm:px-14">
+        <h2 className="font-sans text-4xl font-semibold tracking-tight text-[#171411] sm:text-5xl">
           Experience
-        </span>
+        </h2>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
           {String(chronological.length).padStart(2, "0")} roles · tap to expand
         </span>

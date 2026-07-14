@@ -71,6 +71,20 @@ export default function App() {
   const pastRef = useRef(false);
   const { humOn, toggleHum } = useHum();
 
+  // simple hash routing: '#life' is its own page, everything else is home
+  const [route, setRoute] = useState(() =>
+    window.location.hash === "#life" ? "life" : "home"
+  );
+  useEffect(() => {
+    const onHash = () =>
+      setRoute(window.location.hash === "#life" ? "life" : "home");
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => {
+    if (route === "life") window.scrollTo(0, 0);
+  }, [route]);
+
   useEffect(() => {
     if (lite) return;
     const onScroll = () => {
@@ -93,11 +107,33 @@ export default function App() {
     <>
       <ProjectNeurons />
       <MuseumExhibit />
-      <AboutMe />
       <SkillTerminals />
       <CoreTerminal />
     </>
   );
+
+  // the Life page — the album stack + interests live here now
+  if (route === "life") {
+    return (
+      <div className="relative min-h-screen bg-white text-[#3a352c]">
+        <MindNav humOn={humOn} toggleHum={toggleHum} />
+        <Sparks />
+        <div className="px-8 pt-24 sm:px-14">
+          <a
+            href="#home"
+            onClick={() => (window.location.hash = "")}
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50 transition-colors hover:text-black"
+          >
+            ← back
+          </a>
+        </div>
+        <main className="relative">
+          <AboutMe />
+        </main>
+        <ChatWidget />
+      </div>
+    );
+  }
 
   if (lite) {
     return (

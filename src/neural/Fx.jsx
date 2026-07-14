@@ -180,9 +180,9 @@ export function useHum() {
 const NAV = [
   { id: "projects", label: "Projects" },
   { id: "experience", label: "Experience" },
-  { id: "about", label: "About" },
   { id: "skills", label: "Skills" },
   { id: "contact", label: "Contact" },
+  { id: "life", label: "Life" },
 ];
 
 export function MindNav({ humOn, toggleHum }) {
