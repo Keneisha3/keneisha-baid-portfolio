@@ -53,11 +53,18 @@ function Hero() {
           </a>
         </div>
 
-        {/* the name, dead centre, wide and thin */}
-        <div className="flex h-full items-center justify-center px-6">
+        {/* the name, dead centre, wide and thin, with a quiet scroll arrow */}
+        <div className="flex h-full flex-col items-center justify-center px-6">
           <h1 className="rise select-none text-center font-wordmark text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
             Keneisha&nbsp;&nbsp;Baid
           </h1>
+          <a
+            href="#projects"
+            aria-label="Scroll down"
+            className="pointer-events-auto mt-8 animate-bounce text-xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
+          >
+            ↓
+          </a>
         </div>
 
         {/* bottom-left: the blurb (bold + cursive) and the About Me button */}
@@ -74,18 +81,9 @@ function Hero() {
             href="#life"
             className="mt-4 inline-block rounded-full border border-[#171411]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171411] transition-colors hover:bg-[#171411] hover:text-white"
           >
-            About Me →
+            bored?
           </a>
         </div>
-
-        {/* bottom-right: a gentler way to say "scroll" */}
-        <a
-          href="#projects"
-          className="pointer-events-auto absolute bottom-10 right-8 flex items-center gap-2 sm:right-14"
-        >
-          <span className="font-cursive text-xl text-[#5d5749]">wander on down</span>
-          <span className="animate-bounce text-[#5d5749]">↓</span>
-        </a>
       </div>
     </section>
   );
