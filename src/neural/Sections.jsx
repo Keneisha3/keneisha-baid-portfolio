@@ -617,7 +617,7 @@ function Filmstrip({ id, corner, caption, items }) {
                   setOpen(i);
                 }
               }}
-              className="group relative w-[78vw] shrink-0 cursor-pointer text-left sm:w-[42vw] lg:w-[26vw]"
+              className="group relative w-[86vw] shrink-0 cursor-pointer text-left sm:w-[58vw] lg:w-[40vw]"
             >
               <div className="relative aspect-[4/5] transition-transform duration-300 group-hover:-translate-y-1.5">
                 {it.thumb}
@@ -677,23 +677,23 @@ export function ProjectNeurons() {
       thumb: (
         <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
           {/* a filled mini-poster: title, the live artifact, and tech tags */}
-          <div className="flex h-full w-full flex-col bg-gradient-to-br from-[#f8f6f1] to-[#ece7dd] p-2.5 text-center">
-            <p className="font-mono text-[7px] uppercase tracking-[0.28em] text-[#a09a8c]">
+          <div className="flex h-full w-full flex-col bg-gradient-to-br from-[#f8f6f1] to-[#ece7dd] p-4 text-center">
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#a09a8c]">
               {p.status ? "in progress" : art?.label ?? "project"}
             </p>
-            <p className="mt-0.5 line-clamp-2 font-display text-[13px] font-medium leading-tight text-[#171411]">
+            <p className="mt-1 line-clamp-2 font-display text-xl font-medium leading-tight text-[#171411] sm:text-2xl">
               {p.title}
             </p>
-            <div className="my-1.5 flex flex-1 items-center justify-center overflow-hidden rounded-[3px] bg-white/70 p-1 ring-1 ring-black/[0.06]">
-              <div className="flex h-full w-full scale-[0.72] items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full">
+            <div className="my-2.5 flex flex-1 items-center justify-center overflow-hidden rounded-[3px] bg-white/70 p-1.5 ring-1 ring-black/[0.06]">
+              <div className="flex h-full w-full scale-[0.9] items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full">
                 {art?.el}
               </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-1">
+            <div className="flex flex-wrap justify-center gap-1.5">
               {p.tech.slice(0, 3).map((t) => (
                 <span
                   key={t}
-                  className="rounded-full bg-black/[0.04] px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-wide text-[#5d5749]"
+                  className="rounded-full bg-black/[0.04] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-[#5d5749]"
                 >
                   {t}
                 </span>
