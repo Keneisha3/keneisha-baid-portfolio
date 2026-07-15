@@ -671,14 +671,34 @@ function Filmstrip({ id, corner, caption, items }) {
 export function ProjectNeurons() {
   const items = PROJECTS.map((p, i) => {
     const art = ARTIFACTS.find((a) => a.match.test(p.title));
-    const preview = /famflow/i.test(p.title) ? <ProjectMedia p={p} /> : art?.el;
     return {
       title: p.title,
       meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
       thumb: (
         <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
-          <div className="h-full w-full overflow-hidden">
-            <div className="min-h-[150px]">{preview}</div>
+          {/* a filled mini-poster: title, the live artifact, and tech tags */}
+          <div className="flex h-full w-full flex-col bg-gradient-to-br from-[#f8f6f1] to-[#ece7dd] p-2.5 text-center">
+            <p className="font-mono text-[7px] uppercase tracking-[0.28em] text-[#a09a8c]">
+              {p.status ? "in progress" : art?.label ?? "project"}
+            </p>
+            <p className="mt-0.5 line-clamp-2 font-display text-[13px] font-medium leading-tight text-[#171411]">
+              {p.title}
+            </p>
+            <div className="my-1.5 flex flex-1 items-center justify-center overflow-hidden rounded-[3px] bg-white/70 p-1 ring-1 ring-black/[0.06]">
+              <div className="flex h-full w-full items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full">
+                {art?.el}
+              </div>
+            </div>
+            <div className="flex flex-wrap justify-center gap-1">
+              {p.tech.slice(0, 3).map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-black/[0.04] px-1.5 py-0.5 font-mono text-[7px] uppercase tracking-wide text-[#5d5749]"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
         </FramedThumb>
       ),
