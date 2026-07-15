@@ -685,7 +685,7 @@ export function ProjectNeurons() {
               {p.title}
             </p>
             <div className="my-1.5 flex flex-1 items-center justify-center overflow-hidden rounded-[3px] bg-white/70 p-1 ring-1 ring-black/[0.06]">
-              <div className="flex h-full w-full items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full">
+              <div className="flex h-full w-full scale-[0.72] items-center justify-center [&_svg]:max-h-full [&_svg]:max-w-full">
                 {art?.el}
               </div>
             </div>

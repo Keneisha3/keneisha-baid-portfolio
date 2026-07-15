@@ -167,14 +167,6 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
-    title: "Patent Landscape Intelligence",
-    status: "In the works",
-    description:
-      "A tool I'm currently building to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets.",
-    tech: ["Python", "NLP", "Machine Learning", "Data Visualization"],
-    links: [],
-  },
-  {
     title: "ATR News Signal System",
     description:
       "Event-driven stock alert system using ATR volatility + RSS news feeds across 50+ equities with backtesting, walk-forward validation, and automated research reports.",
@@ -216,6 +208,14 @@ export const PROJECTS = [
       "Operations research model determining truck rental vs 3PL efficiency.",
     tech: ["Python"],
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/MarkovChainModelling.git" }],
+  },
+  {
+    title: "Patent Landscape Intelligence",
+    status: "In the works",
+    description:
+      "A tool I'm currently building to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets.",
+    tech: ["Python", "NLP", "Machine Learning", "Data Visualization"],
+    links: [],
   },
 ];
 
