@@ -1170,53 +1170,30 @@ function AlbumStack({ songs }) {
     </div>
   );
 }
-/* one interest card — image with a caption that lifts in on hover/tap */
-function InterestCard({ item, active, onToggle }) {
-  const [ok, setOk] = useState(true);
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="group relative aspect-[4/5] w-full overflow-hidden rounded-[3px] bg-[#f4f2ee] text-left ring-1 ring-black/10 transition-transform duration-300 hover:-translate-y-1"
-    >
-      {ok ? (
-        <img
-          src={item.img}
-          alt={item.title}
-          loading="lazy"
-          onError={() => setOk(false)}
-          className="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f6f4f0] to-[#e6e2d8]" />
-      )}
-      {/* label bar always visible at the bottom */}
-      <span className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2.5 pt-8">
-        <span className="font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white">
-          {item.title}
-        </span>
-        <span className="font-mono text-[14px] leading-none text-white/70">
-          {active ? "–" : "+"}
-        </span>
-      </span>
-      {/* the blurb slides up over the image when open */}
-      <span
-        className="absolute inset-0 flex items-end bg-black/70 p-4 text-[13px] leading-[1.6] text-white transition-opacity duration-300"
-        style={{ opacity: active ? 1 : 0 }}
-      >
-        {item.blurb}
-      </span>
-    </button>
-  );
-}
 
-/* An interactive, grainy gradient blob that follows the cursor — a small
-   nod to the old "welcome to my brain" VR playground, minus the headset.
-   Pure canvas 2D: a few soft radial blobs drift and react to the pointer,
-   with a subtle film-grain dither over the top. */
-function BrainGradient() {
+/* scattered positions (x%, y%) for each favourite thing across the brain map */
+const BRAIN_NODE_POS = [
+  [13, 26],
+  [37, 16],
+  [64, 20],
+  [89, 34],
+  [20, 68],
+  [46, 76],
+  [72, 62],
+  [90, 80],
+];
+
+/* An interactive, grainy gradient "brain" — a small nod to the old VR
+   playground, minus the headset. Each favourite thing is a glowing node
+   scattered across it; move your cursor (or drag, on touch) and whichever
+   node you're nearest lights up and reveals itself below. Tap/click pins it. */
+function BrainMap({ items }) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const stateRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const [pinnedIdx, setPinnedIdx] = useState(null);
+  const activeIdx = pinnedIdx ?? hoverIdx;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1255,18 +1232,6 @@ function BrainGradient() {
     }
     gctx.putImageData(gimg, 0, 0);
 
-    const onMove = (e) => {
-      const r = canvas.getBoundingClientRect();
-      stateRef.current.tx = (e.clientX - r.left) / r.width;
-      stateRef.current.ty = (e.clientY - r.top) / r.height;
-    };
-    canvas.addEventListener("pointermove", onMove);
-    const onLeave = () => {
-      stateRef.current.tx = 0.5;
-      stateRef.current.ty = 0.5;
-    };
-    canvas.addEventListener("pointerleave", onLeave);
-
     const draw = (t) => {
       const s = stateRef.current;
       s.x += (s.tx - s.x) * 0.045;
@@ -1303,20 +1268,113 @@ function BrainGradient() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerleave", onLeave);
     };
   }, []);
 
+  const onPointerMove = (e) => {
+    const r = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    stateRef.current.tx = x;
+    stateRef.current.ty = y;
+
+    let nearest = null,
+      nearestD = Infinity;
+    items.forEach((_, i) => {
+      const [nx, ny] = BRAIN_NODE_POS[i];
+      const dx = (nx / 100 - x) * r.width;
+      const dy = (ny / 100 - y) * r.height;
+      const d = Math.hypot(dx, dy);
+      if (d < nearestD) {
+        nearestD = d;
+        nearest = i;
+      }
+    });
+    setHoverIdx(nearestD < 80 ? nearest : null);
+  };
+  const onPointerLeave = () => {
+    stateRef.current.tx = 0.5;
+    stateRef.current.ty = 0.5;
+    setHoverIdx(null);
+  };
+
+  const active = activeIdx != null ? items[activeIdx] : null;
+
   return (
-    <div className="overflow-hidden rounded-xl ring-1 ring-black/10">
-      <canvas ref={canvasRef} className="block h-64 w-full cursor-crosshair sm:h-80" />
+    <div>
+      <div
+        ref={containerRef}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
+        className="relative cursor-crosshair overflow-hidden rounded-xl ring-1 ring-black/10"
+      >
+        <canvas ref={canvasRef} className="block h-[360px] w-full sm:h-[440px]" />
+        {items.map((it, i) => {
+          const [x, y] = BRAIN_NODE_POS[i];
+          const isActive = activeIdx === i;
+          return (
+            <button
+              key={it.title}
+              type="button"
+              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
+              aria-label={it.title}
+              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 focus:outline-none"
+              style={{ left: `${x}%`, top: `${y}%` }}
+            >
+              <span
+                className={`rounded-full bg-white transition-all duration-300 ${
+                  isActive ? "h-4 w-4 shadow-[0_0_18px_6px_rgba(255,255,255,0.7)]" : "h-2 w-2 opacity-60"
+                }`}
+              />
+              <span
+                className={`whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.15em] text-white transition-opacity duration-300 ${
+                  isActive ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {it.title}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* the reveal panel — whichever thought you've wandered into */}
+      <div className="mt-4 flex min-h-[132px] items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
+        {active ? (
+          <BrainReveal item={active} />
+        ) : (
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
+            move around, or tap a point, to wander through my brain
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
+function BrainReveal({ item }) {
+  const [ok, setOk] = useState(true);
+  return (
+    <>
+      {ok && (
+        <img
+          src={item.img}
+          alt={item.title}
+          onError={() => setOk(false)}
+          className="h-20 w-16 shrink-0 rounded-[3px] object-cover ring-1 ring-black/10"
+        />
+      )}
+      <div className="min-w-0">
+        <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-[#171411]">
+          {item.title}
+        </p>
+        <p className="mt-1 text-[13px] leading-snug text-[#5d5749]">{item.blurb}</p>
+      </div>
+    </>
+  );
+}
+
 export function AboutMe() {
-  const [open, setOpen] = useState(null);
   return (
     <section id="about" className="relative min-h-screen bg-white py-16">
       {/* corner labels */}
@@ -1329,53 +1387,34 @@ export function AboutMe() {
         </span>
       </div>
 
-      <div className="mx-auto mt-16 grid max-w-5xl gap-12 px-8 sm:px-14 lg:grid-cols-2">
-        {/* music */}
-        <div>
-          {/* interactive music — a 3D stack of favourite covers */}
-          <div className="mt-9">
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-                ♪ what's spinning in my ears
-              </p>
-              <a
-                href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
-              >
-                full playlist ↗
-              </a>
-            </div>
-            <AlbumStack songs={FAVE_SONGS} />
-          </div>
-        </div>
-
-        {/* interactive interests grid */}
-        <div>
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-            a few of my favourite things — tap to peek
-          </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {INTERESTS.map((it, i) => (
-              <InterestCard
-                key={it.title}
-                item={it}
-                active={open === i}
-                onToggle={() => setOpen(open === i ? null : i)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* a small nod to the old VR "welcome to my brain" concept — a
-          grainy, mouse-reactive gradient instead of a headset */}
       <div className="mx-auto mt-16 max-w-5xl px-8 sm:px-14">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-          welcome to my brain — move your cursor around
-        </p>
-        <BrainGradient />
+        {/* interactive music — a 3D stack of favourite covers */}
+        <div>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+              ♪ what's spinning in my ears
+            </p>
+            <a
+              href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+            >
+              full playlist ↗
+            </a>
+          </div>
+          <AlbumStack songs={FAVE_SONGS} />
+        </div>
+
+        {/* welcome to my brain — a nod to the old VR playground. every
+            favourite thing is a point scattered through it; wander the
+            cursor over the map (or tap, on touch) to surface each one. */}
+        <div className="mt-16">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+            welcome to my brain — move through it to find what I like
+          </p>
+          <BrainMap items={INTERESTS} />
+        </div>
       </div>
     </section>
   );
