@@ -1171,29 +1171,51 @@ function AlbumStack({ songs }) {
   );
 }
 
-/* scattered positions (x%, y%) for each favourite thing across the brain map */
-const BRAIN_NODE_POS = [
-  [13, 26],
-  [37, 16],
-  [64, 20],
-  [89, 34],
-  [20, 68],
-  [46, 76],
-  [72, 62],
-  [90, 80],
-];
+/* seeded RNG so the scattered layout is stable across renders */
+function seeded(s) {
+  let x = s;
+  return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+}
 
-/* An interactive, grainy gradient "brain" — a small nod to the old VR
-   playground, minus the headset. Each favourite thing is a glowing node
-   scattered across it; move your cursor (or drag, on touch) and whichever
-   node you're nearest lights up and reveals itself below. Tap/click pins it. */
+/* Every favourite thing echoes a few times around the brain — like a
+   recurring thought — so the map reads as dense as a real memory network
+   instead of eight lonely dots. Positions scatter in a ring around the
+   central glow, leaving the middle clear. */
+function useBrainNodes(items, echoesPerItem = 4) {
+  return useMemo(() => {
+    const rand = seeded(731);
+    const nodes = [];
+    items.forEach((_, itemIdx) => {
+      for (let e = 0; e < echoesPerItem; e++) {
+        const angle = rand() * Math.PI * 2;
+        const radius = 16 + rand() * 33; // % — ring around the centre glow
+        const x = Math.min(94, Math.max(6, 50 + Math.cos(angle) * radius));
+        const y = Math.min(92, Math.max(8, 50 + Math.sin(angle) * radius * 0.82));
+        nodes.push({
+          itemIdx,
+          x,
+          y,
+          rot: (rand() - 0.5) * 26,
+          size: 46 + rand() * 30,
+        });
+      }
+    });
+    return nodes;
+  }, [items, echoesPerItem]);
+}
+
+/* A dark, glowing "brain" — a small nod to the old VR playground. Every
+   favourite thing scatters a few photo-echoes around a central glow, joined
+   to the centre by thin lines like a memory network. Hover/tap a photo (or
+   any of its echoes) to bring it into full colour and read about it below. */
 function BrainMap({ items }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const stateRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
+  const pointerRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
   const [hoverIdx, setHoverIdx] = useState(null);
   const [pinnedIdx, setPinnedIdx] = useState(null);
   const activeIdx = pinnedIdx ?? hoverIdx;
+  const nodes = useBrainNodes(items, 4);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1214,12 +1236,6 @@ function BrainMap({ items }) {
     resize();
     window.addEventListener("resize", resize);
 
-    const BLOBS = [
-      { hue: 18, base: [0.32, 0.4], r: 0.55, speed: 0.00021, phase: 0 }, // copper
-      { hue: 28, base: [0.72, 0.32], r: 0.5, speed: 0.00017, phase: 2 }, // amber
-      { hue: 8, base: [0.55, 0.72], r: 0.6, speed: 0.00013, phase: 4 }, // rust
-    ];
-
     // pre-render a grain tile once — cheap to composite every frame
     const grain = document.createElement("canvas");
     grain.width = grain.height = 128;
@@ -1228,36 +1244,34 @@ function BrainMap({ items }) {
     for (let i = 0; i < gimg.data.length; i += 4) {
       const v = 255 * Math.random();
       gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v;
-      gimg.data[i + 3] = 14;
+      gimg.data[i + 3] = 12;
     }
     gctx.putImageData(gimg, 0, 0);
 
     const draw = (t) => {
-      const s = stateRef.current;
-      s.x += (s.tx - s.x) * 0.045;
-      s.y += (s.ty - s.y) * 0.045;
+      const p = pointerRef.current;
+      p.x += (p.tx - p.x) * 0.04;
+      p.y += (p.ty - p.y) * 0.04;
 
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "#141014";
       ctx.fillRect(0, 0, w, h);
 
-      BLOBS.forEach((b, i) => {
-        const drift = reduce ? 0 : t * b.speed + b.phase;
-        const px = (b.base[0] + Math.sin(drift) * 0.12 + (s.x - 0.5) * 0.5) * w;
-        const py = (b.base[1] + Math.cos(drift * 1.3) * 0.12 + (s.y - 0.5) * 0.5) * h;
-        const rad = b.r * Math.max(w, h);
-        const grad = ctx.createRadialGradient(px, py, 0, px, py, rad);
-        grad.addColorStop(0, `hsla(${b.hue}, 70%, ${i === 1 ? 62 : 46}%, 0.9)`);
-        grad.addColorStop(0.55, `hsla(${b.hue}, 65%, 38%, 0.45)`);
-        grad.addColorStop(1, "hsla(0,0%,0%,0)");
-        ctx.globalCompositeOperation = i === 0 ? "source-over" : "screen";
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-      });
+      // one warm sun, slow breathing pulse, gentle parallax toward the pointer
+      const pulse = reduce ? 1 : 1 + Math.sin(t * 0.0006) * 0.06;
+      const cx = w * (0.5 + (p.x - 0.5) * 0.12);
+      const cy = h * (0.48 + (p.y - 0.5) * 0.12);
+      const rad = Math.max(w, h) * 0.5 * pulse;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+      grad.addColorStop(0, "hsla(28, 85%, 62%, 0.95)");
+      grad.addColorStop(0.35, "hsla(20, 75%, 46%, 0.55)");
+      grad.addColorStop(0.7, "hsla(10, 60%, 30%, 0.22)");
+      grad.addColorStop(1, "hsla(0,0%,0%,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
 
       ctx.globalCompositeOperation = "overlay";
-      const pat = ctx.createPattern(grain, "repeat");
-      ctx.fillStyle = pat;
+      ctx.fillStyle = ctx.createPattern(grain, "repeat");
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = "source-over";
 
@@ -1273,29 +1287,12 @@ function BrainMap({ items }) {
 
   const onPointerMove = (e) => {
     const r = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    stateRef.current.tx = x;
-    stateRef.current.ty = y;
-
-    let nearest = null,
-      nearestD = Infinity;
-    items.forEach((_, i) => {
-      const [nx, ny] = BRAIN_NODE_POS[i];
-      const dx = (nx / 100 - x) * r.width;
-      const dy = (ny / 100 - y) * r.height;
-      const d = Math.hypot(dx, dy);
-      if (d < nearestD) {
-        nearestD = d;
-        nearest = i;
-      }
-    });
-    setHoverIdx(nearestD < 80 ? nearest : null);
+    pointerRef.current.tx = (e.clientX - r.left) / r.width;
+    pointerRef.current.ty = (e.clientY - r.top) / r.height;
   };
   const onPointerLeave = () => {
-    stateRef.current.tx = 0.5;
-    stateRef.current.ty = 0.5;
-    setHoverIdx(null);
+    pointerRef.current.tx = 0.5;
+    pointerRef.current.ty = 0.5;
   };
 
   const active = activeIdx != null ? items[activeIdx] : null;
@@ -1306,33 +1303,50 @@ function BrainMap({ items }) {
         ref={containerRef}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
-        className="relative cursor-crosshair overflow-hidden rounded-xl ring-1 ring-black/10"
+        className="relative overflow-hidden rounded-xl ring-1 ring-black/10"
       >
-        <canvas ref={canvasRef} className="block h-[360px] w-full sm:h-[440px]" />
-        {items.map((it, i) => {
-          const [x, y] = BRAIN_NODE_POS[i];
-          const isActive = activeIdx === i;
+        <canvas ref={canvasRef} className="block h-[400px] w-full sm:h-[500px]" />
+
+        {/* thin lines from the centre glow to every echo, like a memory network */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {nodes.map((n, i) => {
+            const isActive = n.itemIdx === activeIdx;
+            const mx = (50 + n.x) / 2 + (n.y - 50) * 0.08;
+            const my = (48 + n.y) / 2 - (n.x - 50) * 0.08;
+            return (
+              <path
+                key={i}
+                d={`M50,48 Q${mx},${my} ${n.x},${n.y}`}
+                fill="none"
+                stroke={isActive ? "rgba(255,205,150,0.85)" : "rgba(255,205,150,0.16)"}
+                strokeWidth={isActive ? 0.35 : 0.18}
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
+        </svg>
+
+        {nodes.map((n, i) => {
+          const it = items[n.itemIdx];
+          const isActive = n.itemIdx === activeIdx;
           return (
             <button
-              key={it.title}
+              key={i}
               type="button"
-              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
+              onMouseEnter={() => setHoverIdx(n.itemIdx)}
+              onMouseLeave={() => setHoverIdx((cur) => (cur === n.itemIdx ? null : cur))}
+              onClick={() => setPinnedIdx((cur) => (cur === n.itemIdx ? null : n.itemIdx))}
               aria-label={it.title}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 focus:outline-none"
-              style={{ left: `${x}%`, top: `${y}%` }}
+              className="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none"
+              style={{
+                left: `${n.x}%`,
+                top: `${n.y}%`,
+                width: n.size,
+                height: n.size,
+                zIndex: isActive ? 20 : 1,
+              }}
             >
-              <span
-                className={`rounded-full bg-white transition-all duration-300 ${
-                  isActive ? "h-4 w-4 shadow-[0_0_18px_6px_rgba(255,255,255,0.7)]" : "h-2 w-2 opacity-60"
-                }`}
-              />
-              <span
-                className={`whitespace-nowrap font-mono text-[9px] uppercase tracking-[0.15em] text-white transition-opacity duration-300 ${
-                  isActive ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                {it.title}
-              </span>
+              <BrainNodeThumb item={it} active={isActive} rot={n.rot} />
             </button>
           );
         })}
@@ -1344,10 +1358,37 @@ function BrainMap({ items }) {
           <BrainReveal item={active} />
         ) : (
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
-            move around, or tap a point, to wander through my brain
+            move around, or tap a photo, to wander through my brain
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+function BrainNodeThumb({ item, active, rot }) {
+  const [ok, setOk] = useState(true);
+  return (
+    <div
+      className="h-full w-full overflow-hidden rounded-[4px] shadow-lg ring-1 transition-all duration-300"
+      style={{
+        transform: `rotate(${rot}deg) scale(${active ? 1.28 : 1})`,
+        filter: active ? "grayscale(0) brightness(1.05)" : "grayscale(0.85) brightness(0.55)",
+        opacity: active ? 1 : 0.85,
+        boxShadow: active ? "0 10px 26px rgba(0,0,0,0.5)" : "0 4px 10px rgba(0,0,0,0.35)",
+      }}
+    >
+      {ok ? (
+        <img
+          src={item.img}
+          alt=""
+          loading="lazy"
+          onError={() => setOk(false)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="h-full w-full bg-gradient-to-br from-[#3a352c] to-[#171411]" />
+      )}
     </div>
   );
 }
