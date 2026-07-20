@@ -1177,188 +1177,121 @@ function seeded(s) {
   return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
 }
 
-/* Every favourite thing echoes a few times around the brain — like a
-   recurring thought — so the map reads as dense as a real memory network
-   instead of eight lonely dots. Positions scatter in a ring around the
-   central glow, leaving the middle clear. */
-function useBrainNodes(items, echoesPerItem = 4) {
+/* One node per favourite thing, evenly spaced around a ring (with a touch of
+   jitter so it doesn't look robotic). */
+function useRingPositions(count, radius, jitter, seed = 4111) {
   return useMemo(() => {
-    const rand = seeded(731);
-    const nodes = [];
-    items.forEach((_, itemIdx) => {
-      for (let e = 0; e < echoesPerItem; e++) {
-        const angle = rand() * Math.PI * 2;
-        const radius = 16 + rand() * 33; // % — ring around the centre glow
-        const x = Math.min(94, Math.max(6, 50 + Math.cos(angle) * radius));
-        const y = Math.min(92, Math.max(8, 50 + Math.sin(angle) * radius * 0.82));
-        nodes.push({
-          itemIdx,
-          x,
-          y,
-          rot: (rand() - 0.5) * 26,
-          size: 46 + rand() * 30,
-        });
-      }
+    const rand = seeded(seed);
+    return Array.from({ length: count }, (_, i) => {
+      const angle = (-90 + i * (360 / count)) * (Math.PI / 180);
+      const r = radius + (rand() - 0.5) * jitter;
+      return {
+        x: 50 + Math.cos(angle) * r,
+        y: 50 + Math.sin(angle) * r,
+        rot: (rand() - 0.5) * 16,
+      };
     });
-    return nodes;
-  }, [items, echoesPerItem]);
+  }, [count, radius, jitter, seed]);
 }
 
-/* A dark, glowing "brain" — a small nod to the old VR playground. Every
-   favourite thing scatters a few photo-echoes around a central glow, joined
-   to the centre by thin lines like a memory network. Hover/tap a photo (or
-   any of its echoes) to bring it into full colour and read about it below. */
-function BrainMap({ items }) {
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const pointerRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
+/* Little sesame seeds scattered across the ring band, purely decorative. */
+function BagelSeeds({ count = 46 }) {
+  const seeds = useMemo(() => {
+    const rand = seeded(909);
+    return Array.from({ length: count }, () => {
+      const angle = rand() * Math.PI * 2;
+      const r = 24 + rand() * 22;
+      return {
+        x: 50 + Math.cos(angle) * r,
+        y: 50 + Math.sin(angle) * r,
+        rot: rand() * 360,
+        w: 2.1 + rand() * 1.5,
+      };
+    });
+  }, [count]);
+  return (
+    <>
+      {seeds.map((s, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full bg-[#f6e9c8]/90"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: `${s.w}%`,
+            height: `${s.w * 0.55}%`,
+            transform: `translate(-50%, -50%) rotate(${s.rot}deg)`,
+            boxShadow: "0 1px 1px rgba(120,80,20,0.35)",
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+/* A warm, CSS-drawn bagel with one photo per favourite thing sitting evenly
+   around the ring — hover (or tap, on touch) to bring one forward and read
+   about it in the panel below. */
+function BagelRing({ items }) {
   const [hoverIdx, setHoverIdx] = useState(null);
   const [pinnedIdx, setPinnedIdx] = useState(null);
   const activeIdx = pinnedIdx ?? hoverIdx;
-  const nodes = useBrainNodes(items, 4);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-    let raf;
-    let w = 0,
-      h = 0,
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-
-    const resize = () => {
-      const r = canvas.getBoundingClientRect();
-      w = canvas.width = Math.round(r.width * dpr);
-      h = canvas.height = Math.round(r.height * dpr);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // pre-render a grain tile once — cheap to composite every frame
-    const grain = document.createElement("canvas");
-    grain.width = grain.height = 128;
-    const gctx = grain.getContext("2d");
-    const gimg = gctx.createImageData(128, 128);
-    for (let i = 0; i < gimg.data.length; i += 4) {
-      const v = 255 * Math.random();
-      gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v;
-      gimg.data[i + 3] = 12;
-    }
-    gctx.putImageData(gimg, 0, 0);
-
-    const draw = (t) => {
-      const p = pointerRef.current;
-      p.x += (p.tx - p.x) * 0.04;
-      p.y += (p.ty - p.y) * 0.04;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "#141014";
-      ctx.fillRect(0, 0, w, h);
-
-      // one warm sun, slow breathing pulse, gentle parallax toward the pointer
-      const pulse = reduce ? 1 : 1 + Math.sin(t * 0.0006) * 0.06;
-      const cx = w * (0.5 + (p.x - 0.5) * 0.12);
-      const cy = h * (0.48 + (p.y - 0.5) * 0.12);
-      const rad = Math.max(w, h) * 0.5 * pulse;
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
-      grad.addColorStop(0, "hsla(28, 85%, 62%, 0.95)");
-      grad.addColorStop(0.35, "hsla(20, 75%, 46%, 0.55)");
-      grad.addColorStop(0.7, "hsla(10, 60%, 30%, 0.22)");
-      grad.addColorStop(1, "hsla(0,0%,0%,0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      ctx.globalCompositeOperation = "overlay";
-      ctx.fillStyle = ctx.createPattern(grain, "repeat");
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "source-over";
-
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  const onPointerMove = (e) => {
-    const r = containerRef.current.getBoundingClientRect();
-    pointerRef.current.tx = (e.clientX - r.left) / r.width;
-    pointerRef.current.ty = (e.clientY - r.top) / r.height;
-  };
-  const onPointerLeave = () => {
-    pointerRef.current.tx = 0.5;
-    pointerRef.current.ty = 0.5;
-  };
-
+  const positions = useRingPositions(items.length, 35, 5);
   const active = activeIdx != null ? items[activeIdx] : null;
 
   return (
     <div>
-      <div
-        ref={containerRef}
-        onPointerMove={onPointerMove}
-        onPointerLeave={onPointerLeave}
-        className="relative overflow-hidden rounded-xl ring-1 ring-black/10"
-      >
-        <canvas ref={canvasRef} className="block h-[400px] w-full sm:h-[500px]" />
-
-        {/* thin lines from the centre glow to every echo, like a memory network */}
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {nodes.map((n, i) => {
-            const isActive = n.itemIdx === activeIdx;
-            const mx = (50 + n.x) / 2 + (n.y - 50) * 0.08;
-            const my = (48 + n.y) / 2 - (n.x - 50) * 0.08;
-            return (
-              <path
-                key={i}
-                d={`M50,48 Q${mx},${my} ${n.x},${n.y}`}
-                fill="none"
-                stroke={isActive ? "rgba(255,205,150,0.85)" : "rgba(255,205,150,0.16)"}
-                strokeWidth={isActive ? 0.35 : 0.18}
-                vectorEffect="non-scaling-stroke"
-              />
-            );
-          })}
+      <div className="relative mx-auto aspect-square w-full max-w-[440px]">
+        {/* the bagel */}
+        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden="true">
+          <defs>
+            <radialGradient id="bagelGrad" cx="42%" cy="38%" r="75%">
+              <stop offset="0%" stopColor="#e3ab5c" />
+              <stop offset="55%" stopColor="#c9873f" />
+              <stop offset="100%" stopColor="#8f5c28" />
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="url(#bagelGrad)" strokeWidth="22" />
+          <circle
+            cx="50"
+            cy="50"
+            r="35"
+            fill="none"
+            stroke="rgba(0,0,0,0.14)"
+            strokeWidth="22"
+            strokeDasharray="0.5 2.6"
+            strokeLinecap="round"
+          />
         </svg>
+        <BagelSeeds />
 
-        {nodes.map((n, i) => {
-          const it = items[n.itemIdx];
-          const isActive = n.itemIdx === activeIdx;
+        {items.map((it, i) => {
+          const p = positions[i];
+          const isActive = activeIdx === i;
           return (
             <button
-              key={i}
+              key={it.title}
               type="button"
-              onMouseEnter={() => setHoverIdx(n.itemIdx)}
-              onMouseLeave={() => setHoverIdx((cur) => (cur === n.itemIdx ? null : cur))}
-              onClick={() => setPinnedIdx((cur) => (cur === n.itemIdx ? null : n.itemIdx))}
+              onMouseEnter={() => setHoverIdx(i)}
+              onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
+              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
               aria-label={it.title}
               className="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-              style={{
-                left: `${n.x}%`,
-                top: `${n.y}%`,
-                width: n.size,
-                height: n.size,
-                zIndex: isActive ? 20 : 1,
-              }}
+              style={{ left: `${p.x}%`, top: `${p.y}%`, width: "19%", zIndex: isActive ? 20 : 1 }}
             >
-              <BrainNodeThumb item={it} active={isActive} rot={n.rot} />
+              <BagelNodeThumb item={it} active={isActive} rot={p.rot} />
             </button>
           );
         })}
       </div>
 
-      {/* the reveal panel — whichever thought you've wandered into */}
-      <div className="mt-4 flex min-h-[132px] items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
+      {/* the reveal panel — whichever thing you've landed on */}
+      <div className="mt-5 flex min-h-[112px] items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
         {active ? (
-          <BrainReveal item={active} />
+          <InterestReveal item={active} />
         ) : (
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
-            move around, or tap a photo, to wander through my brain
+            hover or tap a topping to see what it is
           </p>
         )}
       </div>
@@ -1366,16 +1299,16 @@ function BrainMap({ items }) {
   );
 }
 
-function BrainNodeThumb({ item, active, rot }) {
+function BagelNodeThumb({ item, active, rot }) {
   const [ok, setOk] = useState(true);
   return (
     <div
-      className="h-full w-full overflow-hidden rounded-[4px] shadow-lg ring-1 transition-all duration-300"
+      className={`aspect-square w-full overflow-hidden rounded-[6px] ring-2 transition-all duration-300 ${
+        active ? "ring-[#171411]" : "ring-white/70"
+      }`}
       style={{
-        transform: `rotate(${rot}deg) scale(${active ? 1.28 : 1})`,
-        filter: active ? "grayscale(0) brightness(1.05)" : "grayscale(0.85) brightness(0.55)",
-        opacity: active ? 1 : 0.85,
-        boxShadow: active ? "0 10px 26px rgba(0,0,0,0.5)" : "0 4px 10px rgba(0,0,0,0.35)",
+        transform: `rotate(${rot}deg) scale(${active ? 1.22 : 1})`,
+        boxShadow: active ? "0 12px 24px rgba(0,0,0,0.4)" : "0 4px 10px rgba(0,0,0,0.25)",
       }}
     >
       {ok ? (
@@ -1387,13 +1320,13 @@ function BrainNodeThumb({ item, active, rot }) {
           className="h-full w-full object-cover"
         />
       ) : (
-        <div className="h-full w-full bg-gradient-to-br from-[#3a352c] to-[#171411]" />
+        <div className="h-full w-full bg-gradient-to-br from-[#f6f4f0] to-[#e6e2d8]" />
       )}
     </div>
   );
 }
 
-function BrainReveal({ item }) {
+function InterestReveal({ item }) {
   const [ok, setOk] = useState(true);
   return (
     <>
@@ -1447,14 +1380,16 @@ export function AboutMe() {
           <AlbumStack songs={FAVE_SONGS} />
         </div>
 
-        {/* welcome to my brain — a nod to the old VR playground. every
-            favourite thing is a point scattered through it; wander the
-            cursor over the map (or tap, on touch) to surface each one. */}
-        <div className="mt-16">
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-            welcome to my brain — move through it to find what I like
+        {/* one bagel, one topping per favourite thing */}
+        <div className="mt-16 text-center">
+          <h2 className="font-sans text-2xl font-semibold text-[#171411] sm:text-3xl">
+            Everything <span className="font-normal text-black/40">(about me)</span>{" "}
+            <span aria-hidden="true">🥯</span>
+          </h2>
+          <p className="mb-6 mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+            hover or tap a topping to find out what it is
           </p>
-          <BrainMap items={INTERESTS} />
+          <BagelRing items={INTERESTS} />
         </div>
       </div>
     </section>
