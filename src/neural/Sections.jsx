@@ -1210,6 +1210,111 @@ function InterestCard({ item, active, onToggle }) {
   );
 }
 
+/* An interactive, grainy gradient blob that follows the cursor — a small
+   nod to the old "welcome to my brain" VR playground, minus the headset.
+   Pure canvas 2D: a few soft radial blobs drift and react to the pointer,
+   with a subtle film-grain dither over the top. */
+function BrainGradient() {
+  const canvasRef = useRef(null);
+  const stateRef = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    let raf;
+    let w = 0,
+      h = 0,
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      w = canvas.width = Math.round(r.width * dpr);
+      h = canvas.height = Math.round(r.height * dpr);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const BLOBS = [
+      { hue: 18, base: [0.32, 0.4], r: 0.55, speed: 0.00021, phase: 0 }, // copper
+      { hue: 28, base: [0.72, 0.32], r: 0.5, speed: 0.00017, phase: 2 }, // amber
+      { hue: 8, base: [0.55, 0.72], r: 0.6, speed: 0.00013, phase: 4 }, // rust
+    ];
+
+    // pre-render a grain tile once — cheap to composite every frame
+    const grain = document.createElement("canvas");
+    grain.width = grain.height = 128;
+    const gctx = grain.getContext("2d");
+    const gimg = gctx.createImageData(128, 128);
+    for (let i = 0; i < gimg.data.length; i += 4) {
+      const v = 255 * Math.random();
+      gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v;
+      gimg.data[i + 3] = 14;
+    }
+    gctx.putImageData(gimg, 0, 0);
+
+    const onMove = (e) => {
+      const r = canvas.getBoundingClientRect();
+      stateRef.current.tx = (e.clientX - r.left) / r.width;
+      stateRef.current.ty = (e.clientY - r.top) / r.height;
+    };
+    canvas.addEventListener("pointermove", onMove);
+    const onLeave = () => {
+      stateRef.current.tx = 0.5;
+      stateRef.current.ty = 0.5;
+    };
+    canvas.addEventListener("pointerleave", onLeave);
+
+    const draw = (t) => {
+      const s = stateRef.current;
+      s.x += (s.tx - s.x) * 0.045;
+      s.y += (s.ty - s.y) * 0.045;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#141014";
+      ctx.fillRect(0, 0, w, h);
+
+      BLOBS.forEach((b, i) => {
+        const drift = reduce ? 0 : t * b.speed + b.phase;
+        const px = (b.base[0] + Math.sin(drift) * 0.12 + (s.x - 0.5) * 0.5) * w;
+        const py = (b.base[1] + Math.cos(drift * 1.3) * 0.12 + (s.y - 0.5) * 0.5) * h;
+        const rad = b.r * Math.max(w, h);
+        const grad = ctx.createRadialGradient(px, py, 0, px, py, rad);
+        grad.addColorStop(0, `hsla(${b.hue}, 70%, ${i === 1 ? 62 : 46}%, 0.9)`);
+        grad.addColorStop(0.55, `hsla(${b.hue}, 65%, 38%, 0.45)`);
+        grad.addColorStop(1, "hsla(0,0%,0%,0)");
+        ctx.globalCompositeOperation = i === 0 ? "source-over" : "screen";
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      });
+
+      ctx.globalCompositeOperation = "overlay";
+      const pat = ctx.createPattern(grain, "repeat");
+      ctx.fillStyle = pat;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerleave", onLeave);
+    };
+  }, []);
+
+  return (
+    <div className="overflow-hidden rounded-xl ring-1 ring-black/10">
+      <canvas ref={canvasRef} className="block h-64 w-full cursor-crosshair sm:h-80" />
+    </div>
+  );
+}
+
 export function AboutMe() {
   const [open, setOpen] = useState(null);
   return (
@@ -1231,7 +1336,7 @@ export function AboutMe() {
           <div className="mt-9">
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-                ♪ cds in my ears
+                ♪ what's spinning in my ears
               </p>
               <a
                 href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
@@ -1262,6 +1367,15 @@ export function AboutMe() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* a small nod to the old VR "welcome to my brain" concept — a
+          grainy, mouse-reactive gradient instead of a headset */}
+      <div className="mx-auto mt-16 max-w-5xl px-8 sm:px-14">
+        <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+          welcome to my brain — move your cursor around
+        </p>
+        <BrainGradient />
       </div>
     </section>
   );
