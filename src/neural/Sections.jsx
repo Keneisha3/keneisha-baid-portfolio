@@ -1065,7 +1065,7 @@ function AlbumStack({ songs }) {
   return (
     <div>
       <div
-        className="album-scroll h-[300px] overflow-y-auto overflow-x-hidden px-2 py-6"
+        className="album-scroll h-[250px] overflow-y-auto overflow-x-hidden px-2 py-5"
         style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
         onMouseMove={(e) => setActive(cardAt(e.clientY))}
         onMouseLeave={() => setActive(null)}
@@ -1645,7 +1645,7 @@ function BrainArcPhoto({ item, pos, hue }) {
 
 export function AboutMe() {
   return (
-    <section id="about" className="relative min-h-screen bg-white py-8">
+    <section id="about" className="relative min-h-screen bg-white py-5">
       {/* corner labels */}
       <div className="flex items-start justify-between px-8 sm:px-14">
         <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
@@ -1656,7 +1656,7 @@ export function AboutMe() {
         </span>
       </div>
 
-      <div className="mx-auto mt-6 max-w-5xl px-8 sm:px-14">
+      <div className="mx-auto mt-4 max-w-5xl px-8 sm:px-14">
         {/* interactive music — a 3D stack of favourite covers */}
         <div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -1676,7 +1676,7 @@ export function AboutMe() {
         </div>
 
         {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
-        <div className="mx-auto mt-6 max-w-md">
+        <div className="mx-auto mt-4 max-w-sm">
           <NeuralMap items={INTERESTS} />
         </div>
       </div>
