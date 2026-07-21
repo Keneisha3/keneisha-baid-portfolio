@@ -1656,28 +1656,30 @@ export function AboutMe() {
         </span>
       </div>
 
-      <div className="mx-auto mt-4 max-w-5xl px-8 sm:px-14">
-        {/* interactive music — a 3D stack of favourite covers */}
-        <div>
-          <div className="mb-2 flex items-baseline justify-between gap-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-              ♪ what's spinning in my ears
-            </p>
-            <a
-              href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
-            >
-              full playlist ↗
-            </a>
+      <div className="mx-auto mt-4 max-w-6xl px-8 sm:px-14">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+          {/* interactive music — a 3D stack of favourite covers */}
+          <div>
+            <div className="mb-2 flex items-baseline justify-between gap-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+                ♪ what's spinning in my ears
+              </p>
+              <a
+                href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+              >
+                full playlist ↗
+              </a>
+            </div>
+            <AlbumStack songs={FAVE_SONGS} />
           </div>
-          <AlbumStack songs={FAVE_SONGS} />
-        </div>
 
-        {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
-        <div className="mx-auto mt-4 max-w-sm">
-          <NeuralMap items={INTERESTS} />
+          {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
+          <div className="mx-auto w-full max-w-sm">
+            <NeuralMap items={INTERESTS} />
+          </div>
         </div>
       </div>
     </section>
