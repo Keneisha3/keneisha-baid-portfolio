@@ -332,51 +332,54 @@ export const FAVE_SONGS = [
   },
 ];
 
+// NOTE: Swimming is pending a replacement photo (the old one was cut) —
+// re-add it here with `category: "Free Time"` once a new image is in.
 export const INTERESTS = [
   {
-    title: "Swimming",
-    blurb: "Laps are my reset button, early mornings and late nights in the pool are like meditation on steroids.",
-    img: "/photos/IMG_8019.jpeg",
-    tag: "Off the clock",
-  },
-  {
     title: "Paris",
+    category: "Travel",
     blurb: "Wandering, pastries, and far too many photos of the eiffel tower.",
     img: "/photos/IMG_0858.jpeg",
     tag: "Never had my daily caloric intake so full of bread before.",
   },
   {
     title: "Venice",
+    category: "Travel",
     blurb: "Coastlines, espresso, and the best pasta of my life.",
     img: "/photos/IMG_3092.jpeg",
     tag: "Venice when can I see you next?",
   },
   {
     title: "Electric guitar",
+    category: "Free Time",
     blurb: "I’ve been playing guitar since I was a kid, so long that my fingers know chords faster than I can remember where I left my keys.",
     img: "/photos/IMG_9151.JPG",
     tag: "My dream collection.",
   },
   {
     title: "Coffee & Red Bull",
+    category: "Free Time",
     blurb: "My two essential food groups during a deadline.",
     img: "/photos/IMG_9152.JPG",
     tag: "My diet on a deadline.",
   },
   {
     title: "Drake",
+    category: "Music",
     blurb: "On repeat while I lock in",
     img: "/photos/IMG_9153.JPG",
     tag: "On repeat whenever I lock in.",
   },
   {
     title: "Suits",
+    category: "TV",
     blurb: "Comfort rewatch. I think I'm right as often as Harvey.",
     img: "/photos/IMG_9154.JPG",
     tag: "Comfort rewatch! I think I'm right as often as Harvey.",
   },
   {
     title: "Industry",
+    category: "TV",
     blurb: "Couldn't look away and LOVED the finance aspect.",
     img: "/photos/IMG_9155.JPG",
     tag: "Couldn't look away and LOVED the finance aspect.",

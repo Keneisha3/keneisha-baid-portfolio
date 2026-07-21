@@ -1171,158 +1171,194 @@ function AlbumStack({ songs }) {
   );
 }
 
-/* seeded RNG so the scattered layout is stable across renders */
-function seeded(s) {
-  let x = s;
-  return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
-}
-
-/* One node per favourite thing, evenly spaced around a ring (with a touch of
-   jitter so it doesn't look robotic). */
-function useRingPositions(count, radius, jitter, seed = 4111) {
-  return useMemo(() => {
-    const rand = seeded(seed);
-    return Array.from({ length: count }, (_, i) => {
-      const angle = (-90 + i * (360 / count)) * (Math.PI / 180);
-      const r = radius + (rand() - 0.5) * jitter;
-      return {
-        x: 50 + Math.cos(angle) * r,
-        y: 50 + Math.sin(angle) * r,
-        rot: (rand() - 0.5) * 16,
-      };
-    });
-  }, [count, radius, jitter, seed]);
-}
-
-/* Little sesame seeds scattered across the ring band, purely decorative. */
-function BagelSeeds({ count = 46 }) {
-  const seeds = useMemo(() => {
-    const rand = seeded(909);
-    return Array.from({ length: count }, () => {
-      const angle = rand() * Math.PI * 2;
-      const r = 24 + rand() * 22;
-      return {
-        x: 50 + Math.cos(angle) * r,
-        y: 50 + Math.sin(angle) * r,
-        rot: rand() * 360,
-        w: 2.1 + rand() * 1.5,
-      };
-    });
-  }, [count]);
+/* the actual bagel photo — drop a file into public/bagel.jpg and this shows
+   it; until then, a warm CSS-drawn bagel stands in so nothing looks broken */
+const BAGEL_IMG = "/bagel.jpg";
+function BagelBackground({ onReady }) {
+  const [ok, setOk] = useState(true);
+  if (ok)
+    return (
+      <img
+        src={BAGEL_IMG}
+        alt="A bagel with cream cheese"
+        onLoad={() => onReady?.(true)}
+        onError={() => {
+          setOk(false);
+          onReady?.(false);
+        }}
+        className="absolute inset-0 h-full w-full rounded-full object-cover"
+      />
+    );
   return (
-    <>
-      {seeds.map((s, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full bg-[#f6e9c8]/90"
-          style={{
-            left: `${s.x}%`,
-            top: `${s.y}%`,
-            width: `${s.w}%`,
-            height: `${s.w * 0.55}%`,
-            transform: `translate(-50%, -50%) rotate(${s.rot}deg)`,
-            boxShadow: "0 1px 1px rgba(120,80,20,0.35)",
-          }}
-        />
-      ))}
-    </>
+    <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden="true">
+      <defs>
+        <radialGradient id="bagelGrad" cx="42%" cy="38%" r="75%">
+          <stop offset="0%" stopColor="#e3ab5c" />
+          <stop offset="55%" stopColor="#c9873f" />
+          <stop offset="100%" stopColor="#8f5c28" />
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="35" fill="none" stroke="url(#bagelGrad)" strokeWidth="22" />
+      <circle
+        cx="50"
+        cy="50"
+        r="35"
+        fill="none"
+        stroke="rgba(0,0,0,0.14)"
+        strokeWidth="22"
+        strokeDasharray="0.5 2.6"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
-/* A warm, CSS-drawn bagel with one photo per favourite thing sitting evenly
-   around the ring — hover (or tap, on touch) to bring one forward and read
-   about it in the panel below. */
+/* measures a ref's rendered width, live, so the orbit radius stays correct
+   at any screen size */
+function useWidth(ref) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    if (!ref.current) return;
+    const ro = new ResizeObserver((entries) => setW(entries[0].contentRect.width));
+    ro.observe(ref.current);
+    return () => ro.disconnect();
+  }, [ref]);
+  return w;
+}
+
+const ORBIT_SECONDS = 50;
+
+/* group the favourite things into a few named sections, in a fixed order */
+const CATEGORY_ORDER = ["Travel", "Music", "TV", "Free Time"];
+function groupByCategory(items) {
+  const byCat = {};
+  items.forEach((it) => {
+    (byCat[it.category] ??= []).push(it);
+  });
+  return CATEGORY_ORDER.filter((c) => byCat[c]).map((c) => ({ category: c, items: byCat[c] }));
+}
+
+/* The bagel: a real photo (or a CSS stand-in) with just a few section names
+   on the cream cheese, slowly orbiting the ring. Hover (or tap, on touch) to
+   pause and open that section below — Travel gets its own airplane-screen
+   wall, everything else gets a simple photo + note. */
 function BagelRing({ items }) {
+  const categories = useMemo(() => groupByCategory(items), [items]);
+  const containerRef = useRef(null);
+  const width = useWidth(containerRef);
+  const radius = width * 0.35;
   const [hoverIdx, setHoverIdx] = useState(null);
   const [pinnedIdx, setPinnedIdx] = useState(null);
   const activeIdx = pinnedIdx ?? hoverIdx;
-  const positions = useRingPositions(items.length, 35, 5);
-  const active = activeIdx != null ? items[activeIdx] : null;
+  const active = activeIdx != null ? categories[activeIdx] : null;
 
   return (
     <div>
-      <div className="relative mx-auto aspect-square w-full max-w-[440px]">
-        {/* the bagel */}
-        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden="true">
-          <defs>
-            <radialGradient id="bagelGrad" cx="42%" cy="38%" r="75%">
-              <stop offset="0%" stopColor="#e3ab5c" />
-              <stop offset="55%" stopColor="#c9873f" />
-              <stop offset="100%" stopColor="#8f5c28" />
-            </radialGradient>
-          </defs>
-          <circle cx="50" cy="50" r="35" fill="none" stroke="url(#bagelGrad)" strokeWidth="22" />
-          <circle
-            cx="50"
-            cy="50"
-            r="35"
-            fill="none"
-            stroke="rgba(0,0,0,0.14)"
-            strokeWidth="22"
-            strokeDasharray="0.5 2.6"
-            strokeLinecap="round"
-          />
-        </svg>
-        <BagelSeeds />
+      <div ref={containerRef} className="relative mx-auto aspect-square w-full max-w-[440px] overflow-hidden rounded-full">
+        <BagelBackground />
 
-        {items.map((it, i) => {
-          const p = positions[i];
+        {categories.map((cat, i) => {
           const isActive = activeIdx === i;
+          const delay = `${-(i / categories.length) * ORBIT_SECONDS}s`;
           return (
-            <button
-              key={it.title}
-              type="button"
-              onMouseEnter={() => setHoverIdx(i)}
-              onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
-              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
-              aria-label={it.title}
-              className="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-              style={{ left: `${p.x}%`, top: `${p.y}%`, width: "19%", zIndex: isActive ? 20 : 1 }}
+            <div
+              key={cat.category}
+              className="bagel-orbit-outer absolute left-1/2 top-1/2 h-0 w-0"
+              style={{ animationDuration: `${ORBIT_SECONDS}s`, animationDelay: delay, animationPlayState: isActive ? "paused" : "running" }}
             >
-              <BagelNodeThumb item={it} active={isActive} rot={p.rot} />
-            </button>
+              <div style={{ transform: `translateX(${radius}px)` }}>
+                <div
+                  className="bagel-orbit-counter"
+                  style={{ animationDuration: `${ORBIT_SECONDS}s`, animationDelay: delay, animationPlayState: isActive ? "paused" : "running" }}
+                >
+                  <button
+                    type="button"
+                    onMouseEnter={() => setHoverIdx(i)}
+                    onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
+                    onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
+                    className="-translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-2 py-1 font-sans uppercase tracking-[0.08em] transition-all duration-200 focus:outline-none"
+                    style={{
+                      fontSize: isActive ? 15 : 13,
+                      fontWeight: isActive ? 700 : 600,
+                      color: "#3a2c14",
+                      textShadow: "0 1px 2px rgba(255,255,255,0.65)",
+                    }}
+                  >
+                    {cat.category}
+                  </button>
+                </div>
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* the reveal panel — whichever thing you've landed on */}
-      <div className="mt-5 flex min-h-[112px] items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
+      {/* whichever section you've landed on */}
+      <div className="mt-5">
         {active ? (
-          <InterestReveal item={active} />
+          <CategoryDetail category={active.category} items={active.items} />
         ) : (
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
-            hover or tap a topping to see what it is
-          </p>
+          <div className="flex min-h-[112px] items-center rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
+              hover or tap a topping to open that part of my life
+            </p>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function BagelNodeThumb({ item, active, rot }) {
-  const [ok, setOk] = useState(true);
+function CategoryDetail({ category, items }) {
+  if (category === "Travel") return <TravelScreens items={items} />;
   return (
-    <div
-      className={`aspect-square w-full overflow-hidden rounded-[6px] ring-2 transition-all duration-300 ${
-        active ? "ring-[#171411]" : "ring-white/70"
-      }`}
-      style={{
-        transform: `rotate(${rot}deg) scale(${active ? 1.22 : 1})`,
-        boxShadow: active ? "0 12px 24px rgba(0,0,0,0.4)" : "0 4px 10px rgba(0,0,0,0.25)",
-      }}
-    >
-      {ok ? (
-        <img
-          src={item.img}
-          alt=""
-          loading="lazy"
-          onError={() => setOk(false)}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <div className="h-full w-full bg-gradient-to-br from-[#f6f4f0] to-[#e6e2d8]" />
-      )}
+    <div className="space-y-3">
+      {items.map((it) => (
+        <div key={it.title} className="flex items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
+          <InterestReveal item={it} />
+        </div>
+      ))}
     </div>
+  );
+}
+
+/* Travel gets its own wall of "seatback screens" — a nod to the airplane
+   entertainment-screen photo. Add more photos to the Travel category in
+   portfolio.js and they slot in here automatically. */
+function TravelScreens({ items }) {
+  return (
+    <div className="rounded-xl bg-[#5c6b78] p-4 sm:p-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {items.map((it, i) => (
+          <div
+            key={it.title}
+            className="rounded-md bg-[#3d4750] p-1.5 shadow-[0_6px_14px_rgba(0,0,0,0.35)]"
+            style={{ marginTop: i % 3 === 1 ? "1.25rem" : i % 3 === 2 ? "-0.5rem" : 0 }}
+          >
+            <div className="aspect-[4/3] overflow-hidden rounded-[3px] bg-black ring-1 ring-black/40">
+              <TravelScreenPhoto item={it} />
+            </div>
+            <p className="mt-1.5 truncate px-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-white/70">
+              {it.title}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TravelScreenPhoto({ item }) {
+  const [ok, setOk] = useState(true);
+  if (!ok) return <div className="h-full w-full bg-gradient-to-br from-[#2a2f33] to-[#14171a]" />;
+  return (
+    <img
+      src={item.img}
+      alt={item.title}
+      loading="lazy"
+      onError={() => setOk(false)}
+      className="h-full w-full object-cover"
+    />
   );
 }
 
@@ -1380,14 +1416,14 @@ export function AboutMe() {
           <AlbumStack songs={FAVE_SONGS} />
         </div>
 
-        {/* one bagel, one topping per favourite thing */}
+        {/* one bagel, a few named sections orbiting the cream cheese */}
         <div className="mt-16 text-center">
           <h2 className="font-sans text-2xl font-semibold text-[#171411] sm:text-3xl">
-            Everything <span className="font-normal text-black/40">(about me)</span>{" "}
-            <span aria-hidden="true">🥯</span>
+            Everything <span className="font-normal text-black/40">(about me)</span> is one{" "}
+            <span className="font-bold">bagel</span> <span aria-hidden="true">🥯</span>
           </h2>
           <p className="mb-6 mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-            hover or tap a topping to find out what it is
+            hover or tap a topping to open that part of my life
           </p>
           <BagelRing items={INTERESTS} />
         </div>

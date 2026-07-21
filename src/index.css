@@ -139,6 +139,24 @@ input.seesaw::-moz-range-thumb {
 }
 
 /* Dark, slim scrollbar for the 3D album stack */
+/* Toppings orbiting the bagel — an outer ring rotates the whole assembly,
+   an inner counter-rotation (same duration/delay) cancels it out so the
+   text stays upright while still being carried around the circle. */
+@keyframes bagel-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes bagel-orbit-counter {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bagel-orbit-outer,
+  .bagel-orbit-counter {
+    animation: none !important;
+  }
+}
+
 .album-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
