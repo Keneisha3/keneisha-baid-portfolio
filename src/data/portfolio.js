@@ -364,13 +364,6 @@ export const INTERESTS = [
     tag: "My diet on a deadline.",
   },
   {
-    title: "Drake",
-    category: "Hobbies",
-    blurb: "On repeat while I lock in",
-    img: "/photos/IMG_9153.JPG",
-    tag: "On repeat whenever I lock in.",
-  },
-  {
     title: "Suits",
     category: "TV",
     blurb: "Comfort rewatch. I think I'm right as often as Harvey.",
