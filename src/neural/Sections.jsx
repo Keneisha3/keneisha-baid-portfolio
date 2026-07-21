@@ -1171,50 +1171,13 @@ function AlbumStack({ songs }) {
   );
 }
 
-/* the actual bagel photo — drop a file into public/bagel.jpg and this shows
-   it; until then, a warm CSS-drawn bagel stands in so nothing looks broken */
-const BAGEL_IMG = "/bagel.jpg";
-function BagelBackground({ onReady }) {
-  const [ok, setOk] = useState(true);
-  if (ok)
-    return (
-      <img
-        src={BAGEL_IMG}
-        alt="A bagel with cream cheese"
-        onLoad={() => onReady?.(true)}
-        onError={() => {
-          setOk(false);
-          onReady?.(false);
-        }}
-        className="absolute inset-0 h-full w-full rounded-full object-cover"
-      />
-    );
-  return (
-    <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden="true">
-      <defs>
-        <radialGradient id="bagelGrad" cx="42%" cy="38%" r="75%">
-          <stop offset="0%" stopColor="#e3ab5c" />
-          <stop offset="55%" stopColor="#c9873f" />
-          <stop offset="100%" stopColor="#8f5c28" />
-        </radialGradient>
-      </defs>
-      <circle cx="50" cy="50" r="35" fill="none" stroke="url(#bagelGrad)" strokeWidth="22" />
-      <circle
-        cx="50"
-        cy="50"
-        r="35"
-        fill="none"
-        stroke="rgba(0,0,0,0.14)"
-        strokeWidth="22"
-        strokeDasharray="0.5 2.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+/* seeded RNG so the particle field is stable across renders */
+function seeded(s) {
+  let x = s;
+  return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
 }
 
-/* measures a ref's rendered width, live, so the orbit radius stays correct
-   at any screen size */
+/* measures a ref's rendered width, live, so children can size to it */
 function useWidth(ref) {
   const [w, setW] = useState(0);
   useEffect(() => {
@@ -1226,8 +1189,6 @@ function useWidth(ref) {
   return w;
 }
 
-const ORBIT_SECONDS = 50;
-
 /* group the favourite things into a few named sections, in a fixed order */
 const CATEGORY_ORDER = ["Travel", "Music", "TV", "Free Time"];
 function groupByCategory(items) {
@@ -1238,15 +1199,129 @@ function groupByCategory(items) {
   return CATEGORY_ORDER.filter((c) => byCat[c]).map((c) => ({ category: c, items: byCat[c] }));
 }
 
-/* The bagel: a real photo (or a CSS stand-in) with just a few section names
-   on the cream cheese, slowly orbiting the ring. Hover (or tap, on touch) to
-   pause and open that section below — Travel gets its own airplane-screen
-   wall, everything else gets a simple photo + note. */
-function BagelRing({ items }) {
+/* the dark ambient backdrop: a warm central glow, a scatter of slowly
+   twinkling particles, and a little grain — a calm nod to the dense
+   particle-cloud brain renders */
+function NeuralBackground() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    let raf;
+    let w = 0,
+      h = 0,
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      w = canvas.width = Math.round(r.width * dpr);
+      h = canvas.height = Math.round(r.height * dpr);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const rand = seeded(551);
+    const particles = Array.from({ length: 130 }, () => ({
+      x: rand(),
+      y: rand(),
+      r: 0.5 + rand() * 1.2,
+      phase: rand() * Math.PI * 2,
+    }));
+
+    const grain = document.createElement("canvas");
+    grain.width = grain.height = 128;
+    const gctx = grain.getContext("2d");
+    const gimg = gctx.createImageData(128, 128);
+    for (let i = 0; i < gimg.data.length; i += 4) {
+      const v = 255 * Math.random();
+      gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v;
+      gimg.data[i + 3] = 10;
+    }
+    gctx.putImageData(gimg, 0, 0);
+
+    const draw = (t) => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#0d0b10";
+      ctx.fillRect(0, 0, w, h);
+
+      const pulse = reduce ? 1 : 1 + Math.sin(t * 0.0005) * 0.05;
+      const grad = ctx.createRadialGradient(w * 0.5, h * 0.46, 0, w * 0.5, h * 0.46, Math.max(w, h) * 0.42 * pulse);
+      grad.addColorStop(0, "hsla(28, 80%, 55%, 0.55)");
+      grad.addColorStop(0.5, "hsla(18, 65%, 32%, 0.28)");
+      grad.addColorStop(1, "hsla(0,0%,0%,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      particles.forEach((p) => {
+        const tw = reduce ? 0.7 : 0.4 + 0.6 * Math.sin(t * 0.001 + p.phase);
+        ctx.beginPath();
+        ctx.arc(p.x * w, p.y * h, p.r * dpr, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,210,170,${0.5 * tw})`;
+        ctx.fill();
+      });
+
+      ctx.globalCompositeOperation = "overlay";
+      ctx.fillStyle = ctx.createPattern(grain, "repeat");
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />;
+}
+
+/* a small burst of radiating lines around a bright centre — a miniature
+   nod to the framed neuron-cluster piece */
+function NeuronCluster({ active }) {
+  const size = active ? 34 : 26;
+  return (
+    <svg viewBox="0 0 40 40" style={{ width: size, height: size }} className="transition-all duration-300">
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+        const rad = (deg * Math.PI) / 180;
+        const x2 = 20 + Math.cos(rad) * 14;
+        const y2 = 20 + Math.sin(rad) * 14;
+        return (
+          <line
+            key={deg}
+            x1="20"
+            y1="20"
+            x2={x2}
+            y2={y2}
+            stroke={active ? "rgba(255,210,160,0.95)" : "rgba(255,210,160,0.4)"}
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        );
+      })}
+      <circle cx="20" cy="20" r={active ? 7 : 5.5} fill={active ? "#ffdca8" : "rgba(255,220,180,0.85)"} />
+    </svg>
+  );
+}
+
+/* Four neuron clusters — one per section of my life — wired to a warm
+   central glow by thin synapse lines. Hover (or tap, on touch) a cluster
+   to light its line and open that section below; Travel gets its own
+   airplane-screen wall, everything else gets a simple photo + note. */
+function NeuralMap({ items }) {
   const categories = useMemo(() => groupByCategory(items), [items]);
-  const containerRef = useRef(null);
-  const width = useWidth(containerRef);
-  const radius = width * 0.35;
+  const positions = useMemo(
+    () =>
+      categories.map((_, i) => {
+        const angle = (-90 + i * (360 / categories.length)) * (Math.PI / 180);
+        return { x: 50 + Math.cos(angle) * 34, y: 50 + Math.sin(angle) * 34 * 0.85 };
+      }),
+    [categories]
+  );
   const [hoverIdx, setHoverIdx] = useState(null);
   const [pinnedIdx, setPinnedIdx] = useState(null);
   const activeIdx = pinnedIdx ?? hoverIdx;
@@ -1254,54 +1329,50 @@ function BagelRing({ items }) {
 
   return (
     <div>
-      <div ref={containerRef} className="relative mx-auto aspect-square w-full max-w-[440px] overflow-hidden rounded-full">
-        <BagelBackground />
+      <div className="relative mx-auto aspect-square w-full max-w-[440px] overflow-hidden rounded-full ring-1 ring-black/10">
+        <NeuralBackground />
+
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {categories.map((cat, i) => {
+            const p = positions[i];
+            const isActive = activeIdx === i;
+            const mx = (50 + p.x) / 2 + (p.y - 50) * 0.12;
+            const my = (48 + p.y) / 2 - (p.x - 50) * 0.12;
+            return (
+              <path
+                key={cat.category}
+                d={`M50,48 Q${mx},${my} ${p.x},${p.y}`}
+                fill="none"
+                stroke={isActive ? "rgba(255,205,150,0.9)" : "rgba(255,205,150,0.22)"}
+                strokeWidth={isActive ? 0.5 : 0.22}
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+          })}
+        </svg>
 
         {categories.map((cat, i) => {
+          const p = positions[i];
           const isActive = activeIdx === i;
-          const startAngle = (i / categories.length) * 360;
-          const delay = `${-(i / categories.length) * ORBIT_SECONDS}s`;
           return (
-            <div
+            <button
               key={cat.category}
-              className="bagel-orbit-outer absolute left-1/2 top-1/2 h-0 w-0"
-              style={{
-                // static fallback angle if the animation is disabled
-                // (reduced motion) — matches where the animation would be
-                transform: `rotate(${startAngle}deg)`,
-                animationDuration: `${ORBIT_SECONDS}s`,
-                animationDelay: delay,
-                animationPlayState: isActive ? "paused" : "running",
-              }}
+              type="button"
+              onMouseEnter={() => setHoverIdx(i)}
+              onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
+              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
+              aria-label={cat.category}
+              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 focus:outline-none"
+              style={{ left: `${p.x}%`, top: `${p.y}%`, zIndex: isActive ? 20 : 1 }}
             >
-              <div style={{ transform: `translateX(${radius}px)` }}>
-                <div
-                  className="bagel-orbit-counter"
-                  style={{
-                    transform: `rotate(${-startAngle}deg)`,
-                    animationDuration: `${ORBIT_SECONDS}s`,
-                    animationDelay: delay,
-                    animationPlayState: isActive ? "paused" : "running",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
-                    onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
-                    className="-translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-2 py-1 font-sans uppercase tracking-[0.08em] transition-all duration-200 focus:outline-none"
-                    style={{
-                      fontSize: isActive ? 15 : 13,
-                      fontWeight: isActive ? 700 : 600,
-                      color: "#3a2c14",
-                      textShadow: "0 1px 2px rgba(255,255,255,0.65)",
-                    }}
-                  >
-                    {cat.category}
-                  </button>
-                </div>
-              </div>
-            </div>
+              <NeuronCluster active={isActive} />
+              <span
+                className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.15em] transition-colors duration-200"
+                style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)" }}
+              >
+                {cat.category}
+              </span>
+            </button>
           );
         })}
       </div>
@@ -1313,7 +1384,7 @@ function BagelRing({ items }) {
         ) : (
           <div className="flex min-h-[112px] items-center rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
-              hover or tap a topping to open that part of my life
+              hover or tap a cluster to open that part of my life
             </p>
           </div>
         )}
@@ -1429,16 +1500,15 @@ export function AboutMe() {
           <AlbumStack songs={FAVE_SONGS} />
         </div>
 
-        {/* one bagel, a few named sections orbiting the cream cheese */}
+        {/* welcome to my brain — a few neuron clusters, one per part of my life */}
         <div className="mt-16 text-center">
           <h2 className="font-sans text-2xl font-semibold text-[#171411] sm:text-3xl">
-            Everything <span className="font-normal text-black/40">(about me)</span> is one{" "}
-            <span className="font-bold">bagel</span> <span aria-hidden="true">🥯</span>
+            Welcome <span className="font-normal text-black/40">to my</span> brain
           </h2>
           <p className="mb-6 mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-            hover or tap a topping to open that part of my life
+            hover or tap a cluster to open that part of my life
           </p>
-          <BagelRing items={INTERESTS} />
+          <NeuralMap items={INTERESTS} />
         </div>
       </div>
     </section>
