@@ -138,11 +138,11 @@ input.seesaw::-moz-range-thumb {
   .vinyl-spin { animation: none; }
 }
 
-/* Dark, slim scrollbar for the 3D album stack */
+/* Slim scrollbar for the 3D album stack (now floating on a plain white page) */
 
 .album-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: rgba(23, 20, 17, 0.25) transparent;
 }
 .album-scroll::-webkit-scrollbar {
   width: 6px;
@@ -151,11 +151,11 @@ input.seesaw::-moz-range-thumb {
   background: transparent;
 }
 .album-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(23, 20, 17, 0.2);
   border-radius: 6px;
 }
 .album-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(23, 20, 17, 0.35);
 }
 
 /* Monochrome gallery frames for the project pieces */

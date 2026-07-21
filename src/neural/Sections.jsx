@@ -1063,7 +1063,7 @@ function AlbumStack({ songs }) {
   const cleanTitle = (s) => s.replace(/\s*-\s*.*$/i, "");
 
   return (
-    <div className="rounded-xl bg-[#0b0b0d] p-4 ring-1 ring-black/20">
+    <div>
       <div
         className="album-scroll h-[440px] overflow-y-auto overflow-x-hidden px-2 py-8"
         style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
@@ -1165,7 +1165,7 @@ function AlbumStack({ songs }) {
         </div>
       </div>
       <audio ref={audioRef} preload="none" />
-      <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-white/40">
+      <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-black/35">
         scroll the stack · hover to lift · click to play
       </p>
     </div>
@@ -1391,9 +1391,11 @@ function BrainFlowField({ activeId }) {
         const ny = (p.y - fit.offsetY) / Math.max(1, fit.drawH);
         let hue = 190 + Math.min(1, Math.max(0, ny)) * 120;
         hue += Math.sin(angle * 2 + p.seed * 0.5) * 26;
-        const sat = 92 - boost * 34;
-        const light = 58 + boost * 32;
-        const alpha = 0.04 + b * 0.16 + boost * 0.34;
+        const sat = 88 - boost * 20;
+        // lower lightness + higher alpha than the dark-background original —
+        // these need real saturation/opacity to read against white
+        const light = 42 + boost * 22;
+        const alpha = 0.16 + b * 0.28 + boost * 0.4;
 
         ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
         ctx.lineWidth = 0.9 + boost * 1.6;
@@ -1403,7 +1405,7 @@ function BrainFlowField({ activeId }) {
         ctx.stroke();
 
         if ((i & 5) === 0 && (Math.sin(time * 8 + p.seed) > 0.72 || boost > 0.2)) {
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${74 + boost * 20}%, ${0.2 + boost * 0.55})`;
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${52 + boost * 18}%, ${0.35 + boost * 0.5})`;
           ctx.beginPath();
           ctx.arc(p.x, p.y, 0.8 + boost * 2.0, 0, Math.PI * 2);
           ctx.fill();
@@ -1456,12 +1458,7 @@ function BrainFlowField({ activeId }) {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 h-full w-full"
-      style={{ mixBlendMode: "screen" }}
-      aria-hidden="true"
-    />
+    <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />
   );
 }
 
@@ -1474,60 +1471,8 @@ function groupInterestsByCategory(items) {
   return byCat;
 }
 
-/* the photo grid for whichever region is selected */
-function BrainCategoryPanel({ meta, items, onClose }) {
-  return (
-    <section>
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em]" style={{ color: `hsl(${meta.hue} 80% 65%)` }}>
-            Region active
-          </p>
-          <h2 className="mt-1 text-3xl font-semibold tracking-tight text-white">{meta.id}</h2>
-          <p className="mt-1 max-w-md text-sm leading-relaxed text-white/50">{meta.blurb}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close panel"
-          className="rounded-full border border-white/10 p-2 text-lg leading-none text-white/60 transition hover:border-white/30 hover:text-white"
-        >
-          ✕
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {items.map((it) => (
-          <BrainPhoto key={it.title} item={it} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BrainPhoto({ item }) {
-  const [ok, setOk] = useState(true);
-  return (
-    <div className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10">
-      {ok ? (
-        <img
-          src={item.img}
-          alt={item.title}
-          loading="lazy"
-          onError={() => setOk(false)}
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-        />
-      ) : (
-        <div className="h-full w-full bg-gradient-to-br from-[#2a2f33] to-[#14171a]" />
-      )}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-      <p className="pointer-events-none absolute bottom-3 left-3 right-3 text-xs text-white/80">{item.blurb}</p>
-    </div>
-  );
-}
-
-/* "Welcome to my brain" — the flow-field hero + hotspot buttons + the
-   category photo panel underneath. */
+/* "Welcome to my brain" — the flow-field hero + hotspot buttons + a small
+   circular arc of photos that fans out from whichever region is selected. */
 function NeuralMap({ items }) {
   const byCategory = useMemo(() => groupInterestsByCategory(items), [items]);
   const stageRef = useRef(null);
@@ -1551,13 +1496,30 @@ function NeuralMap({ items }) {
 
   const fit = fitContain(size.w || 1, size.h || 1);
   const selectedMeta = BRAIN_CATEGORIES.find((c) => c.id === selected) ?? null;
+  const selectedPhotos = selectedMeta ? byCategory[selectedMeta.id] : null;
+
+  // circular photos fan outward from whichever hotspot is selected, away
+  // from the brain's centre, instead of sitting in a boxed grid below
+  const arcPositions = useMemo(() => {
+    if (!selectedMeta || !selectedPhotos || !size.w) return [];
+    const cx = fit.toX(selectedMeta.nx);
+    const cy = fit.toY(selectedMeta.ny);
+    const centerX = fit.toX(0.5);
+    const centerY = fit.toY(0.45);
+    const baseAngle = Math.atan2(cy - centerY, cx - centerX);
+    const count = selectedPhotos.length;
+    const spread = count > 1 ? 0.55 : 0;
+    const photoR = fit.toR(0.09);
+    const dist = fit.toR(selectedMeta.nr) + photoR + 22;
+    return Array.from({ length: count }, (_, i) => {
+      const a = baseAngle + (i - (count - 1) / 2) * spread;
+      return { x: cx + Math.cos(a) * dist, y: cy + Math.sin(a) * dist, size: photoR * 2 };
+    });
+  }, [selectedMeta, selectedPhotos, size.w, fit]);
 
   return (
     <div className="w-full">
-      <div
-        ref={stageRef}
-        className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl border border-white/10 bg-black sm:aspect-[16/10]"
-      >
+      <div ref={stageRef} className="relative aspect-[5/4] w-full overflow-visible sm:aspect-[16/10]">
         <img
           src={BRAIN_IMAGE}
           alt="A glowing neural simulation of a human brain"
@@ -1566,20 +1528,6 @@ function NeuralMap({ items }) {
         />
 
         <BrainFlowField activeId={active} />
-
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-60"
-          style={{
-            backgroundImage: "radial-gradient(rgba(140,175,255,0.14) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,0.55) 100%)" }}
-        />
 
         {size.w > 0 &&
           BRAIN_CATEGORIES.filter((c) => byCategory[c.id]?.length).map((c) => {
@@ -1599,30 +1547,30 @@ function NeuralMap({ items }) {
                 onBlur={() => setHovered(null)}
                 onClick={() => setSelected((prev) => (prev === c.id ? null : c.id))}
                 className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none"
-                style={{ left: cx, top: cy, width: d, height: d }}
+                style={{ left: cx, top: cy, width: d, height: d, zIndex: isActive ? 30 : 10 }}
               >
                 <span
                   aria-hidden="true"
                   className="absolute inset-0 rounded-full border transition duration-500"
                   style={{
-                    borderColor: isActive ? `hsl(${c.hue} 90% 65% / 0.6)` : "transparent",
-                    boxShadow: isActive ? `0 0 40px hsl(${c.hue} 90% 60% / 0.35)` : "none",
+                    borderColor: isActive ? `hsl(${c.hue} 80% 45% / 0.6)` : "transparent",
+                    boxShadow: isActive ? `0 0 34px hsl(${c.hue} 85% 55% / 0.3)` : "none",
                   }}
                 />
                 <span
                   className="pointer-events-none absolute left-1/2 top-full flex -translate-x-1/2 translate-y-2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-300"
                   style={{
-                    color: isActive ? `hsl(${c.hue} 95% 82%)` : "rgba(255,255,255,0.9)",
-                    backgroundColor: isActive ? `hsl(${c.hue} 60% 12% / 0.85)` : "rgba(0,0,0,0.6)",
-                    border: `1px solid ${isActive ? `hsl(${c.hue} 90% 65% / 0.7)` : "rgba(255,255,255,0.18)"}`,
-                    boxShadow: isActive ? `0 4px 24px hsl(${c.hue} 90% 45% / 0.5)` : "0 2px 10px rgba(0,0,0,0.5)",
+                    color: isActive ? `hsl(${c.hue} 65% 32%)` : "rgba(23,20,17,0.75)",
+                    backgroundColor: isActive ? `hsl(${c.hue} 85% 94% / 0.95)` : "rgba(255,255,255,0.85)",
+                    border: `1px solid ${isActive ? `hsl(${c.hue} 70% 55% / 0.5)` : "rgba(23,20,17,0.14)"}`,
+                    boxShadow: isActive ? `0 4px 16px hsl(${c.hue} 70% 45% / 0.25)` : "0 2px 8px rgba(0,0,0,0.06)",
                     transform: isActive ? "translate(-50%, 0.75rem) scale(1.06)" : "translate(-50%, 0.5rem) scale(1)",
                   }}
                 >
                   <span
                     aria-hidden="true"
                     className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: `hsl(${c.hue} 90% 65%)`, boxShadow: `0 0 8px hsl(${c.hue} 90% 60% / 0.9)` }}
+                    style={{ backgroundColor: `hsl(${c.hue} 75% 50%)`, boxShadow: `0 0 6px hsl(${c.hue} 75% 45% / 0.7)` }}
                   />
                   {c.id}
                 </span>
@@ -1630,22 +1578,71 @@ function NeuralMap({ items }) {
             );
           })}
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center p-6 text-center sm:p-10">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/40">A living self-portrait</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-5xl">Welcome to my brain</h2>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/45">
+        {selectedMeta &&
+          selectedPhotos.map((it, i) => (
+            <BrainArcPhoto key={it.title} item={it} pos={arcPositions[i]} hue={selectedMeta.hue} />
+          ))}
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center p-2 text-center sm:p-4">
+          <p className="text-xs uppercase tracking-[0.4em] text-black/35">A living self-portrait</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#171411] sm:text-5xl">Welcome to my brain</h2>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/45">
             Hover the glowing regions to stir the field — click one to see what lives inside.
           </p>
         </div>
       </div>
 
-      <div className="mt-8 min-h-[2rem]">
+      <div className="mt-8 flex min-h-[2rem] items-center justify-center gap-3 text-center">
         {selectedMeta ? (
-          <BrainCategoryPanel meta={selectedMeta} items={byCategory[selectedMeta.id]} onClose={() => setSelected(null)} />
+          <>
+            <span
+              aria-hidden="true"
+              className="h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: `hsl(${selectedMeta.hue} 75% 50%)` }}
+            />
+            <p className="text-sm text-black/60">{selectedMeta.blurb}</p>
+            <button
+              type="button"
+              onClick={() => setSelected(null)}
+              className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-black/40 transition-colors hover:text-black"
+            >
+              close ✕
+            </button>
+          </>
         ) : (
-          <p className="text-center text-sm text-white/30">Select a region above to open its collection.</p>
+          <p className="text-sm text-black/30">Select a region above to open its collection.</p>
         )}
       </div>
+    </div>
+  );
+}
+
+function BrainArcPhoto({ item, pos, hue }) {
+  const [ok, setOk] = useState(true);
+  if (!pos) return null;
+  return (
+    <div
+      className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full ring-2 ring-white transition-all duration-500"
+      style={{
+        left: pos.x,
+        top: pos.y,
+        width: pos.size,
+        height: pos.size,
+        boxShadow: `0 10px 28px hsl(${hue} 55% 30% / 0.35)`,
+        zIndex: 25,
+      }}
+    >
+      {ok ? (
+        <img
+          src={item.img}
+          alt={item.title}
+          loading="lazy"
+          onError={() => setOk(false)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="h-full w-full bg-gradient-to-br from-black/10 to-black/25" />
+      )}
     </div>
   );
 }
