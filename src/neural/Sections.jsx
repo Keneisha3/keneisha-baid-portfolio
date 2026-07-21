@@ -1186,10 +1186,10 @@ const BRAIN_IMAGE = "/brain-base.png";
 // brain-base.png's anatomy; hue is the iridescent colour that region leans
 // toward. Real photos are pulled live from INTERESTS by category.
 const BRAIN_CATEGORIES = [
-  { id: "Travel", blurb: "Frontal lobe — always plotting the next horizon.", nx: 0.24, ny: 0.44, nr: 0.13, hue: 200 },
-  { id: "Food", blurb: "Up top — the part that never stops craving.", nx: 0.5, ny: 0.26, nr: 0.13, hue: 300 },
-  { id: "TV", blurb: "Occipital cortex — where the stories play on loop.", nx: 0.79, ny: 0.44, nr: 0.13, hue: 190 },
-  { id: "Hobbies", blurb: "Down at the stem — the roots of what I make.", nx: 0.63, ny: 0.72, nr: 0.12, hue: 265 },
+  { id: "Travel", nx: 0.24, ny: 0.44, nr: 0.13, hue: 200 },
+  { id: "Food", nx: 0.5, ny: 0.26, nr: 0.13, hue: 300 },
+  { id: "TV", nx: 0.79, ny: 0.44, nr: 0.13, hue: 190 },
+  { id: "Hobbies", nx: 0.63, ny: 0.72, nr: 0.12, hue: 265 },
 ];
 
 // fit a square image into a w x h box (object-contain), with helpers mapping
@@ -1539,7 +1539,7 @@ function NeuralMap({ items }) {
               <button
                 key={c.id}
                 type="button"
-                aria-label={`${c.id}: ${c.blurb}`}
+                aria-label={c.id}
                 aria-pressed={selected === c.id}
                 onMouseEnter={() => setHovered(c.id)}
                 onMouseLeave={() => setHovered(null)}
@@ -1584,11 +1584,7 @@ function NeuralMap({ items }) {
           ))}
 
         <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center p-2 text-center sm:p-4">
-          <p className="text-xs uppercase tracking-[0.4em] text-black/35">A living self-portrait</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#171411] sm:text-5xl">Welcome to my brain</h2>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-black/45">
-            Hover the glowing regions to stir the field — click one to see what lives inside.
-          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-[#171411] sm:text-5xl">Welcome to my brain</h2>
         </div>
       </div>
 
@@ -1600,7 +1596,7 @@ function NeuralMap({ items }) {
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: `hsl(${selectedMeta.hue} 75% 50%)` }}
             />
-            <p className="text-sm text-black/60">{selectedMeta.blurb}</p>
+            <p className="text-sm font-medium text-black/70">{selectedMeta.id}</p>
             <button
               type="button"
               onClick={() => setSelected(null)}
