@@ -1065,7 +1065,7 @@ function AlbumStack({ songs }) {
   return (
     <div>
       <div
-        className="album-scroll h-[250px] overflow-y-auto overflow-x-hidden px-2 py-5"
+        className="album-scroll h-[420px] overflow-y-auto overflow-x-hidden px-2 py-5"
         style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
         onMouseMove={(e) => setActive(cardAt(e.clientY))}
         onMouseLeave={() => setActive(null)}
@@ -1082,7 +1082,7 @@ function AlbumStack({ songs }) {
               <div
                 key={t.title + i}
                 ref={(el) => (cardRefs.current[i] = el)}
-                className="group relative w-full max-w-[260px] shrink-0 cursor-pointer"
+                className="group relative w-full max-w-[340px] shrink-0 cursor-pointer"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isActive
@@ -1091,7 +1091,7 @@ function AlbumStack({ songs }) {
                   transformOrigin: "center bottom",
                   transition: "transform 480ms cubic-bezier(0.22,1,0.36,1)",
                   // fixed overlap — never reflows on hover, so hit-mapping stays stable
-                  marginBottom: "-86px",
+                  marginBottom: "-38px",
                   zIndex: isActive ? 50 : i + 1,
                 }}
               >
@@ -1657,7 +1657,7 @@ export function AboutMe() {
       </div>
 
       <div className="mx-auto mt-4 max-w-6xl px-8 sm:px-14">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           {/* interactive music — a 3D stack of favourite covers */}
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">
