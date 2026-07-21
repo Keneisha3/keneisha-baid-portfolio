@@ -2,6 +2,7 @@
    bench instruments, not web cards. Asymmetric, typographic, hairline rules.
    Every project is a different artifact with its own interaction. */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createNoise3D } from "simplex-noise";
 import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS, FAVE_SONGS } from "../data/portfolio";
 
 /* The eleven stations of the walk: six project paintings, five rooms. */
@@ -1171,300 +1172,481 @@ function AlbumStack({ songs }) {
   );
 }
 
-/* seeded RNG so the particle field is stable across renders */
-function seeded(s) {
-  let x = s;
-  return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+/* ===== "Welcome to my brain" — a flow-field brain hero =====
+   Ported from a v0-generated prototype. A glowing brain image is used as a
+   luminance mask: hundreds of particles drift through a simplex-noise flow
+   field, staying inside the brain's silhouette and tracing its brightness,
+   colour cycling cyan (top) -> violet (base). The cursor locally swirls the
+   field; four anatomical hotspots (frontal lobe/crown/occipital/cerebellum)
+   pull particles toward them and open that category's photos below. */
+
+const BRAIN_IMAGE = "/brain-base.png";
+
+// hotspot centre + radius in NORMALIZED image space (0..1), tuned to
+// brain-base.png's anatomy; hue is the iridescent colour that region leans
+// toward. Real photos are pulled live from INTERESTS by category.
+const BRAIN_CATEGORIES = [
+  { id: "Travel", blurb: "Frontal lobe — always plotting the next horizon.", nx: 0.24, ny: 0.44, nr: 0.13, hue: 200 },
+  { id: "Food", blurb: "Up top — the part that never stops craving.", nx: 0.5, ny: 0.26, nr: 0.13, hue: 300 },
+  { id: "TV", blurb: "Occipital cortex — where the stories play on loop.", nx: 0.79, ny: 0.44, nr: 0.13, hue: 190 },
+  { id: "Hobbies", blurb: "Down at the stem — the roots of what I make.", nx: 0.63, ny: 0.72, nr: 0.12, hue: 265 },
+];
+
+// fit a square image into a w x h box (object-contain), with helpers mapping
+// normalized image coords (0..1) to CSS pixel coords inside the container
+function fitContain(w, h) {
+  const containerAspect = w / h;
+  let drawW, drawH;
+  if (containerAspect > 1) {
+    drawH = h;
+    drawW = h;
+  } else {
+    drawW = w;
+    drawH = w;
+  }
+  const offsetX = (w - drawW) / 2;
+  const offsetY = (h - drawH) / 2;
+  return {
+    drawW,
+    drawH,
+    offsetX,
+    offsetY,
+    toX: (nx) => offsetX + nx * drawW,
+    toY: (ny) => offsetY + ny * drawH,
+    toR: (nr) => nr * drawW,
+  };
 }
 
-/* measures a ref's rendered width, live, so children can size to it */
-function useWidth(ref) {
-  const [w, setW] = useState(0);
-  useEffect(() => {
-    if (!ref.current) return;
-    const ro = new ResizeObserver((entries) => setW(entries[0].contentRect.width));
-    ro.observe(ref.current);
-    return () => ro.disconnect();
-  }, [ref]);
-  return w;
-}
-
-/* group the favourite things into a few named sections, in a fixed order */
-const CATEGORY_ORDER = ["Travel", "Music", "TV", "Free Time"];
-function groupByCategory(items) {
-  const byCat = {};
-  items.forEach((it) => {
-    (byCat[it.category] ??= []).push(it);
-  });
-  return CATEGORY_ORDER.filter((c) => byCat[c]).map((c) => ({ category: c, items: byCat[c] }));
-}
-
-/* the dark ambient backdrop: a warm central glow, a scatter of slowly
-   twinkling particles, and a little grain — a calm nod to the dense
-   particle-cloud brain renders */
-function NeuralBackground() {
+/* the flow-field canvas: particles constrained to a luminance mask built
+   from BRAIN_IMAGE, drifting through simplex noise, swirling around the
+   cursor, and pulled toward `activeId`'s hotspot */
+function BrainFlowField({ activeId }) {
   const canvasRef = useRef(null);
+  const activeRef = useRef(activeId);
+  activeRef.current = activeId;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const parent = canvas.parentElement;
+    if (!parent) return;
 
-    let raf;
-    let w = 0,
-      h = 0,
-      dpr = Math.min(2, window.devicePixelRatio || 1);
-    const resize = () => {
-      const r = canvas.getBoundingClientRect();
-      w = canvas.width = Math.round(r.width * dpr);
-      h = canvas.height = Math.round(r.height * dpr);
+    const noise3D = createNoise3D();
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    let w = 0, h = 0, wd = 0, hd = 0;
+    let fit = fitContain(1, 1);
+    let particles = [];
+    let ready = false;
+    let mask = null;
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const mouse = { x: -9999, y: -9999, active: false };
+
+    const inBrain = (x, y) => {
+      if (!mask) return false;
+      const dx = Math.floor(x * dpr);
+      const dy = Math.floor(y * dpr);
+      if (dx < 0 || dy < 0 || dx >= wd || dy >= hd) return false;
+      return mask[dy * wd + dx] > 26;
     };
-    resize();
-    window.addEventListener("resize", resize);
+    const brightAt = (x, y) => {
+      if (!mask) return 0;
+      const dx = Math.floor(x * dpr);
+      const dy = Math.floor(y * dpr);
+      if (dx < 0 || dy < 0 || dx >= wd || dy >= hd) return 0;
+      return mask[dy * wd + dx] / 255;
+    };
 
-    const rand = seeded(551);
-    const particles = Array.from({ length: 130 }, () => ({
-      x: rand(),
-      y: rand(),
-      r: 0.5 + rand() * 1.2,
-      phase: rand() * Math.PI * 2,
-    }));
+    const buildMask = () => {
+      if (!img.complete || img.naturalWidth === 0) return;
+      const m = document.createElement("canvas");
+      m.width = wd;
+      m.height = hd;
+      const mctx = m.getContext("2d", { willReadFrequently: true });
+      if (!mctx) return;
+      mctx.clearRect(0, 0, wd, hd);
+      mctx.drawImage(img, fit.offsetX * dpr, fit.offsetY * dpr, fit.drawW * dpr, fit.drawH * dpr);
+      const data = mctx.getImageData(0, 0, wd, hd).data;
+      const lum = new Uint8ClampedArray(wd * hd);
+      for (let i = 0; i < wd * hd; i++) {
+        const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+        lum[i] = (r * 0.299 + g * 0.587 + b * 0.114) | 0;
+      }
+      mask = lum;
+    };
 
-    const grain = document.createElement("canvas");
-    grain.width = grain.height = 128;
-    const gctx = grain.getContext("2d");
-    const gimg = gctx.createImageData(128, 128);
-    for (let i = 0; i < gimg.data.length; i += 4) {
-      const v = 255 * Math.random();
-      gimg.data[i] = gimg.data[i + 1] = gimg.data[i + 2] = v;
-      gimg.data[i + 3] = 10;
-    }
-    gctx.putImageData(gimg, 0, 0);
+    const spawn = (p) => {
+      for (let i = 0; i < 60; i++) {
+        const x = fit.offsetX + Math.random() * fit.drawW;
+        const y = fit.offsetY + Math.random() * fit.drawH;
+        if (inBrain(x, y)) {
+          p.x = x; p.y = y; p.px = x; p.py = y;
+          p.life = 0; p.maxLife = 50 + Math.random() * 150; p.seed = Math.random() * 1000;
+          return;
+        }
+      }
+      p.x = fit.toX(0.5); p.y = fit.toY(0.45); p.px = p.x; p.py = p.y;
+      p.life = 0; p.maxLife = 100; p.seed = Math.random() * 1000;
+    };
 
-    const draw = (t) => {
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "#0d0b10";
-      ctx.fillRect(0, 0, w, h);
-
-      const pulse = reduce ? 1 : 1 + Math.sin(t * 0.0005) * 0.05;
-      const grad = ctx.createRadialGradient(w * 0.5, h * 0.46, 0, w * 0.5, h * 0.46, Math.max(w, h) * 0.42 * pulse);
-      grad.addColorStop(0, "hsla(28, 80%, 55%, 0.55)");
-      grad.addColorStop(0.5, "hsla(18, 65%, 32%, 0.28)");
-      grad.addColorStop(1, "hsla(0,0%,0%,0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      particles.forEach((p) => {
-        const tw = reduce ? 0.7 : 0.4 + 0.6 * Math.sin(t * 0.001 + p.phase);
-        ctx.beginPath();
-        ctx.arc(p.x * w, p.y * h, p.r * dpr, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,210,170,${0.5 * tw})`;
-        ctx.fill();
+    const PARTICLE_TARGET = 1300;
+    const makeParticles = () => {
+      const count = Math.round(PARTICLE_TARGET * Math.min(1.5, Math.max(0.5, (w * h) / (900 * 600))));
+      particles = new Array(count).fill(0).map(() => {
+        const p = { x: 0, y: 0, px: 0, py: 0, life: 0, maxLife: 0, seed: 0 };
+        spawn(p);
+        p.life = Math.random() * p.maxLife;
+        return p;
       });
-
-      ctx.globalCompositeOperation = "overlay";
-      ctx.fillStyle = ctx.createPattern(grain, "repeat");
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = "source-over";
-
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+
+    const resize = () => {
+      const rect = parent.getBoundingClientRect();
+      w = Math.max(1, rect.width);
+      h = Math.max(1, rect.height);
+      wd = Math.floor(w * dpr);
+      hd = Math.floor(h * dpr);
+      canvas.width = wd;
+      canvas.height = hd;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      fit = fitContain(w, h);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      buildMask();
+      if (ready) makeParticles();
+    };
+
+    const hotspot = (id) => {
+      const c = BRAIN_CATEGORIES.find((cat) => cat.id === id);
+      return { x: fit.toX(c.nx), y: fit.toY(c.ny), r: fit.toR(c.nr) };
+    };
+
+    const noiseScale = 0.006;
+    let time = 0;
+
+    const step = () => {
+      if (!ready) return;
+      const active = activeRef.current;
+
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0,0,0,0.09)";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
+
+      const act = active ? hotspot(active) : null;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.px = p.x; p.py = p.y;
+
+        const n = noise3D(p.x * noiseScale, p.y * noiseScale, time);
+        let angle = n * Math.PI * 3;
+        angle += Math.sin(time * 0.6 + p.seed) * 0.15;
+        const speed = 1.0;
+        let vx = Math.cos(angle) * speed;
+        let vy = Math.sin(angle) * speed;
+
+        if (mouse.active) {
+          const mdx = p.x - mouse.x, mdy = p.y - mouse.y;
+          const md = Math.hypot(mdx, mdy);
+          const R = 130;
+          if (md < R && md > 0.001) {
+            const f = (1 - md / R) ** 2;
+            vx += (-mdy / md) * f * 3.4;
+            vy += (mdx / md) * f * 3.4;
+            vx += (mdx / md) * f * 1.2;
+            vy += (mdy / md) * f * 1.2;
+          }
+        }
+
+        let boost = 0;
+        if (act) {
+          const adx = act.x - p.x, ady = act.y - p.y;
+          const ad = Math.hypot(adx, ady);
+          if (ad < act.r * 2.6 && ad > 0.001) {
+            const f = 1 - ad / (act.r * 2.6);
+            vx += (adx / ad) * f * 0.8;
+            vy += (ady / ad) * f * 0.8;
+            boost = f;
+          }
+        }
+
+        p.x += vx; p.y += vy; p.life++;
+
+        if (p.life > p.maxLife || !inBrain(p.x, p.y)) {
+          spawn(p);
+          continue;
+        }
+
+        const b = brightAt(p.x, p.y);
+        const ny = (p.y - fit.offsetY) / Math.max(1, fit.drawH);
+        let hue = 190 + Math.min(1, Math.max(0, ny)) * 120;
+        hue += Math.sin(angle * 2 + p.seed * 0.5) * 26;
+        const sat = 92 - boost * 34;
+        const light = 58 + boost * 32;
+        const alpha = 0.04 + b * 0.16 + boost * 0.34;
+
+        ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
+        ctx.lineWidth = 0.9 + boost * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(p.px, p.py);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+
+        if ((i & 5) === 0 && (Math.sin(time * 8 + p.seed) > 0.72 || boost > 0.2)) {
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${74 + boost * 20}%, ${0.2 + boost * 0.55})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 0.8 + boost * 2.0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      time += 0.0028;
+    };
+
+    let raf = 0;
+    const loop = () => { step(); raf = requestAnimationFrame(loop); };
+
+    const onMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+    };
+    const onLeave = () => { mouse.active = false; mouse.x = -9999; mouse.y = -9999; };
+
+    const start = () => {
+      resize();
+      ready = true;
+      makeParticles();
+      if (reduceMotion) {
+        for (let i = 0; i < 600; i++) step();
+      } else {
+        window.addEventListener("pointermove", onMove, { passive: true });
+        window.addEventListener("pointerleave", onLeave);
+        raf = requestAnimationFrame(loop);
+      }
+    };
+
+    if (img.complete && img.naturalWidth > 0) start();
+    else img.onload = start;
+    img.src = BRAIN_IMAGE;
+
+    const ro = new ResizeObserver(() => {
+      if (!ready) return;
+      resize();
+      if (reduceMotion) for (let i = 0; i < 600; i++) step();
+    });
+    ro.observe(parent);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      ro.disconnect();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerleave", onLeave);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />;
-}
-
-/* a small burst of radiating lines around a bright centre — a miniature
-   nod to the framed neuron-cluster piece */
-function NeuronCluster({ active }) {
-  const size = active ? 34 : 26;
   return (
-    <svg viewBox="0 0 40 40" style={{ width: size, height: size }} className="transition-all duration-300">
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
-        const rad = (deg * Math.PI) / 180;
-        const x2 = 20 + Math.cos(rad) * 14;
-        const y2 = 20 + Math.sin(rad) * 14;
-        return (
-          <line
-            key={deg}
-            x1="20"
-            y1="20"
-            x2={x2}
-            y2={y2}
-            stroke={active ? "rgba(255,210,160,0.95)" : "rgba(255,210,160,0.4)"}
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        );
-      })}
-      <circle cx="20" cy="20" r={active ? 7 : 5.5} fill={active ? "#ffdca8" : "rgba(255,220,180,0.85)"} />
-    </svg>
-  );
-}
-
-/* Four neuron clusters — one per section of my life — wired to a warm
-   central glow by thin synapse lines. Hover (or tap, on touch) a cluster
-   to light its line and open that section below; Travel gets its own
-   airplane-screen wall, everything else gets a simple photo + note. */
-function NeuralMap({ items }) {
-  const categories = useMemo(() => groupByCategory(items), [items]);
-  const positions = useMemo(
-    () =>
-      categories.map((_, i) => {
-        const angle = (-90 + i * (360 / categories.length)) * (Math.PI / 180);
-        return { x: 50 + Math.cos(angle) * 34, y: 50 + Math.sin(angle) * 34 * 0.85 };
-      }),
-    [categories]
-  );
-  const [hoverIdx, setHoverIdx] = useState(null);
-  const [pinnedIdx, setPinnedIdx] = useState(null);
-  const activeIdx = pinnedIdx ?? hoverIdx;
-  const active = activeIdx != null ? categories[activeIdx] : null;
-
-  return (
-    <div>
-      <div className="relative mx-auto aspect-square w-full max-w-[440px] overflow-hidden rounded-full ring-1 ring-black/10">
-        <NeuralBackground />
-
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          {categories.map((cat, i) => {
-            const p = positions[i];
-            const isActive = activeIdx === i;
-            const mx = (50 + p.x) / 2 + (p.y - 50) * 0.12;
-            const my = (48 + p.y) / 2 - (p.x - 50) * 0.12;
-            return (
-              <path
-                key={cat.category}
-                d={`M50,48 Q${mx},${my} ${p.x},${p.y}`}
-                fill="none"
-                stroke={isActive ? "rgba(255,205,150,0.9)" : "rgba(255,205,150,0.22)"}
-                strokeWidth={isActive ? 0.5 : 0.22}
-                vectorEffect="non-scaling-stroke"
-              />
-            );
-          })}
-        </svg>
-
-        {categories.map((cat, i) => {
-          const p = positions[i];
-          const isActive = activeIdx === i;
-          return (
-            <button
-              key={cat.category}
-              type="button"
-              onMouseEnter={() => setHoverIdx(i)}
-              onMouseLeave={() => setHoverIdx((cur) => (cur === i ? null : cur))}
-              onClick={() => setPinnedIdx((cur) => (cur === i ? null : i))}
-              aria-label={cat.category}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 focus:outline-none"
-              style={{ left: `${p.x}%`, top: `${p.y}%`, zIndex: isActive ? 20 : 1 }}
-            >
-              <NeuronCluster active={isActive} />
-              <span
-                className="whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.15em] transition-colors duration-200"
-                style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)" }}
-              >
-                {cat.category}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* whichever section you've landed on */}
-      <div className="mt-5">
-        {active ? (
-          <CategoryDetail category={active.category} items={active.items} />
-        ) : (
-          <div className="flex min-h-[112px] items-center rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#a09a8c]">
-              hover or tap a cluster to open that part of my life
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CategoryDetail({ category, items }) {
-  if (category === "Travel") return <TravelScreens items={items} />;
-  return (
-    <div className="space-y-3">
-      {items.map((it) => (
-        <div key={it.title} className="flex items-center gap-4 rounded-lg bg-[#f8f6f1] p-4 ring-1 ring-black/[0.06]">
-          <InterestReveal item={it} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* Travel gets its own wall of "seatback screens" — a nod to the airplane
-   entertainment-screen photo. Add more photos to the Travel category in
-   portfolio.js and they slot in here automatically. */
-function TravelScreens({ items }) {
-  return (
-    <div className="rounded-xl bg-[#5c6b78] p-4 sm:p-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {items.map((it, i) => (
-          <div
-            key={it.title}
-            className="rounded-md bg-[#3d4750] p-1.5 shadow-[0_6px_14px_rgba(0,0,0,0.35)]"
-            style={{ marginTop: i % 3 === 1 ? "1.25rem" : i % 3 === 2 ? "-0.5rem" : 0 }}
-          >
-            <div className="aspect-[4/3] overflow-hidden rounded-[3px] bg-black ring-1 ring-black/40">
-              <TravelScreenPhoto item={it} />
-            </div>
-            <p className="mt-1.5 truncate px-0.5 font-mono text-[9px] uppercase tracking-[0.15em] text-white/70">
-              {it.title}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TravelScreenPhoto({ item }) {
-  const [ok, setOk] = useState(true);
-  if (!ok) return <div className="h-full w-full bg-gradient-to-br from-[#2a2f33] to-[#14171a]" />;
-  return (
-    <img
-      src={item.img}
-      alt={item.title}
-      loading="lazy"
-      onError={() => setOk(false)}
-      className="h-full w-full object-cover"
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 h-full w-full"
+      style={{ mixBlendMode: "screen" }}
+      aria-hidden="true"
     />
   );
 }
 
-function InterestReveal({ item }) {
+/* group INTERESTS by category, keyed to BRAIN_CATEGORIES order */
+function groupInterestsByCategory(items) {
+  const byCat = {};
+  items.forEach((it) => {
+    (byCat[it.category] ??= []).push(it);
+  });
+  return byCat;
+}
+
+/* the photo grid for whichever region is selected */
+function BrainCategoryPanel({ meta, items, onClose }) {
+  return (
+    <section>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em]" style={{ color: `hsl(${meta.hue} 80% 65%)` }}>
+            Region active
+          </p>
+          <h2 className="mt-1 text-3xl font-semibold tracking-tight text-white">{meta.id}</h2>
+          <p className="mt-1 max-w-md text-sm leading-relaxed text-white/50">{meta.blurb}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close panel"
+          className="rounded-full border border-white/10 p-2 text-lg leading-none text-white/60 transition hover:border-white/30 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {items.map((it) => (
+          <BrainPhoto key={it.title} item={it} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function BrainPhoto({ item }) {
   const [ok, setOk] = useState(true);
   return (
-    <>
-      {ok && (
+    <div className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10">
+      {ok ? (
         <img
           src={item.img}
           alt={item.title}
+          loading="lazy"
           onError={() => setOk(false)}
-          className="h-20 w-16 shrink-0 rounded-[3px] object-cover ring-1 ring-black/10"
+          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
         />
+      ) : (
+        <div className="h-full w-full bg-gradient-to-br from-[#2a2f33] to-[#14171a]" />
       )}
-      <div className="min-w-0">
-        <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-[#171411]">
-          {item.title}
-        </p>
-        <p className="mt-1 text-[13px] leading-snug text-[#5d5749]">{item.blurb}</p>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      <p className="pointer-events-none absolute bottom-3 left-3 right-3 text-xs text-white/80">{item.blurb}</p>
+    </div>
+  );
+}
+
+/* "Welcome to my brain" — the flow-field hero + hotspot buttons + the
+   category photo panel underneath. */
+function NeuralMap({ items }) {
+  const byCategory = useMemo(() => groupInterestsByCategory(items), [items]);
+  const stageRef = useRef(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const active = hovered ?? selected;
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      setSize({ w: r.width, h: r.height });
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const fit = fitContain(size.w || 1, size.h || 1);
+  const selectedMeta = BRAIN_CATEGORIES.find((c) => c.id === selected) ?? null;
+
+  return (
+    <div className="w-full">
+      <div
+        ref={stageRef}
+        className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl border border-white/10 bg-black sm:aspect-[16/10]"
+      >
+        <img
+          src={BRAIN_IMAGE}
+          alt="A glowing neural simulation of a human brain"
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          draggable={false}
+        />
+
+        <BrainFlowField activeId={active} />
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            backgroundImage: "radial-gradient(rgba(140,175,255,0.14) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "radial-gradient(120% 90% at 50% 45%, transparent 40%, rgba(0,0,0,0.55) 100%)" }}
+        />
+
+        {size.w > 0 &&
+          BRAIN_CATEGORIES.filter((c) => byCategory[c.id]?.length).map((c) => {
+            const cx = fit.toX(c.nx);
+            const cy = fit.toY(c.ny);
+            const d = fit.toR(c.nr) * 2;
+            const isActive = active === c.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                aria-label={`${c.id}: ${c.blurb}`}
+                aria-pressed={selected === c.id}
+                onMouseEnter={() => setHovered(c.id)}
+                onMouseLeave={() => setHovered(null)}
+                onFocus={() => setHovered(c.id)}
+                onBlur={() => setHovered(null)}
+                onClick={() => setSelected((prev) => (prev === c.id ? null : c.id))}
+                className="group absolute -translate-x-1/2 -translate-y-1/2 rounded-full outline-none"
+                style={{ left: cx, top: cy, width: d, height: d }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full border transition duration-500"
+                  style={{
+                    borderColor: isActive ? `hsl(${c.hue} 90% 65% / 0.6)` : "transparent",
+                    boxShadow: isActive ? `0 0 40px hsl(${c.hue} 90% 60% / 0.35)` : "none",
+                  }}
+                />
+                <span
+                  className="pointer-events-none absolute left-1/2 top-full flex -translate-x-1/2 translate-y-2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-300"
+                  style={{
+                    color: isActive ? `hsl(${c.hue} 95% 82%)` : "rgba(255,255,255,0.9)",
+                    backgroundColor: isActive ? `hsl(${c.hue} 60% 12% / 0.85)` : "rgba(0,0,0,0.6)",
+                    border: `1px solid ${isActive ? `hsl(${c.hue} 90% 65% / 0.7)` : "rgba(255,255,255,0.18)"}`,
+                    boxShadow: isActive ? `0 4px 24px hsl(${c.hue} 90% 45% / 0.5)` : "0 2px 10px rgba(0,0,0,0.5)",
+                    transform: isActive ? "translate(-50%, 0.75rem) scale(1.06)" : "translate(-50%, 0.5rem) scale(1)",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: `hsl(${c.hue} 90% 65%)`, boxShadow: `0 0 8px hsl(${c.hue} 90% 60% / 0.9)` }}
+                  />
+                  {c.id}
+                </span>
+              </button>
+            );
+          })}
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center p-6 text-center sm:p-10">
+          <p className="text-xs uppercase tracking-[0.4em] text-white/40">A living self-portrait</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-5xl">Welcome to my brain</h2>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/45">
+            Hover the glowing regions to stir the field — click one to see what lives inside.
+          </p>
+        </div>
       </div>
-    </>
+
+      <div className="mt-8 min-h-[2rem]">
+        {selectedMeta ? (
+          <BrainCategoryPanel meta={selectedMeta} items={byCategory[selectedMeta.id]} onClose={() => setSelected(null)} />
+        ) : (
+          <p className="text-center text-sm text-white/30">Select a region above to open its collection.</p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1500,14 +1682,8 @@ export function AboutMe() {
           <AlbumStack songs={FAVE_SONGS} />
         </div>
 
-        {/* welcome to my brain — a few neuron clusters, one per part of my life */}
-        <div className="mt-16 text-center">
-          <h2 className="font-sans text-2xl font-semibold text-[#171411] sm:text-3xl">
-            Welcome <span className="font-normal text-black/40">to my</span> brain
-          </h2>
-          <p className="mb-6 mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
-            hover or tap a cluster to open that part of my life
-          </p>
+        {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
+        <div className="mt-16">
           <NeuralMap items={INTERESTS} />
         </div>
       </div>

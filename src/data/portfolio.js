@@ -333,7 +333,7 @@ export const FAVE_SONGS = [
 ];
 
 // NOTE: Swimming is pending a replacement photo (the old one was cut) —
-// re-add it here with `category: "Free Time"` once a new image is in.
+// re-add it here with `category: "Hobbies"` once a new image is in.
 export const INTERESTS = [
   {
     title: "Paris",
@@ -351,21 +351,21 @@ export const INTERESTS = [
   },
   {
     title: "Electric guitar",
-    category: "Free Time",
+    category: "Hobbies",
     blurb: "I’ve been playing guitar since I was a kid, so long that my fingers know chords faster than I can remember where I left my keys.",
     img: "/photos/IMG_9151.JPG",
     tag: "My dream collection.",
   },
   {
     title: "Coffee & Red Bull",
-    category: "Free Time",
+    category: "Food",
     blurb: "My two essential food groups during a deadline.",
     img: "/photos/IMG_9152.JPG",
     tag: "My diet on a deadline.",
   },
   {
     title: "Drake",
-    category: "Music",
+    category: "Hobbies",
     blurb: "On repeat while I lock in",
     img: "/photos/IMG_9153.JPG",
     tag: "On repeat whenever I lock in.",
