@@ -1259,17 +1259,30 @@ function BagelRing({ items }) {
 
         {categories.map((cat, i) => {
           const isActive = activeIdx === i;
+          const startAngle = (i / categories.length) * 360;
           const delay = `${-(i / categories.length) * ORBIT_SECONDS}s`;
           return (
             <div
               key={cat.category}
               className="bagel-orbit-outer absolute left-1/2 top-1/2 h-0 w-0"
-              style={{ animationDuration: `${ORBIT_SECONDS}s`, animationDelay: delay, animationPlayState: isActive ? "paused" : "running" }}
+              style={{
+                // static fallback angle if the animation is disabled
+                // (reduced motion) — matches where the animation would be
+                transform: `rotate(${startAngle}deg)`,
+                animationDuration: `${ORBIT_SECONDS}s`,
+                animationDelay: delay,
+                animationPlayState: isActive ? "paused" : "running",
+              }}
             >
               <div style={{ transform: `translateX(${radius}px)` }}>
                 <div
                   className="bagel-orbit-counter"
-                  style={{ animationDuration: `${ORBIT_SECONDS}s`, animationDelay: delay, animationPlayState: isActive ? "paused" : "running" }}
+                  style={{
+                    transform: `rotate(${-startAngle}deg)`,
+                    animationDuration: `${ORBIT_SECONDS}s`,
+                    animationDelay: delay,
+                    animationPlayState: isActive ? "paused" : "running",
+                  }}
                 >
                   <button
                     type="button"
