@@ -1244,8 +1244,10 @@ function BrainFlowField({ activeId }) {
     let ready = false;
     let mask = null;
 
+    // NOTE: no crossOrigin here — the image is same-origin, so it doesn't need
+    // CORS to read pixels, and setting crossOrigin="anonymous" would fail
+    // against a cache entry poisoned (no ACAO header) by the visible <img>.
     const img = new Image();
-    img.crossOrigin = "anonymous";
     const mouse = { x: -9999, y: -9999, active: false };
 
     const inBrain = (x, y) => {
