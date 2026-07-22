@@ -1082,7 +1082,7 @@ function AlbumStack({ songs }) {
               <div
                 key={t.title + i}
                 ref={(el) => (cardRefs.current[i] = el)}
-                className="group relative w-full max-w-[380px] shrink-0 cursor-pointer"
+                className="group relative w-full max-w-[320px] shrink-0 cursor-pointer"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isActive
@@ -1091,7 +1091,7 @@ function AlbumStack({ songs }) {
                   transformOrigin: "center bottom",
                   transition: "transform 480ms cubic-bezier(0.22,1,0.36,1)",
                   // fixed overlap — never reflows on hover, so hit-mapping stays stable
-                  marginBottom: "-150px",
+                  marginBottom: "-215px",
                   zIndex: isActive ? 50 : i + 1,
                 }}
               >
@@ -1220,7 +1220,7 @@ function fitContain(w, h) {
 /* the flow-field canvas: particles constrained to a luminance mask built
    from BRAIN_IMAGE, drifting through simplex noise, swirling around the
    cursor, and pulled toward `activeId`'s hotspot */
-function BrainFlowField({ activeId }) {
+function BrainFlowField({ activeId, imgRef }) {
   const canvasRef = useRef(null);
   const activeRef = useRef(activeId);
   activeRef.current = activeId;
@@ -1244,10 +1244,12 @@ function BrainFlowField({ activeId }) {
     let ready = false;
     let mask = null;
 
-    // NOTE: no crossOrigin here — the image is same-origin, so it doesn't need
-    // CORS to read pixels, and setting crossOrigin="anonymous" would fail
-    // against a cache entry poisoned (no ACAO header) by the visible <img>.
-    const img = new Image();
+    // Reuse the already-rendered visible <img> as the mask source. Loading a
+    // separate new Image() for the same URL proved unreliable (it silently
+    // never fired start(), leaving the canvas blank); the on-page img is
+    // same-origin and readable, so build the luminance mask from it directly.
+    const img = imgRef?.current;
+    if (!img) return;
     const mouse = { x: -9999, y: -9999, active: false };
 
     const inBrain = (x, y) => {
@@ -1440,9 +1442,13 @@ function BrainFlowField({ activeId }) {
       }
     };
 
+    // the visible <img> already carries its src from JSX — just wait for it
+    let onImgLoad = null;
     if (img.complete && img.naturalWidth > 0) start();
-    else img.onload = start;
-    img.src = BRAIN_IMAGE;
+    else {
+      onImgLoad = () => start();
+      img.addEventListener("load", onImgLoad);
+    }
 
     const ro = new ResizeObserver(() => {
       if (!ready) return;
@@ -1454,6 +1460,7 @@ function BrainFlowField({ activeId }) {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      if (onImgLoad) img.removeEventListener("load", onImgLoad);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerleave", onLeave);
     };
@@ -1478,6 +1485,7 @@ function groupInterestsByCategory(items) {
 function NeuralMap({ items }) {
   const byCategory = useMemo(() => groupInterestsByCategory(items), [items]);
   const stageRef = useRef(null);
+  const brainImgRef = useRef(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [hovered, setHovered] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -1523,13 +1531,14 @@ function NeuralMap({ items }) {
     <div className="w-full">
       <div ref={stageRef} className="relative aspect-[5/4] w-full overflow-visible sm:aspect-[16/10]">
         <img
+          ref={brainImgRef}
           src={BRAIN_IMAGE}
           alt="A glowing neural simulation of a human brain"
           className="pointer-events-none absolute inset-0 h-full w-full object-contain"
           draggable={false}
         />
 
-        <BrainFlowField activeId={active} />
+        <BrainFlowField activeId={active} imgRef={brainImgRef} />
 
         {size.w > 0 &&
           BRAIN_CATEGORIES.filter((c) => byCategory[c.id]?.length).map((c) => {
