@@ -1340,7 +1340,7 @@ function BrainFlowField({ activeId, imgRef }) {
       const active = activeRef.current;
 
       ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = "rgba(0,0,0,0.09)";
+      ctx.fillStyle = "rgba(0,0,0,0.06)";
       ctx.fillRect(0, 0, w, h);
 
       ctx.globalCompositeOperation = "lighter";
@@ -1395,23 +1395,22 @@ function BrainFlowField({ activeId, imgRef }) {
         const ny = (p.y - fit.offsetY) / Math.max(1, fit.drawH);
         let hue = 190 + Math.min(1, Math.max(0, ny)) * 120;
         hue += Math.sin(angle * 2 + p.seed * 0.5) * 26;
-        const sat = 88 - boost * 20;
-        // lower lightness + higher alpha than the dark-background original —
-        // these need real saturation/opacity to read against white
-        const light = 42 + boost * 22;
-        const alpha = 0.16 + b * 0.28 + boost * 0.4;
+        const sat = 92 - boost * 16;
+        // vivid + saturated so the streaks read clearly over the bright brain
+        const light = 46 + boost * 20;
+        const alpha = 0.34 + b * 0.4 + boost * 0.45;
 
-        ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${alpha})`;
-        ctx.lineWidth = 0.9 + boost * 1.6;
+        ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${Math.min(1, alpha)})`;
+        ctx.lineWidth = 1.5 + boost * 1.8;
         ctx.beginPath();
         ctx.moveTo(p.px, p.py);
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
 
-        if ((i & 5) === 0 && (Math.sin(time * 8 + p.seed) > 0.72 || boost > 0.2)) {
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${52 + boost * 18}%, ${0.35 + boost * 0.5})`;
+        if ((i & 3) === 0 && (Math.sin(time * 8 + p.seed) > 0.6 || boost > 0.2)) {
+          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${58 + boost * 16}%, ${0.5 + boost * 0.4})`;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 0.8 + boost * 2.0, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, 1.1 + boost * 2.2, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -1594,7 +1593,7 @@ function NeuralMap({ items }) {
             <BrainArcPhoto key={it.title} item={it} pos={arcPositions[i]} hue={selectedMeta.hue} />
           ))}
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col items-center p-2 text-center sm:p-4">
+        <div className="pointer-events-none absolute inset-x-0 top-[26%] flex flex-col items-center px-2 text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-[#171411] sm:text-5xl">Welcome to my brain</h2>
         </div>
       </div>
