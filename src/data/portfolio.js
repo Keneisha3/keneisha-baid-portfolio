@@ -453,13 +453,34 @@ export const CHAT_KB = [
       "Outside of work she swims, plays electric guitar, travels (Paris and Venice are favourites), keeps Drake on repeat while coding, and rewatches Suits and Industry.",
   },
   {
-    keywords: ["hire", "hiring", "role", "fit", "why", "good"],
+    keywords: ["hire", "hiring", "role", "fit", "why", "good", "recruit", "candidate", "strong"],
     answer:
-      "She's applying to role and is a strong fit for data/product/fintech roles, her quant projects (ATR Signal, Electionomics) and her ML work at Pratt & Whitney show she can ship real, measurable results.",
+      "She's a strong fit for data, product, and fintech roles. Her quant work (the ATR signal system, Electionomics) and her ML work at Pratt & Whitney show she can ship real, measurable results — not just prototypes. She pairs technical depth with a product/business-analysis lens, so she can talk to both engineers and stakeholders.",
   },
   {
-    keywords: ["contact", "email", "reach", "linkedin", "github", "connect", "hire me"],
+    keywords: [
+      "want to do", "goal", "goals", "aspiration", "aspire", "future", "next", "looking for",
+      "career", "dream", "aiming", "hoping", "plans", "become", "wants",
+    ],
     answer:
-      "You can reach Keneisha at kbaid@uwaterloo.ca, on LinkedIn (/in/keneisha-baid/), or GitHub (github.com/Keneisha3).",
+      "She's looking to work at the intersection of data, product, and finance — building data-driven products and ML systems that help people make better decisions. She's especially drawn to fintech and AI, and to roles where she can own a problem end-to-end, from the analysis to the interface people actually use. Long-term, she's building toward a patent-landscape intelligence tool of her own.",
+  },
+  {
+    keywords: [
+      "like", "personality", "person", "kind of", "vibe", "character", "who is she",
+      "type of", "describe", "strengths", "traits",
+    ],
+    answer:
+      "Curious, product-minded, and relentless about shipping things that work. She likes hard problems and clean interfaces, brings an athlete's discipline (she swims competitively) to her work, and cares as much about how something feels to use as whether the math checks out.",
+  },
+  {
+    keywords: ["patent", "landscape", "in progress", "building now", "current project", "working on"],
+    answer:
+      "Right now she's building Patent Landscape Intelligence — a tool to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets using NLP and machine learning. It's her main in-progress project.",
+  },
+  {
+    keywords: ["contact", "email", "reach", "linkedin", "github", "connect", "hire me", "get in touch", "message"],
+    answer:
+      "You can reach Keneisha at kbaid@uwaterloo.ca, on LinkedIn (/in/keneisha-baid/), or GitHub (github.com/Keneisha3). She's quick to reply!",
   },
 ];

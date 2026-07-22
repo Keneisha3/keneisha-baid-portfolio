@@ -5,36 +5,92 @@ import { CHAT_KB } from "../data/portfolio";
 const GREETING = {
   role: "assistant",
   content:
-    "Hi there! Ask me anything about Keneisha's projects and experience, or what she's into outside of work. What would you like to know?",
+    "Hey! I'm Keneisha's assistant. Ask me about her projects, experience, skills, what she's aiming for, or what she's into outside of work.",
 };
 
 const QUICK_REPLIES = [
   "Her projects",
   "Experience",
   "Skills",
+  "What does she want to do?",
   "Her interests",
   "How to contact her",
 ];
 
-// Pick the best knowledge-base answer for a question (simple keyword scoring).
+// ---- lightweight intent handling for small talk ----
+const STOPWORDS = new Set([
+  "the", "a", "an", "is", "are", "was", "were", "of", "to", "and", "or", "in", "on",
+  "for", "with", "she", "her", "he", "his", "they", "it", "that", "this", "what",
+  "whats", "who", "how", "why", "when", "where", "do", "does", "did", "can", "could",
+  "would", "you", "your", "me", "my", "i", "about", "tell", "give", "please", "some",
+  "any", "there", "their", "at", "as", "be", "by", "so", "if", "im",
+]);
+
+const anyOf = (text, words) => words.some((w) => text.includes(w));
+
+function smallTalk(text) {
+  const t = ` ${text} `;
+  if (/^\s*(hi|hii|hey|heya|hello|hiya|yo|sup|hi there|good (morning|afternoon|evening))\b/.test(text))
+    return "Hey there! 👋 Want to hear about Keneisha's projects, her experience, or what she does for fun?";
+  if (anyOf(t, ["thank", "thx", " ty ", "appreciate"]))
+    return "Anytime! Anything else you'd like to know about Keneisha?";
+  if (anyOf(t, ["bye", "goodbye", "see ya", "later", "cya"]))
+    return "Take care! If you want to reach Keneisha directly, she's at kbaid@uwaterloo.ca.";
+  if (/how are you|how's it going|how are u|whats up|what's up|wassup/.test(text))
+    return "Doing great, thanks for asking! I'm here to tell you all about Keneisha — what would you like to know?";
+  if (/who are you|what are you|are you (a )?(bot|ai|robot)|your name/.test(text))
+    return "I'm a little assistant built into Keneisha's portfolio to answer questions about her work and interests. Ask away!";
+  if (/^\s*(ok|okay|cool|nice|great|awesome|got it|thanks)\s*$/.test(text))
+    return "👍 Ask me anything else — projects, experience, skills, or what she's into.";
+  return null;
+}
+
+// ---- keyword scoring over the knowledge base ----
+function scoreEntry(entry, text, tokens) {
+  let score = 0;
+  for (const kw of entry.keywords) {
+    if (kw.includes(" ")) {
+      if (text.includes(kw)) score += 3; // phrase match — strong signal
+    } else {
+      const re = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+      if (re.test(text)) score += 2; // whole-word match
+      else if (kw.length > 4 && text.includes(kw)) score += 1; // substring fallback
+    }
+  }
+  for (const tok of tokens) {
+    if (entry.keywords.some((kw) => kw === tok)) score += 0.5;
+  }
+  return score;
+}
+
 function answerFor(text) {
-  const q = " " + text.toLowerCase().replace(/[^a-z0-9\s]/g, " ") + " ";
+  const clean = text.toLowerCase().replace(/[^a-z0-9\s']/g, " ").replace(/\s+/g, " ").trim();
+
+  const st = smallTalk(clean);
+  if (st) return { content: st, suggestions: null };
+
+  const tokens = clean.split(" ").filter((w) => w && !STOPWORDS.has(w));
+
   let best = null;
   let bestScore = 0;
   for (const entry of CHAT_KB) {
-    let score = 0;
-    for (const kw of entry.keywords) {
-      if (q.includes(" " + kw + " ") || q.includes(kw)) {
-        score += kw.includes(" ") ? 2 : 1; // multi-word keywords weigh more
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score;
+    const s = scoreEntry(entry, clean, tokens);
+    if (s > bestScore) {
+      bestScore = s;
       best = entry;
     }
   }
-  if (best && bestScore > 0) return best.answer;
-  return "I'm not totally sure about that one! Try asking about her projects, experience, skills, or interests, or email her directly at kbaid@uwaterloo.ca.";
+
+  if (best && bestScore >= 2) {
+    return { content: best.answer, suggestions: null };
+  }
+
+  // Nothing solid matched — be helpful instead of a dead end.
+  return {
+    content:
+      "Hmm, I'm not sure about that one — I know Keneisha best. Try one of these, or email her directly at kbaid@uwaterloo.ca:",
+    suggestions: ["Her projects", "Experience", "Skills", "What does she want to do?", "Her interests"],
+  };
 }
 
 export default function ChatWidget() {
@@ -42,14 +98,13 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([GREETING]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState(QUICK_REPLIES);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, loading]);
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, loading, suggestions]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -60,12 +115,13 @@ export default function ChatWidget() {
     if (!clean || loading) return;
     setMessages((m) => [...m, { role: "user", content: clean }]);
     setInput("");
+    setSuggestions(null);
     setLoading(true);
-    // Small, natural-feeling delay before the reply.
-    const reply = answerFor(clean);
-    const delay = 450 + Math.min(reply.length * 8, 900);
+    const { content, suggestions: nextSuggestions } = answerFor(clean);
+    const delay = 380 + Math.min(clean.length * 6, 500);
     setTimeout(() => {
-      setMessages((m) => [...m, { role: "assistant", content: reply }]);
+      setMessages((m) => [...m, { role: "assistant", content }]);
+      setSuggestions(nextSuggestions);
       setLoading(false);
     }, delay);
   };
@@ -74,13 +130,13 @@ export default function ChatWidget() {
     <>
       <motion.button
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat" : "Open chat"}
+        aria-label={open ? "Close chat" : "Ask about Keneisha"}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-pink-500 text-white shadow-lg shadow-pink-500/40"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#171411] text-white shadow-lg shadow-black/20"
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
@@ -126,36 +182,28 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed bottom-24 right-6 z-50 flex h-[540px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-3xl border border-pink-200 bg-blush-100 shadow-2xl shadow-pink-500/20"
+            className="fixed bottom-24 right-6 z-50 flex h-[540px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl shadow-black/20"
           >
-            <div className="flex items-center gap-3 border-b border-pink-100 bg-gradient-to-r from-pink-400 to-rose-400 px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/30 text-sm font-bold text-white">
+            <div className="flex items-center gap-3 border-b border-black/10 bg-[#171411] px-5 py-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-sm font-bold text-white">
                 KB
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">
-                  Ask about Keneisha
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-white/85">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blush-100" /> Always around
+                <div className="text-sm font-semibold text-white">Ask about Keneisha</div>
+                <div className="flex items-center gap-1.5 text-xs text-white/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" /> Usually instant
                 </div>
               </div>
             </div>
 
-            <div
-              ref={scrollRef}
-              className="flex-1 space-y-3 overflow-y-auto bg-blush-50 px-4 py-4"
-            >
+            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-[#faf9f7] px-4 py-4">
               {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
-                        ? "rounded-br-md bg-pink-500 text-white"
-                        : "rounded-bl-md border border-pink-100 bg-blush-100 text-plum-700"
+                        ? "rounded-br-md bg-[#171411] text-white"
+                        : "rounded-bl-md border border-black/10 bg-white text-[#2a2620]"
                     }`}
                   >
                     {m.content}
@@ -165,12 +213,12 @@ export default function ChatWidget() {
 
               {loading && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-pink-100 bg-blush-100 px-4 py-3">
+                  <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-black/10 bg-white px-4 py-3">
                     {[0, 1, 2].map((d) => (
                       <motion.span
                         key={d}
-                        className="h-2 w-2 rounded-full bg-pink-400"
-                        animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+                        className="h-2 w-2 rounded-full bg-black/40"
+                        animate={{ y: [0, -5, 0], opacity: [0.3, 1, 0.3] }}
                         transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }}
                       />
                     ))}
@@ -178,14 +226,14 @@ export default function ChatWidget() {
                 </div>
               )}
 
-              {/* Quick replies shown only at the start of the conversation */}
-              {messages.length === 1 && !loading && (
+              {/* contextual suggestion chips */}
+              {suggestions && !loading && (
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {QUICK_REPLIES.map((q) => (
+                  {suggestions.map((q) => (
                     <button
                       key={q}
                       onClick={() => respond(q)}
-                      className="rounded-full border border-pink-200 bg-blush-100 px-3 py-1.5 text-xs font-medium text-pink-600 transition-colors hover:bg-pink-50"
+                      className="rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-medium text-[#3a352c] transition-colors hover:border-black/40 hover:bg-black/[0.03]"
                     >
                       {q}
                     </button>
@@ -199,20 +247,20 @@ export default function ChatWidget() {
                 e.preventDefault();
                 respond(input);
               }}
-              className="flex items-center gap-2 border-t border-pink-100 bg-blush-100 px-3 py-3"
+              className="flex items-center gap-2 border-t border-black/10 bg-white px-3 py-3"
             >
               <input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me something…"
-                className="flex-1 rounded-full border border-pink-200 bg-blush-50 px-4 py-2.5 text-sm text-plum-900 placeholder-plum-700/40 outline-none focus:border-pink-400"
+                placeholder="Ask me anything…"
+                className="flex-1 rounded-full border border-black/15 bg-[#faf9f7] px-4 py-2.5 text-sm text-[#171411] placeholder-black/35 outline-none focus:border-black/50"
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
                 aria-label="Send message"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-500 text-white transition-colors hover:bg-pink-400 disabled:opacity-40"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#171411] text-white transition-colors hover:bg-black disabled:opacity-30"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />
