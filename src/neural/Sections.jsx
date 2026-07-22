@@ -1065,7 +1065,7 @@ function AlbumStack({ songs }) {
   return (
     <div>
       <div
-        className="album-scroll h-[420px] overflow-y-auto overflow-x-hidden px-2 py-5"
+        className="album-scroll h-[440px] overflow-y-auto overflow-x-hidden px-2 py-5"
         style={{ perspective: "900px", perspectiveOrigin: "50% 40%" }}
         onMouseMove={(e) => setActive(cardAt(e.clientY))}
         onMouseLeave={() => setActive(null)}
@@ -1082,7 +1082,7 @@ function AlbumStack({ songs }) {
               <div
                 key={t.title + i}
                 ref={(el) => (cardRefs.current[i] = el)}
-                className="group relative w-full max-w-[340px] shrink-0 cursor-pointer"
+                className="group relative w-full max-w-[380px] shrink-0 cursor-pointer"
                 style={{
                   transformStyle: "preserve-3d",
                   transform: isActive
@@ -1091,7 +1091,7 @@ function AlbumStack({ songs }) {
                   transformOrigin: "center bottom",
                   transition: "transform 480ms cubic-bezier(0.22,1,0.36,1)",
                   // fixed overlap — never reflows on hover, so hit-mapping stays stable
-                  marginBottom: "-38px",
+                  marginBottom: "-150px",
                   zIndex: isActive ? 50 : i + 1,
                 }}
               >
@@ -1186,10 +1186,10 @@ const BRAIN_IMAGE = "/brain-base.png";
 // brain-base.png's anatomy; hue is the iridescent colour that region leans
 // toward. Real photos are pulled live from INTERESTS by category.
 const BRAIN_CATEGORIES = [
-  { id: "Travel", nx: 0.24, ny: 0.44, nr: 0.13, hue: 200 },
-  { id: "Food", nx: 0.5, ny: 0.26, nr: 0.13, hue: 300 },
-  { id: "TV", nx: 0.79, ny: 0.44, nr: 0.13, hue: 190 },
-  { id: "Hobbies", nx: 0.63, ny: 0.72, nr: 0.12, hue: 265 },
+  { id: "Travel", nx: 0.22, ny: 0.5, nr: 0.13, hue: 200 }, // frontal lobe (left)
+  { id: "Food", nx: 0.5, ny: 0.3, nr: 0.13, hue: 300 }, // crown (top)
+  { id: "TV", nx: 0.78, ny: 0.48, nr: 0.13, hue: 190 }, // occipital (back/right)
+  { id: "Hobbies", nx: 0.6, ny: 0.72, nr: 0.12, hue: 265 }, // cerebellum / stem
 ];
 
 // fit a square image into a w x h box (object-contain), with helpers mapping
@@ -1677,7 +1677,7 @@ export function AboutMe() {
           </div>
 
           {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
-          <div className="mx-auto w-full max-w-sm">
+          <div className="mx-auto w-full max-w-lg">
             <NeuralMap items={INTERESTS} />
           </div>
         </div>
