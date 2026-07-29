@@ -1299,7 +1299,7 @@ function BrainFlowField({ activeId, imgRef }) {
       p.life = 0; p.maxLife = 100; p.seed = Math.random() * 1000;
     };
 
-    const PARTICLE_TARGET = 1300;
+    const PARTICLE_TARGET = 2100;
     const makeParticles = () => {
       const count = Math.round(PARTICLE_TARGET * Math.min(1.5, Math.max(0.5, (w * h) / (900 * 600))));
       particles = new Array(count).fill(0).map(() => {
@@ -1528,7 +1528,7 @@ function NeuralMap({ items }) {
 
   return (
     <div className="w-full">
-      <div ref={stageRef} className="relative aspect-[5/4] w-full overflow-visible sm:aspect-[16/10]">
+      <div ref={stageRef} className="relative aspect-square w-full overflow-visible">
         <img
           ref={brainImgRef}
           src={BRAIN_IMAGE}
@@ -1667,7 +1667,7 @@ export function AboutMe() {
       </div>
 
       <div className="mx-auto mt-4 max-w-6xl px-8 sm:px-14">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.45fr] lg:items-center">
           {/* interactive music — a 3D stack of favourite covers */}
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -1687,7 +1687,7 @@ export function AboutMe() {
           </div>
 
           {/* welcome to my brain — flow-field hero with one hotspot per part of my life */}
-          <div className="mx-auto w-full max-w-lg">
+          <div className="mx-auto w-full max-w-2xl">
             <NeuralMap items={INTERESTS} />
           </div>
         </div>
