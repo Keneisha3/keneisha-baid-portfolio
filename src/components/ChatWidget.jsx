@@ -81,14 +81,24 @@ function answerFor(text) {
     }
   }
 
+  // Confident match — answer directly.
   if (best && bestScore >= 2) {
     return { content: best.answer, suggestions: null };
   }
 
-  // Nothing solid matched — be helpful instead of a dead end.
+  // Weak-but-plausible match — take a best guess and offer to narrow down,
+  // rather than dead-ending.
+  if (best && bestScore >= 1) {
+    return {
+      content: `${best.answer}\n\n(If that's not quite what you meant, ask me something more specific!)`,
+      suggestions: null,
+    };
+  }
+
+  // Truly nothing — stay helpful and point to the real person.
   return {
     content:
-      "Hmm, I'm not sure about that one — I know Keneisha best. Try one of these, or email her directly at kbaid@uwaterloo.ca:",
+      "I'm not totally sure on that one — I know Kenny's work best. Try one of these, or reach her directly at kbaid@uwaterloo.ca:",
     suggestions: ["Her projects", "Experience", "Skills", "What does she want to do?", "Her interests"],
   };
 }
@@ -200,7 +210,7 @@ export default function ChatWidget() {
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    className={`max-w-[82%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
                         ? "rounded-br-md bg-[#171411] text-white"
                         : "rounded-bl-md border border-black/10 bg-white text-[#2a2620]"

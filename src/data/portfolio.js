@@ -383,104 +383,123 @@ export const INTERESTS = [
 // Each entry is matched by keywords; the best match's answer is returned.
 export const CHAT_KB = [
   {
-    keywords: ["who", "about", "keneisha", "yourself", "her", "bio", "background"],
+    keywords: ["who", "about", "keneisha", "kenny", "yourself", "bio", "background", "herself"],
     answer:
-      "Keneisha Baid is a Management Engineering student at the University of Waterloo. She works across data science, product/business analysis, and software, and loves fintech, AI, and building real products.",
+      "Kenny (Keneisha) Baid is a Management Engineering student at the University of Waterloo, currently on co-op. Her work runs across software development, business analysis, finance, and UX research — the throughline is pairing quantitative, technical projects with a real product and business lens.",
   },
   {
-    keywords: ["project", "projects", "built", "build", "work", "portfolio"],
+    keywords: [
+      "throughline", "unique", "special", "stand out", "different", "story", "overall",
+      "summary", "sum up", "elevator", "pitch", "what is she into", "what's she into",
+      "what does she do", "what she does",
+    ],
     answer:
-      "Her projects span quantitative finance, machine learning, and systems modeling. Key work includes an ATR-based news-triggered trading system, an election-driven stock prediction model, a stochastic Markov Chain logistics optimizer, a macroeconomic index comparison (Nikkei 225 vs Dow Jones), and a UX-focused family management prototype. Ask about any one for details.",
+      "The throughline: she builds quantitative, technical things (trading signals, ML models, automation) and pairs them with business analysis and UX so they actually get used. She's touched a wide range of industries too — finance, aerospace, consumer, and energy — across four internships.",
   },
   {
-    keywords: ["atr", "signal", "stock", "trading", "quant", "equities", "backtest", "news"],
+    keywords: ["project", "projects", "built", "build", "portfolio", "made", "work on"],
     answer:
-      "The ATR-Based News-Triggered Stock System is a quantitative trading research platform that combines Average True Range (ATR) volatility detection with real-time news signals across equities. It generates event-driven trading signals, supports portfolio backtesting, and includes walk-forward style validation. Built in Python with yfinance and news ingestion pipelines, designed for research into volatility-adjusted momentum and event impact.",
+      "Six of them: an ATR news-triggered trading signal system, Electionomics (predicting markets from policy cycles), a Nikkei 225 vs Dow Jones divergence study, the FamFlow UX prototype, a Markov chain fleet-transition model, and Patent Landscape Intelligence (in progress). Ask about any one for the details.",
   },
   {
-    keywords: ["election", "electionomics", "ml", "machine learning", "model", "prediction", "sklearn"],
+    keywords: ["atr", "signal", "stock", "trading", "trade", "quant", "equities", "backtest", "news", "yfinance"],
     answer:
-      "Electionomics is a machine learning project that predicts stock market behavior using U.S. presidential election data from 2000–2024. It compares models including KNN, SVM, Random Forest, and Gradient Boosting. The best model achieved an R² of 0.779, showing strong explanatory power between political cycles and market movement. Built using Python and scikit-learn.",
+      "The ATR News Signal System is a news-triggered trading signal engine — it fuses Average True Range volatility with real-time news feeds to flag event-driven setups across equities, with backtesting baked in. Built in Python with yfinance and RSS ingestion.",
   },
   {
-    keywords: ["markov", "operations", "logistics", "truck", "3pl", "research", "optimization"],
+    keywords: ["election", "electionomics", "ml", "machine learning", "prediction", "predict", "policy", "sklearn", "random forest"],
     answer:
-      "The Markov Chain Logistics Model is an operations research system that simulates inventory and shipment transitions using stochastic state modeling. It evaluates tradeoffs between dedicated trucking fleets and third-party logistics (3PL) providers under different cost and demand conditions. Built in Python for probabilistic decision analysis.",
+      "Electionomics predicts stock movement from U.S. election and policy cycles. She benchmarked KNN, SVM, gradient boosting, and random forest — random forest was the best fit at R² = 0.779. Python and scikit-learn.",
   },
   {
-    keywords: ["cross market", "nikkei", "dow", "index", "macroeconomic", "report", "correlation"],
+    keywords: ["financial", "nikkei", "dow", "index", "divergence", "macro", "macroeconomic", "report", "correlation", "market comparison"],
     answer:
-      "The Cross-Market Index Comparison is a macro-financial research project analyzing the Nikkei 225 and Dow Jones Industrial Average. It studies monetary policy divergence, USD/JPY effects, sector composition differences, geopolitical shocks, and cross-market correlations using statistical analysis and scenario-based reasoning.",
+      "Her Financial Analyst Research compares the Nikkei 225 and Dow Jones, studying how they diverge across different policy regimes using statistical and economic analysis in Python. It digs into monetary policy, currency effects, and cross-market correlation.",
   },
   {
-    keywords: ["ux", "famflow", "figma", "design", "prototype", "frontend"],
+    keywords: ["famflow", "ux", "figma", "design", "prototype", "hci", "frontend", "family", "app"],
     answer:
-      "FamFlow UX Prototype is a user experience design project for a family management platform. It includes interactive Figma prototypes, user flows for scheduling and communication, and UX research grounded in HCI principles, focusing on accessibility and task coordination.",
+      "FamFlow is a family-management app prototype she designed in Figma — user flows for scheduling and communication, grounded in user-centered design and HCI principles. It's her most design-forward project.",
   },
   {
-    keywords: ["experience", "job", "intern", "internship", "worked", "career"],
+    keywords: ["markov", "chain", "fleet", "operations", "logistics", "truck", "3pl", "transition", "optimization", "quarter"],
     answer:
-      "Her experience: Business Analyst and Software Developer at Creospark, AI Engineering Intern at Pratt & Whitney, Operations Analyst at Greenhouse Juice, and Project Controls at Capital Power. Ask about any company for specifics!",
+      "The Markov Chain Model simulates fleet-ownership transitions quarter over quarter — a stochastic model for deciding between running your own fleet and using third-party logistics under changing conditions. Built in Python.",
   },
   {
-    keywords: ["creospark", "analyst", "spfx", "sharepoint", "power platform", "power bi"],
+    keywords: ["patent", "landscape", "intelligence", "nlp", "in progress", "current project", "working on now", "building now", "latest"],
     answer:
-      "At Creospark she was a Business Analyst (led stakeholder engagement across 3 digital-transformation projects, +24% operational efficiency) and earlier a Software Developer (built enterprise SPFx web parts in TypeScript/React, +27% usability; automation across 5 client projects).",
+      "Patent Landscape Intelligence is her in-progress project — mapping and analyzing patent landscapes to surface trends, white space, and competitor activity from large datasets using NLP and machine learning in Python.",
   },
   {
-    keywords: ["pratt", "whitney", "aerospace", "neural", "patent", "ai engineer"],
+    keywords: ["experience", "internship", "internships", "intern", "co-op", "coop", "job", "jobs", "worked", "career", "companies", "roles"],
     answer:
-      "At Pratt & Whitney she was an AI Engineering Intern: she built Python automation and AI-assisted workflows that cut manual patent processing time by 30%, and applied ML/neural networks to aerospace decision systems for a 15% accuracy gain.",
+      "Four internships across very different worlds: Creospark (Software Developer → Business Analyst), Pratt & Whitney Canada (AI Engineering, patents & innovation), Greenhouse Juice (Operations Analyst), and Capital Power (Project Controls). Ask about any one for specifics.",
   },
   {
-    keywords: ["greenhouse", "juice", "capital power", "vba", "excel", "controls", "operations analyst"],
+    keywords: ["creospark", "spfx", "sharepoint", "power platform", "power bi", "power automate", "stakeholder", "digital transformation", "business analyst"],
     answer:
-      "At Greenhouse Juice (Operations Analyst) she built Excel VBA reporting and dashboards (+17% inventory management, −20% manual workload). At Capital Power (Project Controls) she built VBA reporting and project-tracking workflows in Microsoft Project (+12% accuracy).",
+      "At Creospark she started as a Software Developer and grew into a Business Analyst, leading stakeholder engagement across 3 digital-transformation projects (Power Platform, SharePoint, Power BI, Power Automate, React, Jira). She lifted operational efficiency by 24% and cut implementation timelines by 18%.",
   },
   {
-    keywords: ["skill", "skills", "tech", "stack", "language", "tools", "python", "react"],
+    keywords: ["pratt", "whitney", "aerospace", "engine", "ai engineering", "innovation"],
     answer:
-      "Top skills: Python, Data Analysis, Machine Learning, Product/Business Analysis, React/JavaScript, Power Platform, and SQL. Tools include Pandas, NumPy, scikit-learn, Node.js/Express, Power BI, Power Automate, SPFx, Figma, Java, and R.",
+      "At Pratt & Whitney Canada she worked in AI Engineering, focused on patents and innovation — bringing machine learning into an aerospace R&D setting.",
   },
   {
-    keywords: ["school", "university", "waterloo", "study", "degree", "education", "major"],
+    keywords: ["greenhouse", "juice", "operations analyst", "consumer", "inventory"],
     answer:
-      "She studies Management Engineering at the University of Waterloo (2022–Present), a blend of engineering, data, and product/operations.",
+      "At Greenhouse Juice she was an Operations Analyst — the consumer-goods chapter of her internships, working on operational reporting and analysis.",
   },
   {
-    keywords: ["interest", "hobby", "hobbies", "fun", "music", "drake", "swimming", "travel", "suits", "industry", "guitar"],
+    keywords: ["capital power", "project controls", "energy", "controls", "utility"],
     answer:
-      "Outside of work she swims, plays electric guitar, travels (Paris and Venice are favourites), keeps Drake on repeat while coding, and rewatches Suits and Industry.",
+      "At Capital Power she worked in Project Controls — the energy-sector stop on her internship tour, handling project tracking and reporting.",
   },
   {
-    keywords: ["hire", "hiring", "role", "fit", "why", "good", "recruit", "candidate", "strong"],
+    keywords: ["skill", "skills", "tech", "stack", "language", "languages", "tools", "python", "react", "sql", "know"],
     answer:
-      "She's a strong fit for data, product, and fintech roles. Her quant work (the ATR signal system, Electionomics) and her ML work at Pratt & Whitney show she can ship real, measurable results — not just prototypes. She pairs technical depth with a product/business-analysis lens, so she can talk to both engineers and stakeholders.",
+      "Broad and practical: cloud/infra (AWS, Azure, GCP, Docker, CI/CD), platform tools (Power Platform, Power BI, Power Automate, SharePoint, Jira), languages (Python, JS/TS, SQL, R), Excel/VBA, plus business analysis (requirements gathering, stakeholder engagement, process mapping).",
+  },
+  {
+    keywords: ["industry", "industries", "sector", "sectors", "fields", "domains", "areas"],
+    answer:
+      "She's deliberately ranged wide: finance (her quant projects), aerospace (Pratt & Whitney), consumer goods (Greenhouse Juice), and energy (Capital Power) — plus the software and product work threaded through all of it.",
+  },
+  {
+    keywords: ["school", "university", "waterloo", "study", "studies", "degree", "education", "major", "management engineering"],
+    answer:
+      "She studies Management Engineering at the University of Waterloo and is currently on co-op — it's a blend of engineering, data, and product/operations, which is exactly why her work crosses so many lanes.",
+  },
+  {
+    keywords: ["interest", "interests", "hobby", "hobbies", "fun", "music", "drake", "swimming", "swim", "travel", "suits", "industry show", "guitar", "outside"],
+    answer:
+      "Outside of work she swims, plays electric guitar, travels (Paris and Venice are favourites), keeps a playlist running while she builds, and rewatches Suits and Industry.",
   },
   {
     keywords: [
       "want to do", "goal", "goals", "aspiration", "aspire", "future", "next", "looking for",
-      "career", "dream", "aiming", "hoping", "plans", "become", "wants",
+      "dream", "aiming", "hoping", "plans", "become", "wants", "seeking", "role she wants",
     ],
     answer:
-      "She's looking to work at the intersection of data, product, and finance — building data-driven products and ML systems that help people make better decisions. She's especially drawn to fintech and AI, and to roles where she can own a problem end-to-end, from the analysis to the interface people actually use. Long-term, she's building toward a patent-landscape intelligence tool of her own.",
+      "She's aiming for roles where she can own a problem end-to-end — quantitative or technical work paired with the product and business side that gets it shipped. Fintech and AI are the sweet spot, and she's building toward a patent-landscape intelligence tool of her own.",
   },
   {
     keywords: [
       "like", "personality", "person", "kind of", "vibe", "character", "who is she",
-      "type of", "describe", "strengths", "traits",
+      "type of", "describe", "strengths", "traits", "attitude",
     ],
     answer:
-      "Curious, product-minded, and relentless about shipping things that work. She likes hard problems and clean interfaces, brings an athlete's discipline (she swims competitively) to her work, and cares as much about how something feels to use as whether the math checks out.",
+      "Curious, product-minded, and relentless about shipping things that work. She likes hard problems and clean interfaces, brings an athlete's discipline (she swims) to her work, and cares as much about how something feels to use as whether the math checks out.",
   },
   {
-    keywords: ["patent", "landscape", "in progress", "building now", "current project", "working on"],
+    keywords: ["hire", "hiring", "recruit", "candidate", "fit", "good", "strong", "why her", "should we"],
     answer:
-      "Right now she's building Patent Landscape Intelligence — a tool to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets using NLP and machine learning. It's her main in-progress project.",
+      "Strong fit for data, product, and fintech roles. Her quant work (ATR signals, Electionomics) and her AI work at Pratt & Whitney show she ships real, measurable results — and she can talk to engineers and stakeholders alike, which is rarer than it sounds.",
   },
   {
-    keywords: ["contact", "email", "reach", "linkedin", "github", "connect", "hire me", "get in touch", "message"],
+    keywords: ["contact", "email", "reach", "linkedin", "github", "connect", "hire me", "get in touch", "message", "talk"],
     answer:
-      "You can reach Keneisha at kbaid@uwaterloo.ca, on LinkedIn (/in/keneisha-baid/), or GitHub (github.com/Keneisha3). She's quick to reply!",
+      "Easiest ways to reach Kenny: kbaid@uwaterloo.ca, linkedin.com/in/keneisha-baid, or github.com/Keneisha3. She's quick to reply.",
   },
 ];
