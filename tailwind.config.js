@@ -43,6 +43,7 @@ export default {
         mono: ["Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
         wordmark: ["\"Jost\"", "\"Century Gothic\"", "ui-sans-serif", "sans-serif"],
         cursive: ["\"Dancing Script\"", "cursive"],
+        serifDisplay: ["\"Cinzel\"", "\"Fraunces\"", "Georgia", "serif"],
       },
     },
   },

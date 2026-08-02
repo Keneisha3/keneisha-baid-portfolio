@@ -1528,7 +1528,19 @@ function NeuralMap({ items }) {
 
   return (
     <div className="w-full">
-      <div ref={stageRef} className="relative aspect-square w-full overflow-visible">
+      {/* elegant serif title in Yale Blue, sitting above the brain */}
+      <div className="mb-1 text-center">
+        <h2 className="font-serifDisplay text-2xl font-semibold uppercase leading-none tracking-[0.14em] text-[#0D3B66] sm:text-4xl sm:tracking-[0.18em]">
+          Welcome to
+          <br />
+          <span className="text-[2.4em] leading-[1.05] tracking-[0.06em]">my brain</span>
+        </h2>
+        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-[#0D3B66]/45">
+          #0D3B66
+        </p>
+      </div>
+
+      <div ref={stageRef} className="relative -mt-2 aspect-square w-full overflow-visible">
         <img
           ref={brainImgRef}
           src={BRAIN_IMAGE}
@@ -1593,9 +1605,6 @@ function NeuralMap({ items }) {
             <BrainArcPhoto key={it.title} item={it} pos={arcPositions[i]} hue={selectedMeta.hue} />
           ))}
 
-        <div className="pointer-events-none absolute inset-x-0 top-[26%] flex flex-col items-center px-2 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#171411] sm:text-5xl">Welcome to my brain</h2>
-        </div>
       </div>
 
       <div className="mt-8 flex min-h-[2rem] items-center justify-center gap-3 text-center">
