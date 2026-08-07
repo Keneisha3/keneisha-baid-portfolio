@@ -17,7 +17,7 @@ function Rail({ children, id }) {
       <div className="rail flex items-start gap-12 overflow-x-auto px-[7vw] pb-6">
         {children}
       </div>
-      <p className="mt-3 px-[7vw] font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+      <p className="mt-3 px-[7vw] font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/45">
         ⟷ slide to browse — or keep scrolling down
       </p>
     </section>
@@ -39,7 +39,7 @@ function ProjectMedia({ p }) {
           allowFullScreen
         />
         {/famflow/i.test(p.title) && (
-          <p className="px-3 pb-3 pt-2 font-sans text-[10px] italic tracking-[0.12em] text-[#6b6459]">
+          <p className="px-3 pb-3 pt-2 font-sans text-[10px] italic tracking-[0.12em] text-[#0D3B66]/70">
             hover to load if the prototype does not appear automatically
           </p>
         )}
@@ -68,8 +68,8 @@ function ProjectMedia({ p }) {
         <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0 fill-[#5d5749]" aria-hidden="true">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
         </svg>
-        <span className="truncate font-mono text-[12px] text-[#3a352c]">{m[1]}</span>
-        <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[#a09a8c] group-hover:text-[#a4622e]">
+        <span className="truncate font-mono text-[12px] text-[#0D3B66]/80">{m[1]}</span>
+        <span className="ml-auto shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0D3B66]/45 group-hover:text-[#0D3B66]">
           open ↗
         </span>
       </a>
@@ -86,7 +86,7 @@ function Painting({ children, plaque }) {
       </div>
       {plaque && (
         <figcaption className="mt-3 flex justify-center">
-          <span className="painting-plaque rounded-sm px-3.5 py-1 font-mono text-[9px] uppercase tracking-[0.28em] text-[#4a4234]">
+          <span className="painting-plaque rounded-sm px-3.5 py-1 font-mono text-[9px] uppercase tracking-[0.28em] text-[#0D3B66]/85">
             {plaque}
           </span>
         </figcaption>
@@ -96,18 +96,20 @@ function Painting({ children, plaque }) {
 }
 
 /* ---------- shared type primitives ---------- */
-const BONE = "text-[#171411]";
-const DIM = "text-[#5d5749]";
-const FAINT = "text-[#a09a8c]";
-const CY = "text-[#a4622e]";
-const CU = "text-[#d98a4a]";
+const BONE = "text-[#0D3B66]";
+const DIM = "text-[#0D3B66]/70";
+const FAINT = "text-[#0D3B66]/45";
+const CY = "text-[#0D3B66]";
+const CU = "text-[#0D3B66]";
 const RULE = "border-t border-[#1c1a1714]";
 
 function Kicker({ children, className = "" }) {
   return (
-    <p className={`font-mono text-[10px] uppercase tracking-[0.4em] ${CY} ${className}`}>
+    <span
+      className={`inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.4em] text-[#0D3B66] ${className}`}
+    >
       {children}
-    </p>
+    </span>
   );
 }
 
@@ -124,7 +126,7 @@ function Links({ links }) {
           href={l.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#1c1a172a] underline-offset-4 transition-colors hover:text-[#a4622e] hover:decoration-[#a4622e]`}
+          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#1c1a172a] underline-offset-4 transition-colors hover:text-[#0D3B66] hover:decoration-[#a4622e]`}
         >
           {l.label} ↗
         </a>
@@ -142,13 +144,13 @@ export function Landing({ onSkip }) {
   return (
     <section className="relative h-screen">
       <div className="rise absolute left-6 top-20 max-w-sm sm:left-12 sm:top-24">
-        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[#a09a8c]">
+        <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-[#0D3B66]/45">
           collection № 01
         </p>
-        <h1 className="mt-3 font-sans text-3xl font-medium leading-snug text-[#1c1a17] sm:text-4xl">
+        <h1 className="mt-3 font-sans text-3xl font-medium leading-snug text-[#0D3B66] sm:text-4xl">
           Keneisha Baid
         </h1>
-        <p className="mt-2 font-sans text-sm text-[#6b6459]">
+        <p className="mt-2 font-sans text-sm text-[#0D3B66]/70">
           Management Engineering, University of Waterloo.
           <br />
           Portrait of a working mind — marble and light, 2022–present.
@@ -156,12 +158,12 @@ export function Landing({ onSkip }) {
         <div className="mt-5 w-16 border-t border-[#1c1a1720]" />
       </div>
 
-      <p className="rise absolute bottom-16 left-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#6b6459] sm:left-12">
+      <p className="rise absolute bottom-16 left-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/70 sm:left-12">
         scroll — the stone is cracking
       </p>
       <button
         onClick={onSkip}
-        className="rise absolute bottom-16 right-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c] transition-colors hover:text-[#a4622e] sm:right-12"
+        className="rise absolute bottom-16 right-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/45 transition-colors hover:text-[#0D3B66] sm:right-12"
       >
         skip the descent →
       </button>
@@ -262,7 +264,7 @@ function ArtifactBench() {
             }}
             className={`font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${
               sel === i ? CY : FAINT
-            } hover:text-[#6b6459]`}
+            } hover:text-[#0D3B66]/70`}
           >
             {sel === i ? "▸ " : ""}
             {name}
@@ -325,7 +327,7 @@ function ArtifactStoryboard() {
               onClick={() => setF(i)}
               className={`font-mono text-[10px] uppercase tracking-[0.2em] transition-colors ${
                 f === i ? CY : FAINT
-              } hover:text-[#6b6459]`}
+              } hover:text-[#0D3B66]/70`}
             >
               {String(i + 1).padStart(2, "0")}
             </button>
@@ -598,7 +600,7 @@ function Filmstrip({ id, corner, caption, items }) {
         <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
           {corner}
         </h2>
-        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+        <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]">
           {String(items.length).padStart(2, "0")} works
         </span>
       </div>
@@ -623,11 +625,11 @@ function Filmstrip({ id, corner, caption, items }) {
               <div className="relative aspect-[4/5] transition-transform duration-300 group-hover:-translate-y-1.5">
                 {it.thumb}
               </div>
-              <p className="mt-4 font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-[#171411]">
-                <span className="text-[#b9b2a4]">{String(i + 1).padStart(2, "0")} — </span>
+              <p className="mt-4 font-sans text-[11px] font-medium uppercase leading-snug tracking-[0.12em] text-[#0D3B66]">
+                <span className="text-[#0D3B66]/40">{String(i + 1).padStart(2, "0")} — </span>
                 {it.title}
               </p>
-              <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#a09a8c]">
+              <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0D3B66]/45">
                 {it.meta}
               </p>
             </div>
@@ -636,7 +638,7 @@ function Filmstrip({ id, corner, caption, items }) {
       </div>
 
       {/* footer caption, like the reference */}
-      <p className="px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
+      <p className="px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#0D3B66]/50 sm:px-14">
         {caption}
       </p>
 
@@ -651,12 +653,12 @@ function Filmstrip({ id, corner, caption, items }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/45">
                 {corner} · {String(open + 1).padStart(2, "0")}
               </span>
               <button
                 onClick={() => setOpen(null)}
-                className="font-mono text-sm text-[#5d5749] hover:text-[#171411]"
+                className="font-mono text-sm text-[#0D3B66]/70 hover:text-[#0D3B66]"
               >
                 ✕
               </button>
@@ -679,10 +681,10 @@ export function ProjectNeurons() {
         <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
           {/* a filled mini-poster: title, the live artifact, and tech tags */}
           <div className="flex h-full w-full flex-col bg-gradient-to-br from-[#f8f6f1] to-[#ece7dd] p-4 text-center">
-            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#a09a8c]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#0D3B66]/45">
               {p.status ? "in progress" : art?.label ?? "project"}
             </p>
-            <p className="mt-1 line-clamp-2 font-display text-xl font-medium leading-tight text-[#171411] sm:text-2xl">
+            <p className="mt-1 line-clamp-2 font-display text-xl font-medium leading-tight text-[#0D3B66] sm:text-2xl">
               {p.title}
             </p>
             <div className="my-2.5 flex flex-1 items-center justify-center overflow-hidden rounded-[3px] bg-white/70 p-1.5 ring-1 ring-black/[0.06]">
@@ -694,7 +696,7 @@ export function ProjectNeurons() {
               {p.tech.slice(0, 3).map((t) => (
                 <span
                   key={t}
-                  className="rounded-full bg-black/[0.04] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-[#5d5749]"
+                  className="rounded-full bg-black/[0.04] px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-[#0D3B66]/70"
                 >
                   {t}
                 </span>
@@ -705,15 +707,15 @@ export function ProjectNeurons() {
       ),
       detail: (
         <div>
-          <h3 className="font-display text-2xl font-medium text-[#171411]">{p.title}</h3>
-          <p className="mt-2 text-[15px] leading-[1.7] text-[#48423a]">{p.description}</p>
+          <h3 className="font-display text-2xl font-medium text-[#0D3B66]">{p.title}</h3>
+          <p className="mt-2 text-[15px] leading-[1.7] text-[#0D3B66]/85">{p.description}</p>
           <div className="mt-6 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2]">
             <ProjectMedia p={p} />
             {!/famflow/i.test(p.title) && <div className="p-5">{art?.el}</div>}
           </div>
           <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
             <Links links={p.links} />
-            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#a09a8c]">
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-[#0D3B66]/45">
               {p.tech.join(" · ")}
             </span>
           </div>
@@ -736,11 +738,16 @@ export function ProjectNeurons() {
 ===================================================================== */
 export function SkillTerminals() {
   return (
-    <section id="skills" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
+    <section id="skills" className="relative mx-auto max-w-5xl overflow-hidden px-6 py-32 sm:px-12">
+      {/* giant Lemon Chiffon square — a background label behind the section */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-20 -top-4 -z-10 h-[26rem] w-[26rem] rounded-[2.5rem] bg-[#FAF0CA]"
+      />
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
           <Kicker>the toolkit</Kicker>
-          <h2 className={`mt-4 font-sans text-3xl font-medium leading-tight ${BONE}`}>
+          <h2 className="mt-4 font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
             Tools & Skills
           </h2>
         </div>
@@ -750,14 +757,14 @@ export function SkillTerminals() {
         {TOOLKIT.map((cat, ci) => (
           <div key={cat.group} className={`${RULE} grid gap-3 py-6 md:grid-cols-12`}>
             <div className="md:col-span-4">
-              <span className={`font-mono text-[10px] uppercase tracking-[0.35em] ${DIM}`}>
+              <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.35em] text-[#0D3B66]">
                 {String(ci + 1).padStart(2, "0")} · {cat.group}
               </span>
             </div>
             <ul className="md:col-span-7 flex flex-wrap gap-2">
               {cat.items.map((tool) => (
                 <li key={tool}>
-                  <span className="inline-flex rounded-full border border-black/15 bg-white px-2.5 py-1 font-sans text-[13px] leading-none text-black transition-colors hover:border-black/40">
+                  <span className="inline-flex rounded-full border border-black/15 bg-white px-2.5 py-1 font-sans text-[13px] leading-none text-[#0D3B66] transition-colors hover:border-black/40">
                     {tool}
                   </span>
                 </li>
@@ -796,8 +803,8 @@ function JobThumbnail({ src, alt, company, period }) {
   if (!src || !ok) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center bg-white p-3 text-center">
-        <span className="font-sans text-[13px] font-medium leading-tight text-[#171411]">{company}</span>
-        <span className="mt-1 font-mono text-[8px] uppercase tracking-[0.2em] text-[#a09a8c]">{period}</span>
+        <span className="font-sans text-[13px] font-medium leading-tight text-[#0D3B66]">{company}</span>
+        <span className="mt-1 font-mono text-[8px] uppercase tracking-[0.2em] text-[#0D3B66]/45">{period}</span>
       </div>
     );
   }
@@ -817,18 +824,23 @@ export function MuseumExhibit() {
   // newest role open by default; click a node/row to expand another
   const [active, setActive] = useState(0);
   return (
-    <section id="experience" className="relative min-h-screen bg-white py-16">
+    <section id="experience" className="relative min-h-screen overflow-hidden bg-white py-16">
+      {/* giant Lemon Chiffon square — a background label behind the heading */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-16 top-2 -z-0 h-[24rem] w-[24rem] rounded-[2.5rem] bg-[#FAF0CA]"
+      />
       {/* section heading */}
-      <div className="flex items-baseline justify-between px-8 sm:px-14">
+      <div className="relative z-10 flex items-baseline justify-between px-8 sm:px-14">
         <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
           Experience
         </h2>
-        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+        <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]">
           {String(chronological.length).padStart(2, "0")} roles · tap to expand
         </span>
       </div>
 
-      <div className="mx-auto mt-16 max-w-3xl px-8 sm:px-14">
+      <div className="relative z-10 mx-auto mt-16 max-w-3xl px-8 sm:px-14">
         <ol className="relative border-l border-black/15">
           {chronological.map((e, i) => {
             const open = active === i;
@@ -840,7 +852,7 @@ export function MuseumExhibit() {
                     open ? "bg-black" : "bg-white"
                   }`}
                 />
-                <span className="absolute -left-[28px] top-1 hidden font-mono text-[9px] tabular-nums text-black/40 sm:block">
+                <span className="absolute -left-[28px] top-1 hidden font-mono text-[9px] tabular-nums text-[#0D3B66]/40 sm:block">
                   {String(chronological.length - i).padStart(2, "0")}
                 </span>
                 {/* number: newest = highest, oldest = 01 */}
@@ -852,21 +864,21 @@ export function MuseumExhibit() {
                   className="group block w-full text-left"
                   aria-expanded={open}
                 >
-                  <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#0D3B66]/50">
                     {e.period}
                   </p>
                   <h3
                     className={`mt-1.5 flex items-center gap-2 font-sans text-xl font-medium transition-colors ${
-                      open ? "text-black" : "text-black/55 group-hover:text-black"
+                      open ? "text-[#0D3B66]" : "text-[#0D3B66]/55 group-hover:text-[#0D3B66]"
                     }`}
                   >
                     <span>
                       {e.role}
-                      <span className="text-black/40"> · {e.company}</span>
+                      <span className="text-[#0D3B66]/40"> · {e.company}</span>
                     </span>
                     <span
-                      className={`ml-auto font-mono text-sm text-black/40 transition-transform duration-300 ${
-                        open ? "rotate-45" : "rotate-0 group-hover:text-black"
+                      className={`ml-auto font-mono text-sm text-[#0D3B66]/40 transition-transform duration-300 ${
+                        open ? "rotate-45" : "rotate-0 group-hover:text-[#0D3B66]"
                       }`}
                       aria-hidden="true"
                     >
@@ -888,7 +900,7 @@ export function MuseumExhibit() {
                       {e.img && <JobPhoto src={e.img} alt={e.company} />}
                       <ul className="space-y-2.5">
                         {e.bullets.map((b, j) => (
-                          <li key={j} className="flex gap-3 text-[14.5px] leading-[1.7] text-black/70">
+                          <li key={j} className="flex gap-3 text-[14.5px] leading-[1.7] text-[#0D3B66]/70">
                             <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-black/40" />
                             {b}
                           </li>
@@ -903,7 +915,7 @@ export function MuseumExhibit() {
         </ol>
       </div>
 
-      <p className="mt-10 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#8a8578] sm:px-14">
+      <p className="mt-10 px-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.2em] text-[#0D3B66]/50 sm:px-14">
         Capital Power · Greenhouse Juice · Pratt &amp; Whitney · Creospark — 2023 to 2026.
       </p>
     </section>
@@ -1144,16 +1156,16 @@ function AlbumStack({ songs }) {
                       }}
                     />
                     {/* title bar — at the TOP, the part that peeks above the next card */}
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/85 to-transparent px-3 pb-8 pt-2.5">
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-[#FAF0CA] via-[#FAF0CA]/90 to-transparent px-3 pb-8 pt-2.5">
                       <span className="min-w-0">
-                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-white">
+                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-[#0D3B66]">
                           {cleanTitle(t.title)}
                         </span>
-                        <span className="block truncate font-sans text-[11px] text-white/70">
+                        <span className="block truncate font-sans text-[11px] text-[#0D3B66]/70">
                           {t.artist.split(",")[0]}
                         </span>
                       </span>
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/90 text-[11px] text-black shadow">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0D3B66] text-[11px] text-[#FAF0CA] shadow">
                         {isPlaying ? "❚❚" : t.preview ? "▶" : "♪"}
                       </span>
                     </div>
@@ -1165,7 +1177,7 @@ function AlbumStack({ songs }) {
         </div>
       </div>
       <audio ref={audioRef} preload="none" />
-      <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-black/35">
+      <p className="mt-2 text-center font-mono text-[9px] uppercase tracking-[0.25em] text-[#0D3B66]/35">
         scroll the stack · hover to lift · click to play
       </p>
     </div>
@@ -1537,13 +1549,10 @@ function NeuralMap({ items }) {
           <br />
           <span className="text-[2.4em] leading-[1.05] tracking-[0.06em]">my brain</span>
         </h2>
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-[#0D3B66]/45">
-          #0D3B66
-        </p>
       </div>
 
       <div ref={stageRef} className="relative -mt-2 aspect-square w-full overflow-visible">
-        {/* soft Lemon Chiffon panel behind the brain — the two-tone commit */}
+        {/* soft Lemon Chiffon panel behind the brain */}
         <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[#FAF0CA]" />
         <img
           ref={brainImgRef}
@@ -1619,17 +1628,17 @@ function NeuralMap({ items }) {
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: `hsl(${selectedMeta.hue} 75% 50%)` }}
             />
-            <p className="text-sm font-medium text-black/70">{selectedMeta.id}</p>
+            <p className="text-sm font-medium text-[#0D3B66]/70">{selectedMeta.id}</p>
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-black/40 transition-colors hover:text-black"
+              className="shrink-0 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0D3B66]/40 transition-colors hover:text-[#0D3B66]"
             >
               close ✕
             </button>
           </>
         ) : (
-          <p className="text-sm text-black/30">Select a region above to open its collection.</p>
+          <p className="text-sm text-[#0D3B66]/30">Select a region above to open its collection.</p>
         )}
       </div>
     </div>
@@ -1671,10 +1680,10 @@ export function AboutMe() {
     <section id="about" className="relative min-h-screen bg-white py-5">
       {/* corner labels — Yale Blue accents */}
       <div className="flex items-start justify-between px-8 sm:px-14">
-        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.25em] text-[#0D3B66]">
+        <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-semibold uppercase tracking-[0.25em] text-[#0D3B66]">
           About Me
         </span>
-        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]/50">
+        <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]">
           Off the clock
         </span>
       </div>
@@ -1684,14 +1693,14 @@ export function AboutMe() {
           {/* interactive music — a 3D stack of favourite covers */}
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/70">
+              <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]">
                 ♪ what's spinning in my ears
-              </p>
+              </span>
               <a
                 href={`https://open.spotify.com/playlist/${PLAYLIST.spotifyId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-black"
+                className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#0D3B66]/50 underline decoration-black/20 underline-offset-4 transition-colors hover:text-[#0D3B66]"
               >
                 full playlist ↗
               </a>
@@ -1766,12 +1775,12 @@ export function CoreTerminal() {
                   href={l.href}
                   target={l.href.startsWith("mailto") ? undefined : "_blank"}
                   rel="noopener noreferrer"
-                  className={`block whitespace-pre ${DIM} transition-colors hover:text-[#a4622e]`}
+                  className={`block whitespace-pre ${DIM} transition-colors hover:text-[#0D3B66]`}
                 >
                   {l.t} <span className={FAINT}>↗</span>
                 </a>
               ) : (
-                <div key={i} className={`whitespace-pre ${l.c ? CY : "text-[#3a352c]"}`}>
+                <div key={i} className={`whitespace-pre ${l.c ? CY : "text-[#0D3B66]/80"}`}>
                   {l.t}
                 </div>
               )
@@ -1792,7 +1801,7 @@ export function CoreTerminal() {
           </span>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM} transition-colors hover:text-[#a4622e]`}
+            className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM} transition-colors hover:text-[#0D3B66]`}
           >
             surface again ↑
           </button>
@@ -1814,24 +1823,24 @@ export function StationPanel({ index }) {
     return (
       <div className="max-h-[78vh] overflow-y-auto rounded-md bg-[#f6f2e8]/95 p-5 shadow-[0_18px_50px_rgba(28,26,23,0.22)] backdrop-blur-sm">
         <div className={`flex items-baseline justify-between ${RULE} pt-2`}>
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/45">
             mem.{String(index + 1).padStart(2, "0")} · {art?.label ?? "a plain record"}
           </span>
-          <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#8a7a5f]"}`}>
+          <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${p.status ? CU : "text-[#0D3B66]/50"}`}>
             {p.status ? "◈ forming" : "consolidated"}
           </span>
         </div>
-        <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#171411]">
+        <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#0D3B66]">
           {p.title}
         </h3>
-        <p className="mt-2 text-[13.5px] leading-[1.65] text-[#48423a]">{p.description}</p>
+        <p className="mt-2 text-[13.5px] leading-[1.65] text-[#0D3B66]/85">{p.description}</p>
         <div className="mt-4 overflow-hidden rounded-sm border border-[#1c1a1714] bg-[#faf8f2]">
           <ProjectMedia p={p} />
           <div className="p-4">{art?.el}</div>
         </div>
         <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5">
           <Links links={p.links} />
-          <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#a09a8c]">
+          <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#0D3B66]/45">
             {p.tech.slice(0, 3).join(" · ")}
           </span>
         </div>
@@ -1844,21 +1853,21 @@ export function StationPanel({ index }) {
   return (
     <div className="max-h-[78vh] overflow-y-auto rounded-md bg-[#f6f2e8]/95 p-5 shadow-[0_18px_50px_rgba(28,26,23,0.22)] backdrop-blur-sm">
       <div className={`flex items-baseline justify-between ${RULE} pt-2`}>
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/45">
           acq.{String(i + 1).padStart(2, "0")} · {e.company}
         </span>
         <span className={`font-mono text-[10px] uppercase tracking-[0.2em] ${CU}`}>{e.period}</span>
       </div>
-      <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#171411]">
+      <h3 className="mt-3 font-sans text-xl font-medium leading-snug text-[#0D3B66]">
         {e.role}
-        <span className="block text-base text-[#5d5749]">at {e.company}</span>
+        <span className="block text-base text-[#0D3B66]/70">at {e.company}</span>
       </h3>
       <div className="mt-4">
         <JobPhoto src={e.img} alt={`${e.company} — from my time there`} />
       </div>
       <ul className="space-y-3 border-l-2 border-[#d98a4a]/40 pl-4">
         {e.bullets.map((b, j) => (
-          <li key={j} className="text-[13.5px] leading-[1.65] text-[#3f3930]">
+          <li key={j} className="text-[13.5px] leading-[1.65] text-[#0D3B66]/85">
             {b}
           </li>
         ))}

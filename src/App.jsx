@@ -38,16 +38,16 @@ function Hero() {
         {/* corner labels */}
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between px-8 py-8 sm:px-14">
           <div className="flex flex-col gap-1 text-left">
-            <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17]">
+            <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#0D3B66]">
               Management Engineering
             </span>
-            <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#5d5749]">
+            <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]/70">
               University of Waterloo
             </span>
           </div>
           <a
             href="#contact"
-            className="pointer-events-auto font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#1c1a17] transition-colors hover:text-[#555555]"
+            className="pointer-events-auto font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#0D3B66] transition-colors hover:text-[#0D3B66]/70"
           >
             Contact Me
           </a>
@@ -55,7 +55,7 @@ function Hero() {
 
         {/* the name, dead centre, wide and thin */}
         <div className="flex h-full items-center justify-center px-6">
-          <h1 className="rise select-none text-center font-wordmark text-3xl font-medium uppercase tracking-[0.18em] text-[#171411] sm:text-5xl sm:tracking-[0.26em]">
+          <h1 className="rise select-none text-center font-wordmark text-3xl font-medium uppercase tracking-[0.18em] text-[#0D3B66] sm:text-5xl sm:tracking-[0.26em]">
             Keneisha&nbsp;&nbsp;Baid
           </h1>
         </div>
@@ -64,14 +64,14 @@ function Hero() {
         <div className="pointer-events-none absolute inset-x-0 bottom-14 flex flex-col items-center gap-5 px-6">
           <a
             href="#projects"
-            className="pointer-events-auto max-w-md text-center font-sans text-[15px] leading-relaxed text-[#5d5749] transition-colors hover:text-[#171411]"
+            className="pointer-events-auto max-w-md text-center font-sans text-[15px] leading-relaxed text-[#0D3B66]/70 transition-colors hover:text-[#0D3B66]"
           >
             I like to build things that make hard decisions a little easier.
           </a>
           <a
             href="#projects"
             aria-label="Scroll down"
-            className="pointer-events-auto animate-bounce text-4xl text-[#b9b2a4] transition-colors hover:text-[#5d5749]"
+            className="pointer-events-auto animate-bounce text-4xl text-[#0D3B66]/40 transition-colors hover:text-[#0D3B66]/70"
           >
             ↓
           </a>
@@ -92,7 +92,7 @@ function BoredShark() {
     return (
       <a
         href="#life"
-        className="pointer-events-auto absolute bottom-10 right-8 rounded-full border border-[#171411]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#171411] transition-colors hover:bg-[#171411] hover:text-white sm:right-14"
+        className="pointer-events-auto absolute bottom-10 right-8 rounded-full border border-[#0D3B66]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#0D3B66] transition-colors hover:bg-[#FAF0CA] hover:border-[#FAF0CA] sm:right-14"
       >
         bored?
       </a>
@@ -110,7 +110,7 @@ function BoredShark() {
         className="w-full transition-transform duration-300 group-hover:-translate-y-1"
       />
       {/* the words, spoken out of the open mouth */}
-      <span className="absolute left-[30%] top-[60%] w-[44%] -rotate-6 font-mono text-[12px] font-semibold leading-tight tracking-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.95)] sm:text-[15px]">
+      <span className="absolute left-[32%] top-[58%] -rotate-6 rounded-md bg-[#FAF0CA] px-2 py-0.5 font-mono text-[12px] font-semibold leading-tight tracking-tight text-[#0D3B66] shadow-sm sm:text-[15px]">
         click me
       </span>
     </a>
@@ -168,14 +168,14 @@ export default function App() {
   // the Life page — the album stack + interests live here now
   if (route === "life") {
     return (
-      <div className="relative min-h-screen bg-white text-[#3a352c]">
+      <div className="relative min-h-screen bg-white text-[#0D3B66]/80">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <Sparks />
         <div className="px-8 pt-24 sm:px-14">
           <a
             href="#home"
             onClick={() => (window.location.hash = "")}
-            className="font-mono text-[11px] uppercase tracking-[0.25em] text-black/50 transition-colors hover:text-black"
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-[#0D3B66]/50 transition-colors hover:text-[#0D3B66]"
           >
             ← back
           </a>
@@ -190,15 +190,15 @@ export default function App() {
 
   if (lite) {
     return (
-      <div className="relative min-h-screen bg-white text-[#3a352c]">
+      <div className="relative min-h-screen bg-white text-[#0D3B66]/80">
         <MindNav humOn={humOn} toggleHum={toggleHum} />
         <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-          <h1 className="font-wordmark text-5xl font-light uppercase tracking-[0.3em] text-[#1c1a17] sm:text-6xl">
+          <h1 className="font-wordmark text-5xl font-light uppercase tracking-[0.3em] text-[#0D3B66] sm:text-6xl">
             Keneisha Baid
           </h1>
           <a
             href="#projects"
-            className="mt-10 rounded-full border border-[#a4622e]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#a4622e] transition-colors hover:bg-[#a4622e]/10"
+            className="mt-10 rounded-full border border-[#a4622e]/50 px-6 py-2.5 font-mono text-xs uppercase tracking-widest text-[#0D3B66] transition-colors hover:bg-[#a4622e]/10"
           >
             explore ↓
           </a>
@@ -210,7 +210,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative bg-white text-[#3a352c]">
+    <div className="relative bg-white text-[#0D3B66]/80">
       {/* the breaking marble — hidden for now (code kept). Flip SHOW_MARBLE to re-enable. */}
       {SHOW_MARBLE && (
         <div className="pointer-events-none fixed inset-0 z-0">

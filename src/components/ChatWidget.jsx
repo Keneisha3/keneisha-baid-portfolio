@@ -146,7 +146,7 @@ export default function ChatWidget() {
         transition={{ delay: 1.2, type: "spring", stiffness: 200 }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#171411] text-white shadow-lg shadow-black/20"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FAF0CA] text-[#0D3B66] shadow-lg shadow-black/20"
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
@@ -194,13 +194,13 @@ export default function ChatWidget() {
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="fixed bottom-24 right-6 z-50 flex h-[540px] w-[min(92vw,380px)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl shadow-black/20"
           >
-            <div className="flex items-center gap-3 border-b border-black/10 bg-[#171411] px-5 py-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-sm font-bold text-white">
+            <div className="flex items-center gap-3 border-b border-[#0D3B66]/15 bg-[#FAF0CA] px-5 py-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-[#0D3B66]">
                 KB
               </div>
               <div>
-                <div className="text-sm font-semibold text-white">Ask about Keneisha</div>
-                <div className="flex items-center gap-1.5 text-xs text-white/70">
+                <div className="text-sm font-semibold text-[#0D3B66]">Ask about Keneisha</div>
+                <div className="flex items-center gap-1.5 text-xs text-[#0D3B66]/70">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400" /> Usually instant
                 </div>
               </div>
@@ -212,8 +212,8 @@ export default function ChatWidget() {
                   <div
                     className={`max-w-[82%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       m.role === "user"
-                        ? "rounded-br-md bg-[#171411] text-white"
-                        : "rounded-bl-md border border-black/10 bg-white text-[#2a2620]"
+                        ? "rounded-br-md bg-[#FAF0CA] text-[#0D3B66]"
+                        : "rounded-bl-md border border-black/10 bg-white text-[#0D3B66]"
                     }`}
                   >
                     {m.content}
@@ -243,7 +243,7 @@ export default function ChatWidget() {
                     <button
                       key={q}
                       onClick={() => respond(q)}
-                      className="rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-medium text-[#3a352c] transition-colors hover:border-black/40 hover:bg-black/[0.03]"
+                      className="rounded-full border border-black/15 bg-white px-3 py-1.5 text-xs font-medium text-[#0D3B66] transition-colors hover:border-black/40 hover:bg-black/[0.03]"
                     >
                       {q}
                     </button>
@@ -264,13 +264,13 @@ export default function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask me anything…"
-                className="flex-1 rounded-full border border-black/15 bg-[#faf9f7] px-4 py-2.5 text-sm text-[#171411] placeholder-black/35 outline-none focus:border-black/50"
+                className="flex-1 rounded-full border border-black/15 bg-[#faf9f7] px-4 py-2.5 text-sm text-[#0D3B66] placeholder-black/35 outline-none focus:border-black/50"
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
                 aria-label="Send message"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#171411] text-white transition-colors hover:bg-black disabled:opacity-30"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FAF0CA] text-[#0D3B66] transition-colors hover:bg-[#FAF0CA]/70 disabled:opacity-30"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 6l6 6-6 6" />

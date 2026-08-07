@@ -195,16 +195,16 @@ export function MindNav({ humOn, toggleHum }) {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="shrink-0 font-sans text-lg font-semibold tracking-tight text-[#171411]"
+          className="shrink-0 font-sans text-lg font-semibold tracking-tight text-[#0D3B66]"
         >
-          Keneisha <span className="text-[#a4622e]">Baid</span>
+          Keneisha <span className="text-[#0D3B66]">Baid</span>
         </a>
         <nav className="flex items-center gap-1.5 overflow-x-auto sm:gap-2.5">
           {NAV.map((n) => (
             <a
               key={n.id}
               href={`#${n.id}`}
-              className="whitespace-nowrap rounded-full border border-[#1c1a171f] bg-white px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#3a352c] transition-colors hover:border-[#a4622e] hover:text-[#a4622e] sm:px-4"
+              className="whitespace-nowrap rounded-full border border-[#1c1a171f] bg-white px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-[#0D3B66]/80 transition-colors hover:border-[#a4622e] hover:text-[#0D3B66] sm:px-4"
             >
               {n.label}
             </a>
@@ -215,8 +215,8 @@ export function MindNav({ humOn, toggleHum }) {
           aria-label={humOn ? "Mute ambient sound" : "Enable ambient sound"}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-sm transition-colors ${
             humOn
-              ? "border-[#a4622e] text-[#a4622e]"
-              : "border-[#1c1a1726] text-[#5d5749] hover:border-[#a4622e]/60"
+              ? "border-[#a4622e] text-[#0D3B66]"
+              : "border-[#1c1a1726] text-[#0D3B66]/70 hover:border-[#a4622e]/60"
           }`}
         >
           {humOn ? "◉" : "◌"}
