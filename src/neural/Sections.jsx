@@ -738,12 +738,7 @@ export function ProjectNeurons() {
 ===================================================================== */
 export function SkillTerminals() {
   return (
-    <section id="skills" className="relative mx-auto max-w-5xl overflow-hidden px-6 py-32 sm:px-12">
-      {/* giant Lemon Chiffon square — a background label behind the section */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-20 -top-4 -z-10 h-[26rem] w-[26rem] rounded-[2.5rem] bg-[#FAF0CA]"
-      />
+    <section id="skills" className="relative mx-auto max-w-5xl px-6 py-32 sm:px-12">
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
           <Kicker>the toolkit</Kicker>
@@ -824,14 +819,9 @@ export function MuseumExhibit() {
   // newest role open by default; click a node/row to expand another
   const [active, setActive] = useState(0);
   return (
-    <section id="experience" className="relative min-h-screen overflow-hidden bg-white py-16">
-      {/* giant Lemon Chiffon square — a background label behind the heading */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-16 top-2 -z-0 h-[24rem] w-[24rem] rounded-[2.5rem] bg-[#FAF0CA]"
-      />
+    <section id="experience" className="relative min-h-screen bg-white py-16">
       {/* section heading */}
-      <div className="relative z-10 flex items-baseline justify-between px-8 sm:px-14">
+      <div className="flex items-baseline justify-between px-8 sm:px-14">
         <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
           Experience
         </h2>
