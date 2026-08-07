@@ -1552,8 +1552,7 @@ function NeuralMap({ items }) {
       </div>
 
       <div ref={stageRef} className="relative -mt-2 aspect-square w-full overflow-visible">
-        {/* soft Lemon Chiffon panel behind the brain */}
-        <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[#FAF0CA]" />
+        {/* brain floats on a blank background — no panel */}
         <img
           ref={brainImgRef}
           src={BRAIN_IMAGE}
