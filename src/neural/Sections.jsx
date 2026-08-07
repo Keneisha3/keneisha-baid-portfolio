@@ -595,7 +595,7 @@ function Filmstrip({ id, corner, caption, items }) {
     <section id={id} className="relative min-h-screen bg-white py-16">
       {/* section heading */}
       <div className="flex items-baseline justify-between px-8 sm:px-14">
-        <h2 className="font-sans text-4xl font-semibold tracking-tight text-[#171411] sm:text-5xl">
+        <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
           {corner}
         </h2>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
@@ -820,7 +820,7 @@ export function MuseumExhibit() {
     <section id="experience" className="relative min-h-screen bg-white py-16">
       {/* section heading */}
       <div className="flex items-baseline justify-between px-8 sm:px-14">
-        <h2 className="font-sans text-4xl font-semibold tracking-tight text-[#171411] sm:text-5xl">
+        <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
           Experience
         </h2>
         <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
@@ -1180,7 +1180,9 @@ function AlbumStack({ songs }) {
    field; four anatomical hotspots (frontal lobe/crown/occipital/cerebellum)
    pull particles toward them and open that category's photos below. */
 
-const BRAIN_IMAGE = "/brain-base.png";
+// renamed from brain-base.png to bust stale image caches (old copies had a
+// baked-in black background)
+const BRAIN_IMAGE = "/brain-hero.png";
 
 // hotspot centre + radius in NORMALIZED image space (0..1), tuned to
 // brain-base.png's anatomy; hue is the iridescent colour that region leans
@@ -1541,6 +1543,8 @@ function NeuralMap({ items }) {
       </div>
 
       <div ref={stageRef} className="relative -mt-2 aspect-square w-full overflow-visible">
+        {/* soft Lemon Chiffon panel behind the brain — the two-tone commit */}
+        <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-[#FAF0CA]" />
         <img
           ref={brainImgRef}
           src={BRAIN_IMAGE}
@@ -1665,12 +1669,12 @@ function BrainArcPhoto({ item, pos, hue }) {
 export function AboutMe() {
   return (
     <section id="about" className="relative min-h-screen bg-white py-5">
-      {/* corner labels */}
+      {/* corner labels — Yale Blue accents */}
       <div className="flex items-start justify-between px-8 sm:px-14">
-        <span className="font-sans text-[11px] font-medium uppercase tracking-[0.25em] text-[#171411]">
+        <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.25em] text-[#0D3B66]">
           About Me
         </span>
-        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#b9b2a4]">
+        <span className="font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]/50">
           Off the clock
         </span>
       </div>
@@ -1680,7 +1684,7 @@ export function AboutMe() {
           {/* interactive music — a 3D stack of favourite covers */}
           <div>
             <div className="mb-2 flex items-baseline justify-between gap-3">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#a09a8c]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/70">
                 ♪ what's spinning in my ears
               </p>
               <a
