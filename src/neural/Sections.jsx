@@ -113,17 +113,16 @@ function Kicker({ children, className = "" }) {
   );
 }
 
-// Section heading with a slim Lemon Chiffon "highlighter" band hugging the text.
+// Section heading with a slim Lemon Chiffon "highlighter" band under the text.
+// Uses a per-line background gradient so it sits under every wrapped line.
 function BandHeading({ children, className = "" }) {
   return (
     <h2
-      className={`relative inline-block font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl ${className}`}
+      className={`font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl ${className}`}
     >
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-[-0.12em] bottom-[0.12em] h-[0.38em] rounded-[3px] bg-[#FAF0CA]"
-      />
-      <span className="relative">{children}</span>
+      <span className="box-decoration-clone bg-[linear-gradient(transparent_56%,#FAF0CA_56%,#FAF0CA_90%,transparent_90%)] [-webkit-box-decoration-break:clone]">
+        {children}
+      </span>
     </h2>
   );
 }
