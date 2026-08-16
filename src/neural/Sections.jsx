@@ -113,6 +113,21 @@ function Kicker({ children, className = "" }) {
   );
 }
 
+// Section heading with a slim Lemon Chiffon "highlighter" band hugging the text.
+function BandHeading({ children, className = "" }) {
+  return (
+    <h2
+      className={`relative inline-block font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl ${className}`}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-[-0.12em] bottom-[0.12em] h-[0.38em] rounded-[3px] bg-[#FAF0CA]"
+      />
+      <span className="relative">{children}</span>
+    </h2>
+  );
+}
+
 function Links({ links }) {
   if (!links?.length)
     return (
@@ -597,9 +612,7 @@ function Filmstrip({ id, corner, caption, items }) {
     <section id={id} className="relative min-h-screen bg-white py-16">
       {/* section heading */}
       <div className="flex items-baseline justify-between px-8 sm:px-14">
-        <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
-          {corner}
-        </h2>
+        <BandHeading>{corner}</BandHeading>
         <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]">
           {String(items.length).padStart(2, "0")} works
         </span>
@@ -742,9 +755,7 @@ export function SkillTerminals() {
       <header className="mb-16 flex justify-end">
         <div className="max-w-xs text-right">
           <Kicker>the toolkit</Kicker>
-          <h2 className="mt-4 font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
-            Tools & Skills
-          </h2>
+          <BandHeading className="mt-4">Tools &amp; Skills</BandHeading>
         </div>
       </header>
 
@@ -822,9 +833,7 @@ export function MuseumExhibit() {
     <section id="experience" className="relative min-h-screen bg-white py-16">
       {/* section heading */}
       <div className="flex items-baseline justify-between px-8 sm:px-14">
-        <h2 className="font-serifDisplay text-4xl font-semibold uppercase tracking-[0.1em] text-[#0D3B66] sm:text-5xl">
-          Experience
-        </h2>
+        <BandHeading>Experience</BandHeading>
         <span className="inline-flex rounded-md bg-[#FAF0CA] px-2.5 py-1 font-sans text-[11px] font-normal uppercase tracking-[0.25em] text-[#0D3B66]">
           {String(chronological.length).padStart(2, "0")} roles · tap to expand
         </span>
