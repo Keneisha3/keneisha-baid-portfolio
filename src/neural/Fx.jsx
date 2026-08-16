@@ -179,6 +179,7 @@ export function useHum() {
 /* ---------- readable museum nav: clear buttons on gallery paper ---------- */
 const NAV = [
   { id: "projects", label: "Projects" },
+  { id: "playground", label: "Try It" },
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Skills" },
   { id: "contact", label: "Contact" },
