@@ -1155,12 +1155,12 @@ function AlbumStack({ songs }) {
                       }}
                     />
                     {/* title bar — at the TOP, the part that peeks above the next card */}
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-[#FAF0CA] via-[#FAF0CA]/90 to-transparent px-3 pb-8 pt-2.5">
+                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 px-3 pb-8 pt-2.5">
                       <span className="min-w-0">
-                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-[#0D3B66]">
+                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-[#0D3B66] [text-shadow:0_1px_3px_rgba(255,255,255,0.95),0_0_2px_rgba(255,255,255,0.95)]">
                           {cleanTitle(t.title)}
                         </span>
-                        <span className="block truncate font-sans text-[11px] text-[#0D3B66]/70">
+                        <span className="block truncate font-sans text-[11px] text-[#0D3B66]/80 [text-shadow:0_1px_3px_rgba(255,255,255,0.95),0_0_2px_rgba(255,255,255,0.95)]">
                           {t.artist.split(",")[0]}
                         </span>
                       </span>
