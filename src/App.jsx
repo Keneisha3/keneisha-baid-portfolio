@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ProjectNeurons,
-  DataPlayground,
   SkillTerminals,
   MuseumExhibit,
   AboutMe,
@@ -160,7 +159,6 @@ export default function App() {
   const Sections = (
     <>
       <ProjectNeurons />
-      <DataPlayground />
       <MuseumExhibit />
       <SkillTerminals />
       <CoreTerminal />
