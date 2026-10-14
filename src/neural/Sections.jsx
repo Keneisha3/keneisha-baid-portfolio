@@ -34,7 +34,7 @@ function ProjectMedia({ p }) {
         <iframe
           title={`${p.title} — Figma`}
           src={`https://www.figma.com/embed?embed_host=portfolio&url=${encodeURIComponent(figma)}`}
-          className="h-80 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+          className="h-80 w-full rounded-t-md border-b border-[#0D3B6612] bg-white"
           loading="lazy"
           allowFullScreen
         />
@@ -51,7 +51,7 @@ function ProjectMedia({ p }) {
       <iframe
         title={`${p.title} — presentation, first page`}
         src={`${pdf}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-        className="pointer-events-none h-44 w-full rounded-t-md border-b border-[#1c1a1712] bg-white"
+        className="pointer-events-none h-44 w-full rounded-t-md border-b border-[#0D3B6612] bg-white"
         loading="lazy"
       />
     );
@@ -63,9 +63,9 @@ function ProjectMedia({ p }) {
         href={gh.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex items-center gap-3 border-b border-[#1c1a1712] bg-[#f3efe6] px-4 py-3 transition-colors hover:bg-[#efe9dc]"
+        className="group flex items-center gap-3 border-b border-[#0D3B6612] bg-[#FAF0CA]/50 px-4 py-3 transition-colors hover:bg-[#FAF0CA]"
       >
-        <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0 fill-[#5d5749]" aria-hidden="true">
+        <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0 fill-[#3D6285]" aria-hidden="true">
           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
         </svg>
         <span className="truncate font-mono text-[12px] text-[#0D3B66]/80">{m[1]}</span>
@@ -101,7 +101,7 @@ const DIM = "text-[#0D3B66]/70";
 const FAINT = "text-[#0D3B66]/45";
 const CY = "text-[#0D3B66]";
 const CU = "text-[#0D3B66]";
-const RULE = "border-t border-[#1c1a1714]";
+const RULE = "border-t border-[#0D3B6614]";
 
 function Kicker({ children, className = "" }) {
   return (
@@ -140,7 +140,7 @@ function Links({ links }) {
           href={l.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#1c1a172a] underline-offset-4 transition-colors hover:text-[#0D3B66] hover:decoration-[#a4622e]`}
+          className={`font-mono text-[11px] uppercase tracking-[0.2em] ${DIM} underline decoration-[#0D3B662a] underline-offset-4 transition-colors hover:text-[#0D3B66] hover:decoration-[#0D3B66]`}
         >
           {l.label} ↗
         </a>
@@ -169,7 +169,7 @@ export function Landing({ onSkip }) {
           <br />
           Portrait of a working mind — marble and light, 2022–present.
         </p>
-        <div className="mt-5 w-16 border-t border-[#1c1a1720]" />
+        <div className="mt-5 w-16 border-t border-[#0D3B6620]" />
       </div>
 
       <p className="rise absolute bottom-16 left-6 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/70 sm:left-12">
@@ -224,22 +224,22 @@ function ArtifactViewport() {
         onMouseMove={onMove}
         onMouseLeave={() => setCursor(null)}
       >
-        <line x1="0" y1="160" x2="560" y2="160" stroke="#1c1a1714" />
-        <path d={path} fill="none" stroke="#6b6459" strokeWidth="1" />
+        <line x1="0" y1="160" x2="560" y2="160" stroke="#0D3B6614" />
+        <path d={path} fill="none" stroke="#3D6285" strokeWidth="1" />
         {markers.map((m) => (
           <g key={m}>
-            <circle cx={(m / 63) * 560} cy={160 - pts[m]} r="3" fill="none" stroke="#d98a4a" />
+            <circle cx={(m / 63) * 560} cy={160 - pts[m]} r="3" fill="none" stroke="#6E89A3" />
             <line
               x1={(m / 63) * 560} y1={160 - pts[m] + 6}
               x2={(m / 63) * 560} y2="160"
-              stroke="#d98a4a" strokeWidth="0.5" strokeDasharray="2 3"
+              stroke="#6E89A3" strokeWidth="0.5" strokeDasharray="2 3"
             />
           </g>
         ))}
         {cursor !== null && (
           <g>
-            <line x1={(cursor / 63) * 560} y1="0" x2={(cursor / 63) * 560} y2="160" stroke="#a4622e" strokeWidth="0.5" />
-            <circle cx={(cursor / 63) * 560} cy={160 - pts[cursor]} r="2.5" fill="#a4622e" />
+            <line x1={(cursor / 63) * 560} y1="0" x2={(cursor / 63) * 560} y2="160" stroke="#0D3B66" strokeWidth="0.5" />
+            <circle cx={(cursor / 63) * 560} cy={160 - pts[cursor]} r="2.5" fill="#0D3B66" />
           </g>
         )}
       </svg>
@@ -294,9 +294,9 @@ function ArtifactBench() {
             R² = {BENCH[sel][1].toFixed(3)}
           </span>
         </div>
-        <div className="mt-2 h-px w-full bg-[#1c1a1714]">
+        <div className="mt-2 h-px w-full bg-[#0D3B6614]">
           <div
-            className="h-px bg-[#a4622e] transition-all duration-700 ease-out"
+            className="h-px bg-[#0D3B66] transition-all duration-700 ease-out"
             style={{ width: `${BENCH[sel][1] * 100}%` }}
           />
         </div>
@@ -311,26 +311,26 @@ function ArtifactBench() {
 /* MEM — the storyboard: walk the UX flow frame by frame */
 const FRAMES = [
   { k: "onboarding", draw: (
-    <g><rect x="200" y="24" width="160" height="10" rx="2" fill="#6b6459" opacity=".5"/><rect x="220" y="46" width="120" height="6" rx="2" fill="#a09a8c"/><rect x="235" y="70" width="90" height="16" rx="8" fill="none" stroke="#a4622e"/></g>
+    <g><rect x="200" y="24" width="160" height="10" rx="2" fill="#3D6285" opacity=".5"/><rect x="220" y="46" width="120" height="6" rx="2" fill="#AABAC9"/><rect x="235" y="70" width="90" height="16" rx="8" fill="none" stroke="#0D3B66"/></g>
   )},
   { k: "household", draw: (
-    <g><rect x="24" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><rect x="104" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><rect x="184" y="20" width="70" height="70" rx="4" fill="none" stroke="#a4622e"/><rect x="264" y="20" width="70" height="70" rx="4" fill="none" stroke="#6b6459"/><circle cx="219" cy="42" r="8" fill="#a4622e" opacity=".6"/></g>
+    <g><rect x="24" y="20" width="70" height="70" rx="4" fill="none" stroke="#3D6285"/><rect x="104" y="20" width="70" height="70" rx="4" fill="none" stroke="#3D6285"/><rect x="184" y="20" width="70" height="70" rx="4" fill="none" stroke="#0D3B66"/><rect x="264" y="20" width="70" height="70" rx="4" fill="none" stroke="#3D6285"/><circle cx="219" cy="42" r="8" fill="#0D3B66" opacity=".6"/></g>
   )},
   { k: "schedule", draw: (
-    <g>{[0,1,2,3,4].map(i=>(<line key={i} x1={40+i*64} y1="18" x2={40+i*64} y2="92" stroke="#1c1a1714"/>))}<rect x="46" y="30" width="52" height="14" rx="2" fill="#a4622e" opacity=".35"/><rect x="110" y="52" width="116" height="14" rx="2" fill="#d98a4a" opacity=".4"/><rect x="238" y="26" width="52" height="14" rx="2" fill="#6b6459" opacity=".3"/></g>
+    <g>{[0,1,2,3,4].map(i=>(<line key={i} x1={40+i*64} y1="18" x2={40+i*64} y2="92" stroke="#0D3B6614"/>))}<rect x="46" y="30" width="52" height="14" rx="2" fill="#0D3B66" opacity=".35"/><rect x="110" y="52" width="116" height="14" rx="2" fill="#6E89A3" opacity=".4"/><rect x="238" y="26" width="52" height="14" rx="2" fill="#3D6285" opacity=".3"/></g>
   )},
   { k: "tasks", draw: (
-    <g>{[0,1,2].map(i=>(<g key={i}><rect x="30" y={24+i*24} width="12" height="12" rx="2" fill="none" stroke={i===0?"#a4622e":"#a09a8c"}/><rect x="54" y={27+i*24} width={180-i*40} height="6" rx="2" fill="#a09a8c"/></g>))}<path d="M33 30 l3 3 5 -6" stroke="#a4622e" fill="none"/></g>
+    <g>{[0,1,2].map(i=>(<g key={i}><rect x="30" y={24+i*24} width="12" height="12" rx="2" fill="none" stroke={i===0?"#0D3B66":"#AABAC9"}/><rect x="54" y={27+i*24} width={180-i*40} height="6" rx="2" fill="#AABAC9"/></g>))}<path d="M33 30 l3 3 5 -6" stroke="#0D3B66" fill="none"/></g>
   )},
   { k: "shared care", draw: (
-    <g><circle cx="150" cy="55" r="26" fill="none" stroke="#6b6459"/><circle cx="210" cy="55" r="26" fill="none" stroke="#a4622e"/><path d="M150 55 h60" stroke="#d98a4a" strokeDasharray="3 3"/></g>
+    <g><circle cx="150" cy="55" r="26" fill="none" stroke="#3D6285"/><circle cx="210" cy="55" r="26" fill="none" stroke="#0D3B66"/><path d="M150 55 h60" stroke="#6E89A3" strokeDasharray="3 3"/></g>
   )},
 ];
 function ArtifactStoryboard() {
   const [f, setF] = useState(0);
   return (
     <div>
-      <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#1c1a1714] bg-[#faf7f1]">
+      <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#0D3B6614] bg-[#FDF9EA]">
         {FRAMES[f].draw}
       </svg>
       <div className="mt-3 flex items-center justify-between">
@@ -357,7 +357,7 @@ function ArtifactStoryboard() {
 
 function ArtifactSlides() {
   return (
-    <div className="rounded-sm border border-[#1c1a1714] bg-[#faf7f1] p-3">
+    <div className="rounded-sm border border-[#0D3B6614] bg-[#FDF9EA] p-3">
       <div className="mb-3 flex items-center justify-between">
         <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM}`}>
           presentation deck
@@ -368,8 +368,8 @@ function ArtifactSlides() {
       </div>
       <div className="grid grid-cols-2 gap-2">
         {FRAMES.map((fr, i) => (
-          <div key={fr.k} className="rounded-sm border border-[#1c1a1714] bg-white p-2">
-            <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#1c1a1714] bg-[#faf7f1]">
+          <div key={fr.k} className="rounded-sm border border-[#0D3B6614] bg-white p-2">
+            <svg viewBox="0 0 380 110" className="w-full rounded-sm border border-[#0D3B6614] bg-[#FDF9EA]">
               {fr.draw}
             </svg>
             <span className={`mt-2 block font-mono text-[9px] uppercase tracking-[0.18em] ${FAINT}`}>
@@ -404,14 +404,14 @@ function ArtifactSeesaw() {
       />
       <div className="mt-3 grid grid-cols-2 gap-6">
         <div>
-          <div className="h-px bg-[#1c1a1714]">
-            <div className="h-px bg-[#a4622e] transition-all duration-300" style={{ width: `${100 - w}%` }} />
+          <div className="h-px bg-[#0D3B6614]">
+            <div className="h-px bg-[#0D3B66] transition-all duration-300" style={{ width: `${100 - w}%` }} />
           </div>
           <p className={`mt-1.5 font-mono text-[10px] ${DIM}`}>policy: yield-curve control era</p>
         </div>
         <div className="text-right">
-          <div className="h-px bg-[#1c1a1714]">
-            <div className="ml-auto h-px bg-[#d98a4a] transition-all duration-300" style={{ width: `${w}%` }} />
+          <div className="h-px bg-[#0D3B6614]">
+            <div className="ml-auto h-px bg-[#6E89A3] transition-all duration-300" style={{ width: `${w}%` }} />
           </div>
           <p className={`mt-1.5 font-mono text-[10px] ${DIM}`}>policy: tightening cycle</p>
         </div>
@@ -447,18 +447,18 @@ function ArtifactAutomaton() {
   return (
     <div>
       <svg viewBox="0 0 380 150" className="w-full select-none">
-        <path d="M104 42 H266" stroke="#1c1a1722" />
-        <path d="M92 60 L166 106" stroke="#1c1a1722" />
-        <path d="M288 60 L212 106" stroke="#1c1a1722" />
+        <path d="M104 42 H266" stroke="#0D3B6622" />
+        <path d="M92 60 L166 106" stroke="#0D3B6622" />
+        <path d="M288 60 L212 106" stroke="#0D3B6622" />
         {STATES.map((st, i) => (
           <g key={st.k}>
             <circle
               cx={st.x} cy={st.y} r="26"
-              fill={s === i ? "rgba(55,214,245,0.08)" : "none"}
-              stroke={s === i ? "#a4622e" : "#a09a8c"}
+              fill={s === i ? "#FAF0CA" : "none"}
+              stroke={s === i ? "#0D3B66" : "#AABAC9"}
               strokeWidth={s === i ? 1.5 : 1}
             />
-            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fill={s === i ? "#1c1a17" : "#6b6459"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <text x={st.x} y={st.y + 3} textAnchor="middle" fontSize="9" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif" fill={s === i ? "#0D3B66" : "#3D6285"} style={{ textTransform: "uppercase", letterSpacing: "0.1em" }}>
               {st.k}
             </text>
           </g>
@@ -467,7 +467,7 @@ function ArtifactAutomaton() {
       <div className="mt-2 flex items-center justify-between">
         <button
           onClick={step}
-          className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CY} underline decoration-[#a4622e]/40 underline-offset-4 hover:decoration-[#a4622e]`}
+          className={`font-mono text-[11px] uppercase tracking-[0.25em] ${CY} underline decoration-[#0D3B66]/40 underline-offset-4 hover:decoration-[#0D3B66]`}
         >
           advance the chain ▸
         </button>
@@ -477,7 +477,7 @@ function ArtifactAutomaton() {
               key={i}
               className="h-1.5 w-1.5 rounded-full"
               style={{
-                background: ["#a4622e", "#d98a4a", "#6b6459"][h],
+                background: ["#0D3B66", "#6E89A3", "#3D6285"][h],
                 opacity: 0.25 + (i / hist.length) * 0.75,
               }}
             />
@@ -519,7 +519,7 @@ function ArtifactForming() {
           <line
             key={i}
             x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
-            stroke="#d98a4a"
+            stroke="#6E89A3"
             strokeWidth="0.6"
             strokeDasharray="60"
             strokeDashoffset="60"
@@ -531,10 +531,10 @@ function ArtifactForming() {
           <circle
             key={i}
             cx={n.x} cy={n.y} r={n.r}
-            fill="#f2efe8"
-            stroke="#d98a4a"
+            fill="#ffffff"
+            stroke="#6E89A3"
             strokeWidth="0.8"
-            className="transition-all duration-700 group-hover:fill-[#d98a4a]"
+            className="transition-all duration-700 group-hover:fill-[#6E89A3]"
             style={{ transitionDelay: `${i * 60}ms` }}
           />
         ))}
@@ -692,7 +692,7 @@ export function ProjectNeurons() {
       thumb: (
         <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
           {/* a filled mini-poster: title, the live artifact, and tech tags */}
-          <div className="flex h-full w-full flex-col bg-gradient-to-br from-[#f8f6f1] to-[#ece7dd] p-4 text-center">
+          <div className="flex h-full w-full flex-col bg-gradient-to-br from-white to-[#FAF0CA] p-4 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#0D3B66]/45">
               {p.status ? "in progress" : art?.label ?? "project"}
             </p>
@@ -721,7 +721,7 @@ export function ProjectNeurons() {
         <div>
           <h3 className="font-display text-2xl font-medium text-[#0D3B66]">{p.title}</h3>
           <p className="mt-2 text-[15px] leading-[1.7] text-[#0D3B66]/85">{p.description}</p>
-          <div className="mt-6 overflow-hidden rounded-md border border-[#1c1a1714] bg-[#faf8f2]">
+          <div className="mt-6 overflow-hidden rounded-md border border-[#0D3B6614] bg-[#FDF9EA]">
             <ProjectMedia p={p} />
             {!/famflow/i.test(p.title) && <div className="p-5">{art?.el}</div>}
           </div>
@@ -1195,13 +1195,13 @@ function AlbumStack({ songs }) {
 const BRAIN_IMAGE = "/brain-hero.png";
 
 // hotspot centre + radius in NORMALIZED image space (0..1), tuned to
-// brain-base.png's anatomy; hue is the iridescent colour that region leans
+// brain-base.png's anatomy
 // toward. Real photos are pulled live from INTERESTS by category.
 const BRAIN_CATEGORIES = [
-  { id: "Travel", nx: 0.22, ny: 0.5, nr: 0.13, hue: 200 }, // frontal lobe (left)
-  { id: "Food", nx: 0.5, ny: 0.3, nr: 0.13, hue: 300 }, // crown (top)
-  { id: "TV", nx: 0.78, ny: 0.48, nr: 0.13, hue: 190 }, // occipital (back/right)
-  { id: "Hobbies", nx: 0.6, ny: 0.72, nr: 0.12, hue: 265 }, // cerebellum / stem
+  { id: "Travel", nx: 0.22, ny: 0.5, nr: 0.13 }, // frontal lobe (left)
+  { id: "Food", nx: 0.5, ny: 0.3, nr: 0.13 }, // crown (top)
+  { id: "TV", nx: 0.78, ny: 0.48, nr: 0.13 }, // occipital (back/right)
+  { id: "Hobbies", nx: 0.6, ny: 0.72, nr: 0.12 }, // cerebellum / stem
 ];
 
 // fit a square image into a w x h box (object-contain), with helpers mapping
@@ -1405,11 +1405,11 @@ function BrainFlowField({ activeId, imgRef }) {
 
         const b = brightAt(p.x, p.y);
         const ny = (p.y - fit.offsetY) / Math.max(1, fit.drawH);
-        let hue = 190 + Math.min(1, Math.max(0, ny)) * 120;
-        hue += Math.sin(angle * 2 + p.seed * 0.5) * 26;
-        const sat = 92 - boost * 16;
-        // vivid + saturated so the streaks read clearly over the bright brain
-        const light = 46 + boost * 20;
+        // navy streaks, a shade lighter toward the base, so the field
+        // matches the site's Yale Blue + Lemon Chiffon palette
+        const hue = 210 + Math.sin(angle * 2 + p.seed * 0.5) * 6;
+        const sat = 70 - boost * 10;
+        const light = 28 + Math.min(1, Math.max(0, ny)) * 14 + boost * 18;
         const alpha = 0.34 + b * 0.4 + boost * 0.45;
 
         ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${Math.min(1, alpha)})`;
@@ -1420,7 +1420,7 @@ function BrainFlowField({ activeId, imgRef }) {
         ctx.stroke();
 
         if ((i & 3) === 0 && (Math.sin(time * 8 + p.seed) > 0.6 || boost > 0.2)) {
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${58 + boost * 16}%, ${0.5 + boost * 0.4})`;
+          ctx.fillStyle = `hsla(47, 90%, ${82 - boost * 8}%, ${0.55 + boost * 0.4})`;
           ctx.beginPath();
           ctx.arc(p.x, p.y, 1.1 + boost * 2.2, 0, Math.PI * 2);
           ctx.fill();
@@ -1555,7 +1555,7 @@ function NeuralMap({ items }) {
           ref={brainImgRef}
           src={BRAIN_IMAGE}
           alt="A glowing neural simulation of a human brain"
-          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain [filter:grayscale(1)_sepia(1)_hue-rotate(185deg)_saturate(2.4)_brightness(0.62)_contrast(1.15)]"
           draggable={false}
         />
 
@@ -1571,7 +1571,7 @@ function NeuralMap({ items }) {
               <button
                 key={c.id}
                 type="button"
-                aria-label={c.id}
+                aria-label={`${c.id} — click to see photos`}
                 aria-pressed={selected === c.id}
                 onMouseEnter={() => setHovered(c.id)}
                 onMouseLeave={() => setHovered(null)}
@@ -1585,26 +1585,31 @@ function NeuralMap({ items }) {
                   aria-hidden="true"
                   className="absolute inset-0 rounded-full border transition duration-500"
                   style={{
-                    borderColor: isActive ? `hsl(${c.hue} 80% 45% / 0.6)` : "transparent",
-                    boxShadow: isActive ? `0 0 34px hsl(${c.hue} 85% 55% / 0.3)` : "none",
+                    borderColor: isActive ? "rgba(13,59,102,0.55)" : "transparent",
+                    boxShadow: isActive ? "0 0 34px rgba(250,240,202,0.9)" : "none",
                   }}
                 />
                 <span
                   className="pointer-events-none absolute left-1/2 top-full flex -translate-x-1/2 translate-y-2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-300"
                   style={{
-                    color: isActive ? `hsl(${c.hue} 65% 32%)` : "rgba(23,20,17,0.75)",
-                    backgroundColor: isActive ? `hsl(${c.hue} 85% 94% / 0.95)` : "rgba(255,255,255,0.85)",
-                    border: `1px solid ${isActive ? `hsl(${c.hue} 70% 55% / 0.5)` : "rgba(23,20,17,0.14)"}`,
-                    boxShadow: isActive ? `0 4px 16px hsl(${c.hue} 70% 45% / 0.25)` : "0 2px 8px rgba(0,0,0,0.06)",
+                    color: isActive ? "#0D3B66" : "rgba(13,59,102,0.75)",
+                    backgroundColor: isActive ? "rgba(250,240,202,0.95)" : "rgba(255,255,255,0.85)",
+                    border: `1px solid ${isActive ? "rgba(13,59,102,0.45)" : "rgba(13,59,102,0.14)"}`,
+                    boxShadow: isActive ? "0 4px 16px rgba(13,59,102,0.18)" : "0 2px 8px rgba(0,0,0,0.06)",
                     transform: isActive ? "translate(-50%, 0.75rem) scale(1.06)" : "translate(-50%, 0.5rem) scale(1)",
                   }}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: `hsl(${c.hue} 75% 50%)`, boxShadow: `0 0 6px hsl(${c.hue} 75% 45% / 0.7)` }}
-                  />
+                  <span aria-hidden="true" className="relative flex h-2 w-2">
+                    {!active && (
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0D3B66]/60 motion-reduce:animate-none" />
+                    )}
+                    <span
+                      className="relative inline-flex h-2 w-2 rounded-full"
+                      style={{ backgroundColor: "#0D3B66", boxShadow: "0 0 6px rgba(13,59,102,0.5)" }}
+                    />
+                  </span>
                   {c.id}
+                  {!isActive && <span aria-hidden="true" className="text-[#0D3B66]/45">＋</span>}
                 </span>
               </button>
             );
@@ -1612,7 +1617,7 @@ function NeuralMap({ items }) {
 
         {selectedMeta &&
           selectedPhotos.map((it, i) => (
-            <BrainArcPhoto key={it.title} item={it} pos={arcPositions[i]} hue={selectedMeta.hue} />
+            <BrainArcPhoto key={it.title} item={it} pos={arcPositions[i]} />
           ))}
 
       </div>
@@ -1623,7 +1628,7 @@ function NeuralMap({ items }) {
             <span
               aria-hidden="true"
               className="h-2 w-2 shrink-0 rounded-full"
-              style={{ backgroundColor: `hsl(${selectedMeta.hue} 75% 50%)` }}
+              style={{ backgroundColor: "#0D3B66" }}
             />
             <p className="text-sm font-medium text-[#0D3B66]/70">{selectedMeta.id}</p>
             <button
@@ -1635,14 +1640,16 @@ function NeuralMap({ items }) {
             </button>
           </>
         ) : (
-          <p className="text-sm text-[#0D3B66]/30">Select a region above to open its collection.</p>
+          <p className="inline-flex items-center gap-2 rounded-md bg-[#FAF0CA] px-3 py-1.5 font-sans text-[12px] font-medium uppercase tracking-[0.2em] text-[#0D3B66]">
+            <span aria-hidden="true">☝</span> click a region of the brain to see photos
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-function BrainArcPhoto({ item, pos, hue }) {
+function BrainArcPhoto({ item, pos }) {
   const [ok, setOk] = useState(true);
   if (!pos) return null;
   return (
@@ -1653,7 +1660,7 @@ function BrainArcPhoto({ item, pos, hue }) {
         top: pos.y,
         width: pos.size,
         height: pos.size,
-        boxShadow: `0 10px 28px hsl(${hue} 55% 30% / 0.35)`,
+        boxShadow: "0 10px 28px rgba(13,59,102,0.3)",
         zIndex: 25,
       }}
     >

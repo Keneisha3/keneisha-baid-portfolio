@@ -94,14 +94,14 @@ function BoredShark() {
         href="#life"
         className="pointer-events-auto absolute bottom-10 right-8 rounded-full border border-[#0D3B66]/40 px-5 py-2 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-[#0D3B66] transition-colors hover:bg-[#FAF0CA] hover:border-[#FAF0CA] sm:right-14"
       >
-        bored?
+        bored? peek inside my brain →
       </a>
     );
   return (
     <a
       href="#life"
-      aria-label="Bored? — About me"
-      className="group pointer-events-auto absolute bottom-3 right-2 block w-36 sm:w-52"
+      aria-label="Bored? Click to peek inside my brain — About me"
+      className="group pointer-events-auto absolute bottom-20 right-2 block w-36 sm:bottom-3 sm:w-52"
     >
       <img
         src="/shark.png"
@@ -110,8 +110,10 @@ function BoredShark() {
         className="w-full transition-transform duration-300 group-hover:-translate-y-1"
       />
       {/* the words, spoken out of the open mouth */}
-      <span className="absolute left-[32%] top-[58%] -rotate-6 rounded-md bg-[#FAF0CA] px-2 py-0.5 font-mono text-[12px] font-semibold leading-tight tracking-tight text-[#0D3B66] shadow-sm sm:text-[15px]">
-        click me
+      <span className="absolute left-[32%] top-[58%] -rotate-6 rounded-md bg-[#FAF0CA] px-2 py-0.5 text-center font-mono transition-transform group-hover:scale-105 text-[12px] font-semibold leading-tight tracking-tight text-[#0D3B66] shadow-sm sm:text-[15px]">
+        click to
+        <br />
+        peek inside ↗
       </span>
     </a>
   );

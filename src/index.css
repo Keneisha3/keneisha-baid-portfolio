@@ -69,7 +69,7 @@ input.seesaw {
   -webkit-appearance: none;
   appearance: none;
   height: 1px;
-  background: rgba(17, 17, 17, 0.24);
+  background: rgba(13, 59, 102, 0.24);
   outline: none;
   cursor: ew-resize;
 }
@@ -79,17 +79,17 @@ input.seesaw::-webkit-slider-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #111111;
-  border: 1px solid #020204;
-  box-shadow: 0 0 12px rgba(17, 17, 17, 0.4);
+  background: #0D3B66;
+  border: 1px solid #0D3B66;
+  box-shadow: 0 0 12px rgba(13, 59, 102, 0.35);
 }
 input.seesaw::-moz-range-thumb {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #111111;
-  border: 1px solid #020204;
-  box-shadow: 0 0 12px rgba(17, 17, 17, 0.4);
+  background: #0D3B66;
+  border: 1px solid #0D3B66;
+  box-shadow: 0 0 12px rgba(13, 59, 102, 0.35);
 }
 
 /* caption shown during the cable descent — static, faint */
