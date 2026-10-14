@@ -607,6 +607,19 @@ function FramedThumb({ frame, children }) {
 
 function Filmstrip({ id, corner, caption, items }) {
   const [open, setOpen] = useState(null);
+  const stripRef = useRef(null);
+  const [pos, setPos] = useState(0);
+  const onStripScroll = () => {
+    const el = stripRef.current;
+    const max = el.scrollWidth - el.clientWidth;
+    setPos(max > 0 ? (el.scrollLeft / max) * 100 : 0);
+  };
+  const onSlide = (e) => {
+    const el = stripRef.current;
+    const v = Number(e.target.value);
+    setPos(v);
+    el.scrollLeft = (v / 100) * (el.scrollWidth - el.clientWidth);
+  };
   return (
     <section id={id} className="relative min-h-screen bg-white py-16">
       {/* section heading */}
@@ -619,7 +632,11 @@ function Filmstrip({ id, corner, caption, items }) {
 
       {/* the strip, centred in the white */}
       <div className="flex min-h-[62vh] items-center">
-        <div className="no-scrollbar flex w-full items-stretch gap-5 overflow-x-auto px-8 py-6 sm:px-14">
+        <div
+          ref={stripRef}
+          onScroll={onStripScroll}
+          className="no-scrollbar flex w-full items-stretch gap-5 overflow-x-auto px-8 py-6 sm:px-14"
+        >
           {items.map((it, i) => (
             <div
               key={i}
@@ -647,6 +664,23 @@ function Filmstrip({ id, corner, caption, items }) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* a visible slider for walking the strip sideways */}
+      <div className="flex items-center gap-4 px-8 pb-6 sm:px-14">
+        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0D3B66]/60">
+          ⟷ slide to browse
+        </span>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          step="0.1"
+          value={pos}
+          onChange={onSlide}
+          className="strip-slider w-full"
+          aria-label={`Scroll through ${corner.toLowerCase()}`}
+        />
       </div>
 
       {/* footer caption, like the reference */}
@@ -692,7 +726,7 @@ export function ProjectNeurons() {
       thumb: (
         <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
           {/* a filled mini-poster: title, the live artifact, and tech tags */}
-          <div className="flex h-full w-full flex-col bg-gradient-to-br from-white to-[#FAF0CA] p-4 text-center">
+          <div className="flex h-full w-full flex-col bg-white p-4 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#0D3B66]/45">
               {p.status ? "in progress" : art?.label ?? "project"}
             </p>
@@ -1412,7 +1446,11 @@ function BrainFlowField({ activeId, imgRef }) {
         const light = 28 + Math.min(1, Math.max(0, ny)) * 14 + boost * 18;
         const alpha = 0.34 + b * 0.4 + boost * 0.45;
 
-        ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${Math.min(1, alpha)})`;
+        // roughly two in five streaks run gold, echoing the Lemon Chiffon accents
+        const gold = (p.seed % 5) < 2;
+        ctx.strokeStyle = gold
+          ? `hsla(48, 95%, ${58 + boost * 14}%, ${Math.min(1, alpha + 0.1)})`
+          : `hsla(${hue}, ${sat}%, ${light}%, ${Math.min(1, alpha)})`;
         ctx.lineWidth = 1.5 + boost * 1.8;
         ctx.beginPath();
         ctx.moveTo(p.px, p.py);
@@ -1571,7 +1609,7 @@ function NeuralMap({ items }) {
               <button
                 key={c.id}
                 type="button"
-                aria-label={`${c.id} — click to see photos`}
+                aria-label={`${c.id} — click to take a peek inside`}
                 aria-pressed={selected === c.id}
                 onMouseEnter={() => setHovered(c.id)}
                 onMouseLeave={() => setHovered(null)}
@@ -1641,7 +1679,7 @@ function NeuralMap({ items }) {
           </>
         ) : (
           <p className="inline-flex items-center gap-2 rounded-md bg-[#FAF0CA] px-3 py-1.5 font-sans text-[12px] font-medium uppercase tracking-[0.2em] text-[#0D3B66]">
-            <span aria-hidden="true">☝</span> click a region of the brain to see photos
+            <span aria-hidden="true">☝</span> click a region of the brain to take a peek inside
           </p>
         )}
       </div>
