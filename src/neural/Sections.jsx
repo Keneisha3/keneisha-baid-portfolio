@@ -1174,10 +1174,14 @@ function AlbumStack({ songs }) {
                       boxShadow: isActive
                         ? "0 40px 70px rgba(0,0,0,0.65)"
                         : "0 24px 40px rgba(0,0,0,0.6)",
-                      filter: isActive ? "brightness(1.05)" : "brightness(0.8)",
-                      transition: "filter 400ms ease, box-shadow 400ms ease",
+                      transition: "box-shadow 400ms ease",
                     }}
                   >
+                    {/* dims resting covers without dimming the song label */}
+                    <span
+                      className="pointer-events-none absolute inset-0 bg-black transition-opacity duration-300"
+                      style={{ opacity: isActive ? 0 : 0.2 }}
+                    />
                     {/* sheen sweep on hover */}
                     <span
                       className="pointer-events-none absolute inset-0 transition-opacity duration-300"
@@ -1188,12 +1192,13 @@ function AlbumStack({ songs }) {
                       }}
                     />
                     {/* title bar — at the TOP, the part that peeks above the next card */}
-                    <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 px-3 pb-8 pt-2.5">
-                      <span className="min-w-0">
-                        <span className="block truncate font-sans text-[13px] font-semibold leading-tight text-[#0D3B66] [text-shadow:0_1px_3px_rgba(255,255,255,0.95),0_0_2px_rgba(255,255,255,0.95)]">
+                    <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 px-2.5 pb-8 pt-2.5">
+                      {/* a Lemon Chiffon label so the song reads clearly over any cover */}
+                      <span className="min-w-0 rounded-md bg-[#FAF0CA] px-2.5 py-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.25)] ring-1 ring-[#0D3B66]/10">
+                        <span className="block truncate font-sans text-[14px] font-semibold leading-tight text-[#0D3B66]">
                           {cleanTitle(t.title)}
                         </span>
-                        <span className="block truncate font-sans text-[11px] text-[#0D3B66]/80 [text-shadow:0_1px_3px_rgba(255,255,255,0.95),0_0_2px_rgba(255,255,255,0.95)]">
+                        <span className="mt-0.5 block truncate font-sans text-[11px] font-medium uppercase tracking-[0.12em] text-[#0D3B66]/75">
                           {t.artist.split(",")[0]}
                         </span>
                       </span>
