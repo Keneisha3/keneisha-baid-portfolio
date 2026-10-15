@@ -332,6 +332,30 @@ export const FAVE_SONGS = [
   },
 ];
 
+// === "Welcome to my brain" regions ===
+// Each region is a clickable spot on the brain. To edit:
+//   - name: the label shown on the brain. Photos in INTERESTS below appear
+//           under the region whose name matches their `category`
+//           (capitals don't matter).
+//   - x, y: where the spot sits, as a % of the brain picture
+//           (x: 0 = left edge, 100 = right edge; y: 0 = top, 100 = bottom).
+//   - size: how big the clickable circle is, as a % of the picture (12–14 works well).
+// Add a region by copying a line; remove one by deleting its line.
+// A region with no matching photos is hidden automatically.
+export const BRAIN_REGIONS = [
+  { name: "Travel", x: 22, y: 50, size: 13 }, // frontal lobe (left)
+  { name: "Food", x: 50, y: 30, size: 13 }, // crown (top)
+  { name: "TV", x: 78, y: 48, size: 13 }, // back of the brain (right)
+  { name: "Hobbies", x: 60, y: 72, size: 12 }, // cerebellum (bottom)
+];
+
+// === Photos inside the brain ===
+// Each photo shows up when its region is clicked. To add one, put the image in
+// public/photos/ and copy an entry below:
+//   - title:    the photo's name
+//   - category: which brain region it belongs to (must match a name above)
+//   - img:      the file path, starting with /photos/
+//   - blurb, tag: short captions
 // NOTE: Swimming is pending a replacement photo (the old one was cut) —
 // re-add it here with `category: "Hobbies"` once a new image is in.
 export const INTERESTS = [

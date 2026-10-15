@@ -3,7 +3,7 @@
    Every project is a different artifact with its own interaction. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
-import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS, FAVE_SONGS } from "../data/portfolio";
+import { PROFILE, PROJECTS, TOOLKIT, EXPERIENCE, PLAYLIST, INTERESTS, FAVE_SONGS, BRAIN_REGIONS } from "../data/portfolio";
 
 /* The eleven stations of the walk: six project paintings, five rooms. */
 export const STATION_COUNT = () => PROJECTS.length + EXPERIENCE.length;
@@ -1233,15 +1233,14 @@ function AlbumStack({ songs }) {
 // baked-in black background)
 const BRAIN_IMAGE = "/brain-hero.png";
 
-// hotspot centre + radius in NORMALIZED image space (0..1), tuned to
-// brain-base.png's anatomy
-// toward. Real photos are pulled live from INTERESTS by category.
-const BRAIN_CATEGORIES = [
-  { id: "Travel", nx: 0.22, ny: 0.5, nr: 0.13 }, // frontal lobe (left)
-  { id: "Food", nx: 0.5, ny: 0.3, nr: 0.13 }, // crown (top)
-  { id: "TV", nx: 0.78, ny: 0.48, nr: 0.13 }, // occipital (back/right)
-  { id: "Hobbies", nx: 0.6, ny: 0.72, nr: 0.12 }, // cerebellum / stem
-];
+// Regions are edited in src/data/portfolio.js (BRAIN_REGIONS); here their
+// percentages become normalized image-space hotspots (0..1).
+const BRAIN_CATEGORIES = BRAIN_REGIONS.map((r) => ({
+  id: r.name,
+  nx: r.x / 100,
+  ny: r.y / 100,
+  nr: r.size / 100,
+}));
 
 // fit a square image into a w x h box (object-contain), with helpers mapping
 // normalized image coords (0..1) to CSS pixel coords inside the container
@@ -1528,8 +1527,11 @@ function BrainFlowField({ activeId, imgRef }) {
 /* group INTERESTS by category, keyed to BRAIN_CATEGORIES order */
 function groupInterestsByCategory(items) {
   const byCat = {};
+  const norm = (v) => String(v ?? "").trim().toLowerCase();
   items.forEach((it) => {
-    (byCat[it.category] ??= []).push(it);
+    // match each photo to its region by name, ignoring capitals/spaces
+    const region = BRAIN_CATEGORIES.find((c) => norm(c.id) === norm(it.category));
+    if (region) (byCat[region.id] ??= []).push(it);
   });
   return byCat;
 }
@@ -1633,7 +1635,7 @@ function NeuralMap({ items }) {
                   }}
                 />
                 <span
-                  className="pointer-events-none absolute left-1/2 top-full flex -translate-x-1/2 translate-y-2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-300"
+                  className="absolute left-1/2 top-full flex -translate-x-1/2 translate-y-2 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-300 hover:shadow-md"
                   style={{
                     color: isActive ? "#0D3B66" : "rgba(13,59,102,0.75)",
                     backgroundColor: isActive ? "rgba(250,240,202,0.95)" : "rgba(255,255,255,0.85)",
@@ -1652,7 +1654,7 @@ function NeuralMap({ items }) {
                     />
                   </span>
                   {c.id}
-                  {!isActive && <span aria-hidden="true" className="text-[#0D3B66]/45">＋</span>}
+                  <span aria-hidden="true" className="text-[#0D3B66]/50">{selected === c.id ? "✕" : "＋"}</span>
                 </span>
               </button>
             );
