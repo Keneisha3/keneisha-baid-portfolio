@@ -167,6 +167,13 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
+    title: "WealthLens",
+    description:
+      "An intelligent decision-support system (IDSS) for stock & portfolio selection — an XGBoost return regressor and buy/hold/sell classifier, FinBERT news sentiment, and a GARCH(1,1) volatility model feeding a mean-variance / HRP portfolio optimizer. Chronological time-series splits (no lookahead bias), with 29 CI-run unit tests.",
+    tech: ["Python", "XGBoost", "FinBERT", "GARCH", "Portfolio Optimization"],
+    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/WealthLens.git" }],
+  },
+  {
     title: "ATR News Signal System",
     description:
       "Event-driven stock alert system using ATR volatility + RSS news feeds across 50+ equities with backtesting, walk-forward validation, and automated research reports.",
