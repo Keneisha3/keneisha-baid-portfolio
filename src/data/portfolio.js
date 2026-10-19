@@ -171,7 +171,10 @@ export const PROJECTS = [
     description:
       "An intelligent decision-support system (IDSS) for stock & portfolio selection — an XGBoost return regressor and buy/hold/sell classifier, FinBERT news sentiment, and a GARCH(1,1) volatility model feeding a mean-variance / HRP portfolio optimizer. Chronological time-series splits (no lookahead bias), with 29 CI-run unit tests.",
     tech: ["Python", "XGBoost", "FinBERT", "GARCH", "Portfolio Optimization"],
-    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/WealthLens.git" }],
+    links: [
+      { label: "GitHub", href: "https://github.com/Keneisha3/WealthLens.git" },
+      { label: "Presentation PDF", href: "/WealthLens-Presentation.pdf" },
+    ],
   },
   {
     title: "ATR News Signal System",
@@ -215,6 +218,13 @@ export const PROJECTS = [
       "Operations research model determining truck rental vs 3PL efficiency.",
     tech: ["Python"],
     links: [{ label: "GitHub", href: "https://github.com/Keneisha3/MarkovChainModelling.git" }],
+  },
+  {
+    title: "Nespresso Supply Chain Optimization",
+    description:
+      "Operations-research study of Nespresso's North American distribution network — whether to keep two centralized DCs on ocean freight or reconfigure, balancing cycle + safety stock, freight mode (ocean vs. air), and facility costs. Applied risk pooling, transportation mode selection, and safety-stock sizing to weigh cost against service and stockout risk.",
+    tech: ["Operations Research", "Inventory Optimization", "Supply Chain Modeling"],
+    links: [{ label: "Presentation PDF", href: "/Nespresso-Supply-Chain.pdf" }],
   },
   {
     title: "Patent Landscape Intelligence",
