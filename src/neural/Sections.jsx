@@ -1724,6 +1724,110 @@ function BrainArcPhoto({ item, pos }) {
   );
 }
 
+/* =====================================================================
+   FORTUNE CARDS — a little pick-a-card fortune teller, vintage playing-card
+   style, with fortunes drawn from my actual world.
+===================================================================== */
+const FORTUNES = [
+  { emoji: "☕", title: "The All-Nighter", text: "A coffee and a Red Bull walk into a deadline. You ship the model at 3 a.m. — and it's your best work yet." },
+  { emoji: "⚖️", title: "The Harvey", text: "You'll be as right as Harvey Specter today. A Suits rerun is optional but encouraged." },
+  { emoji: "📈", title: "The Analyst", text: "A spreadsheet reveals a pattern nobody else caught. Trust the regression." },
+  { emoji: "🗼", title: "La Vie en Rose", text: "Pack a bag — Paris is calling, and the pastries are non-negotiable." },
+  { emoji: "🎸", title: "The Six-String", text: "Pick up the guitar; the chords remember you even when your keys don't." },
+  { emoji: "🚤", title: "The Grand Canal", text: "Venice is asking when it'll see you next. The correct answer is: soon." },
+  { emoji: "💹", title: "The Market Open", text: "An Industry marathon tonight — you'll catch a trade you missed the first time." },
+  { emoji: "🧠", title: "The Flow State", text: "Two stubborn problems collide and solve each other. Keep the notebook close." },
+  { emoji: "🎯", title: "The Optimizer", text: "Run the numbers once more — the efficient frontier shifts in your favour." },
+  { emoji: "📍", title: "The Next Pin", text: "A new city is coming to your map. Window seat, obviously." },
+];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function FortuneCard({ fortune, flipped, onFlip }) {
+  return (
+    <button
+      type="button"
+      onClick={onFlip}
+      aria-label={flipped ? fortune.title : "Flip a card for your fortune"}
+      className="group relative h-[196px] w-[140px] shrink-0 [perspective:1100px] sm:h-[224px] sm:w-[160px]"
+    >
+      <div
+        className="relative h-full w-full transition-transform duration-[650ms] ease-out [transform-style:preserve-3d]"
+        style={{ transform: flipped ? "rotateY(180deg)" : "none" }}
+      >
+        {/* back — face-down, vintage ornament */}
+        <div className="absolute inset-0 overflow-hidden rounded-xl border border-[#0D3B66]/15 bg-[#FBF6E9] shadow-[0_10px_26px_rgba(13,59,102,0.14)] [backface-visibility:hidden] transition-transform duration-300 group-hover:-translate-y-1">
+          <div className="absolute inset-[7px] rounded-lg border border-[#9b2d3a]/55" />
+          <div className="absolute inset-[7px] rounded-lg border border-[#9b2d3a]/25 [transform:scale(0.94)]" />
+          <span className="absolute left-2.5 top-1.5 font-serif text-[13px] text-[#9b2d3a]">♥</span>
+          <span className="absolute bottom-1.5 right-2.5 font-serif text-[13px] text-[#9b2d3a] [transform:rotate(180deg)]">♥</span>
+          <div className="flex h-full w-full items-center justify-center px-4 text-center">
+            <span className="font-cursive text-[26px] leading-tight text-[#9b2d3a] sm:text-[30px]">pick a card</span>
+          </div>
+        </div>
+
+        {/* front — the fortune */}
+        <div className="absolute inset-0 overflow-hidden rounded-xl border border-[#0D3B66]/15 bg-[#FBF6E9] shadow-[0_10px_26px_rgba(13,59,102,0.16)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
+          <span className="absolute left-2.5 top-1.5 font-serif text-[12px] text-[#9b2d3a]">♥</span>
+          <span className="absolute bottom-1.5 right-2.5 font-serif text-[12px] text-[#9b2d3a] [transform:rotate(180deg)]">♥</span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-3.5 text-center">
+            <span className="text-[30px] leading-none sm:text-[34px]">{fortune.emoji}</span>
+            <span className="font-serifDisplay text-[13px] font-semibold uppercase leading-tight tracking-[0.08em] text-[#0D3B66]">
+              {fortune.title}
+            </span>
+            <span className="font-sans text-[11px] leading-snug text-[#0D3B66]/75 sm:text-[12px]">
+              {fortune.text}
+            </span>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export function FortuneCards() {
+  const COUNT = 5;
+  const deal = () => shuffle(FORTUNES).slice(0, COUNT).map((f) => ({ fortune: f, flipped: false }));
+  const [hand, setHand] = useState(deal);
+  const flip = (i) => setHand((h) => h.map((c, idx) => (idx === i ? { ...c, flipped: true } : c)));
+  const anyFlipped = hand.some((c) => c.flipped);
+
+  return (
+    <section id="fortune" className="relative bg-white py-20 sm:py-28">
+      <div className="mx-auto max-w-5xl px-8 text-center sm:px-14">
+        <Kicker>how lucky are we</Kicker>
+        <div className="mt-4">
+          <BandHeading>Pick a Card</BandHeading>
+        </div>
+        <p className="mx-auto mt-5 max-w-md font-sans text-[14px] leading-relaxed text-[#0D3B66]/65">
+          A little fortune, straight from my brain to yours. Flip a card — or the whole deck.
+        </p>
+
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          {hand.map((c, i) => (
+            <FortuneCard key={i} fortune={c.fortune} flipped={c.flipped} onFlip={() => flip(i)} />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setHand(deal())}
+          className="mt-12 inline-flex items-center gap-2 rounded-full bg-[#FAF0CA] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.25em] text-[#0D3B66] transition-colors hover:bg-[#f5e7b0]"
+        >
+          {anyFlipped ? "shuffle again" : "shuffle the deck"} ↻
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function AboutMe() {
   return (
     <section id="about" className="relative min-h-screen bg-white py-5">

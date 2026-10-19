@@ -4,6 +4,7 @@ import {
   SkillTerminals,
   MuseumExhibit,
   AboutMe,
+  FortuneCards,
   CoreTerminal,
 } from "./neural/Sections";
 import { Sparks, useHum, MindNav } from "./neural/Fx";
@@ -182,6 +183,7 @@ export default function App() {
         </div>
         <main className="relative">
           <AboutMe />
+          <FortuneCards />
         </main>
         <ChatWidget />
       </div>
