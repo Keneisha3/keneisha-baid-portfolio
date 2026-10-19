@@ -120,8 +120,10 @@ export const EXPERIENCE = [
     img: "",
     color: "#EC4899",
     bullets: [
+      "My current role — the analyst embedded on live client engagements, running requirement-gathering sessions, mapping current-vs-future-state workflows, and turning them into Power Platform apps and Power BI dashboards teams use day to day.",
       "Led stakeholder engagement across 3 digital transformation projects using Power Platform, SharePoint, Power BI, Power Automate, React, and Jira, improving operational efficiency by 24%.",
       "Translated feedback from 8 workshops into user stories, workflow requirements, and reporting structures while supporting AI-enabled automation and dashboard initiatives, accelerating implementation timelines by 18%.",
+      "Act as the bridge between non-technical stakeholders and the delivery team — documenting requirements, prioritizing the backlog, and keeping scope and timelines aligned.",
     ],
   },
   {
@@ -133,6 +135,7 @@ export const EXPERIENCE = [
     bullets: [
       "Built enterprise SPFx web parts using TypeScript, React, and SharePoint APIs, improving platform usability by 27%.",
       "Developed workflow automation solutions using Power Platform, Power Automate, and SharePoint technologies across 5 client projects.",
+      "Worked through the full build cycle with the development team — writing reusable, well-structured components, reviewing code, and testing before each client rollout.",
     ],
   },
   {
@@ -143,6 +146,7 @@ export const EXPERIENCE = [
     bullets: [
       "Developed Python automation tools and AI-assisted workflows reducing manual patent processing time by 30%.",
       "Applied machine learning and neural networks to aerospace decision systems, improving predictive accuracy by 15%.",
+      "Partnered with the IP/patent team to prototype AI-assisted document triage, benchmarking model output against manual review to keep results reliable.",
     ],
   },
   {
@@ -152,6 +156,7 @@ export const EXPERIENCE = [
     color: "#FB7185",
     bullets: [
       "Built automated Excel VBA reporting workflows and operational dashboards improving inventory management by 17% while reducing manual workload by 20%.",
+      "Partnered with operations and supply teams to standardize ad-hoc spreadsheets into repeatable dashboards leadership could rely on each week.",
     ],
   },
   {
@@ -161,6 +166,7 @@ export const EXPERIENCE = [
     color: "#EC4899",
     bullets: [
       "Developed Excel VBA reporting tools and project tracking workflows using Microsoft Project, improving accuracy by 12%.",
+      "Supported the project controls team on schedule and cost tracking, automating repetitive reporting so the team could spend more time on analysis.",
     ],
   },
 ];
@@ -227,12 +233,18 @@ export const PROJECTS = [
     links: [{ label: "Presentation PDF", href: "/Nespresso-Supply-Chain.pdf" }],
   },
   {
-    title: "Patent Landscape Intelligence",
-    status: "In the works",
+    title: "Deal or No Deal",
     description:
-      "A tool I'm currently building to map and analyze patent landscapes, surfacing trends, white space, and competitor activity from large patent datasets.",
-    tech: ["Python", "NLP", "Machine Learning", "Data Visualization"],
-    links: [],
+      "A Java recreation of the game show, built with a Swing GUI and object-oriented game logic for case selection, banker offers, and game state. An early project, kept to show my Java fundamentals.",
+    tech: ["Java", "Swing", "OOP"],
+    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/DealOrNoDeal.git" }],
+  },
+  {
+    title: "Patent Landscape Intelligence",
+    description:
+      "A platform that maps and analyzes patent landscapes end-to-end: it collects real patent data, uses Claude to cluster technologies, maps the competitive field, surfaces white-space opportunities, and writes a full landscape report.",
+    tech: ["Next.js", "TypeScript", "Claude API", "Recharts"],
+    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/Patent-Landscape-Creator.git" }],
   },
 ];
 

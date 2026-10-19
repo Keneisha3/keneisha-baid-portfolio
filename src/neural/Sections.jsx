@@ -546,6 +546,110 @@ function ArtifactForming() {
   );
 }
 
+/* WEALTHLENS — a mini portfolio: a rising return curve feeding an allocation. */
+function ArtifactPortfolio() {
+  const alloc = [
+    { k: "AAPL", v: 34, c: "#0D3B66" },
+    { k: "MSFT", v: 26, c: "#6E89A3" },
+    { k: "NVDA", v: 22, c: "#C9A227" },
+    { k: "cash", v: 18, c: "#b9c4cf" },
+  ];
+  return (
+    <svg viewBox="0 0 300 150" className="h-full w-full" role="img" aria-label="Portfolio optimizer">
+      <line x1="16" y1="16" x2="16" y2="112" stroke="#0D3B6622" />
+      <line x1="16" y1="112" x2="150" y2="112" stroke="#0D3B6622" />
+      {/* candles */}
+      {[0, 1, 2, 3].map((i) => {
+        const x = 34 + i * 26;
+        const up = i % 2 === 0;
+        const h = 22 + i * 8;
+        return (
+          <g key={i} stroke={up ? "#2e7d5b" : "#9b2d3a"}>
+            <line x1={x} y1={96 - h} x2={x} y2={104 - h + 14} />
+            <rect x={x - 5} y={80 - h} width="10" height="18" fill={up ? "#2e7d5b" : "#9b2d3a"} opacity="0.85" stroke="none" />
+          </g>
+        );
+      })}
+      {/* expected-return curve */}
+      <path d="M16 100 C 50 92, 78 70, 104 58 S 140 34, 150 28" fill="none" stroke="#0D3B66" strokeWidth="2.5" strokeLinecap="round" />
+      {/* allocation donut */}
+      {(() => {
+        const cx = 232, cy = 64, r = 30;
+        let a = -Math.PI / 2;
+        return alloc.map((s) => {
+          const ang = (s.v / 100) * Math.PI * 2;
+          const x1 = cx + r * Math.cos(a), y1 = cy + r * Math.sin(a);
+          a += ang;
+          const x2 = cx + r * Math.cos(a), y2 = cy + r * Math.sin(a);
+          const large = ang > Math.PI ? 1 : 0;
+          return <path key={s.k} d={`M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`} fill={s.c} />;
+        });
+      })()}
+      <circle cx="232" cy="64" r="13" fill="#fff" />
+      <text x="150" y="134" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" letterSpacing="2" fill="#0D3B6688">
+        PREDICT → OPTIMIZE
+      </text>
+    </svg>
+  );
+}
+
+/* NESPRESSO — a small supply-chain network: plant → DCs → demand. */
+function ArtifactSupply() {
+  const node = (x, y, label, fill = "#0D3B66") => (
+    <g>
+      <rect x={x - 22} y={y - 13} width="44" height="26" rx="5" fill={fill} />
+      <text x={x} y={y + 3.5} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" fill="#fff" letterSpacing="0.5">
+        {label}
+      </text>
+    </g>
+  );
+  return (
+    <svg viewBox="0 0 300 150" className="h-full w-full" role="img" aria-label="Supply chain network">
+      {[["42","40","122","40"],["42","40","122","100"],["122","40","220","32"],["122","40","220","72"],["122","100","220","110"],["122","100","220","72"]].map((l, i) => (
+        <line key={i} x1={l[0]} y1={l[1]} x2={l[2]} y2={l[3]} stroke="#0D3B6633" strokeWidth="1.5" />
+      ))}
+      {node(42, 40, "PLANT", "#9b2d3a")}
+      {node(122, 40, "DC·E")}
+      {node(122, 100, "DC·W")}
+      {[32, 72, 110].map((y, i) => (
+        <circle key={i} cx="226" cy={y} r="6" fill="#C9A227" />
+      ))}
+      <text x="226" y="132" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="8" letterSpacing="1" fill="#0D3B6688">
+        DEMAND
+      </text>
+      <text x="150" y="16" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" letterSpacing="2" fill="#0D3B6688">
+        COST ↔ SERVICE
+      </text>
+    </svg>
+  );
+}
+
+/* DEAL OR NO DEAL — a grid of briefcases, one open with an offer. */
+function ArtifactCases() {
+  const cases = [1, 7, 13, 22, 4, 19, 11, 26];
+  return (
+    <svg viewBox="0 0 300 150" className="h-full w-full" role="img" aria-label="Deal or No Deal briefcases">
+      {cases.map((n, i) => {
+        const x = 20 + (i % 4) * 56;
+        const y = 22 + Math.floor(i / 4) * 52;
+        const open = n === 13;
+        return (
+          <g key={n}>
+            <rect x={x} y={y} width="44" height="36" rx="4" fill={open ? "#C9A227" : "#0D3B66"} />
+            <rect x={x + 16} y={y - 5} width="12" height="7" rx="2" fill={open ? "#C9A227" : "#0D3B66"} />
+            <text x={x + 22} y={y + 23} textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="12" fontWeight="700" fill={open ? "#0D3B66" : "#FAF0CA"}>
+              {open ? "$" : n}
+            </text>
+          </g>
+        );
+      })}
+      <text x="150" y="140" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9" letterSpacing="2" fill="#0D3B6688">
+        DEAL — OR NO DEAL?
+      </text>
+    </svg>
+  );
+}
+
 /* ---------- artifact registry ---------- */
 const ARTIFACTS = [
   { match: /patent/i, label: "a forming memory", el: <ArtifactForming /> },
@@ -554,6 +658,9 @@ const ARTIFACTS = [
   { match: /famflow/i, label: "a storyboard", el: <ArtifactStoryboard /> },
   { match: /financial|market|nikkei/i, label: "a balance instrument", el: <ArtifactSeesaw /> },
   { match: /markov/i, label: "an automaton", el: <ArtifactAutomaton /> },
+  { match: /wealth|lens/i, label: "a portfolio optimizer", el: <ArtifactPortfolio /> },
+  { match: /nespresso|supply/i, label: "a supply network", el: <ArtifactSupply /> },
+  { match: /deal/i, label: "the briefcases", el: <ArtifactCases /> },
 ];
 
 /* ---------- a clean-cut horizontal filmstrip of cards ---------- */
@@ -570,6 +677,12 @@ const ART_FRAMES = [
   { src: "/frames/frame-4.jpg", inset: "20% 21.6% 19.7% 20.4%" }, // antique white
   { src: "/frames/frame-5.jpg", inset: "12% 17% 12.4% 16.8%" }, // navy + gold
 ];
+
+/* Per-project frame choice (in PROJECTS order), hand-tuned so no two
+   same-colour frames sit next to each other — the two blues (periwinkle,
+   sky-blue) and the navy are always separated by a green or white neighbour.
+   0 green · 1 periwinkle · 2 sky-blue · 3 antique-white · 4 navy+gold */
+const FRAME_SEQUENCE = [2, 0, 4, 3, 1, 0, 4, 3, 2];
 
 /* Puts `children` inside an ornate frame image; the artwork sits in the
    frame's window. */
@@ -724,7 +837,7 @@ export function ProjectNeurons() {
       title: p.title,
       meta: p.status ? "In progress" : p.tech.slice(0, 2).join(" · "),
       thumb: (
-        <FramedThumb frame={ART_FRAMES[i % ART_FRAMES.length]}>
+        <FramedThumb frame={ART_FRAMES[FRAME_SEQUENCE[i % FRAME_SEQUENCE.length]]}>
           {/* a filled mini-poster: title, the live artifact, and tech tags */}
           <div className="flex h-full w-full flex-col bg-white p-4 text-center">
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[#0D3B66]/45">
@@ -773,7 +886,7 @@ export function ProjectNeurons() {
     <Filmstrip
       id="projects"
       corner="Projects"
-      caption="Selected projects — click any piece to open it. Data, machine learning, and product work, 2023–2026."
+      caption="Selected projects — click any piece to open it. Data, machine learning, and product work."
       items={items}
     />
   );
