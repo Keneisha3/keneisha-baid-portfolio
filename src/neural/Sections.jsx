@@ -650,8 +650,90 @@ function ArtifactCases() {
   );
 }
 
+/* EARNINGS — model vs. baseline: median forecast error on held-out years */
+const EFT = {
+  revenue: { model: 4.3, base: 7.4, beat: 62, n: 771, name: "seasonal growth" },
+  eps: { model: 20.0, base: 23.8, beat: 55, n: 571, name: "last year's margin" },
+};
+function ArtifactForecast() {
+  const [k, setK] = useState("revenue");
+  const r = EFT[k];
+  const max = 25;
+  const bar = (label, v, fill) => (
+    <div className="flex items-center gap-3">
+      <span className={`w-20 shrink-0 text-left font-mono text-[10px] uppercase tracking-[0.15em] ${DIM}`}>{label}</span>
+      <div className="h-2 flex-1 rounded-full bg-[#0D3B66]/[0.06]">
+        <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${(v / max) * 100}%`, background: fill }} />
+      </div>
+      <span className={`w-12 shrink-0 text-right font-mono text-[11px] ${BONE}`}>{v.toFixed(1)}%</span>
+    </div>
+  );
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <div className="flex gap-4">
+        {["revenue", "eps"].map((key) => (
+          <button
+            key={key}
+            onClick={(e) => { e.stopPropagation(); setK(key); }}
+            className={`font-mono text-[11px] uppercase tracking-[0.15em] transition-colors ${k === key ? CY : FAINT} hover:text-[#0D3B66]/70`}
+          >
+            {k === key ? "▸ " : ""}{key === "eps" ? "diluted eps" : "revenue"}
+          </button>
+        ))}
+      </div>
+      <p className={`mt-4 text-left font-mono text-[10px] uppercase tracking-[0.25em] ${FAINT}`}>median error · 2022 onward</p>
+      <div className="mt-2 space-y-2.5">
+        {bar("model", r.model, "#0D3B66")}
+        {bar("baseline", r.base, "#AABAC9")}
+      </div>
+      <p className={`mt-3 text-right font-mono text-[10px] ${CU}`}>
+        ◈ closer than last year's quarter in {r.beat}% of {r.n} quarters
+      </p>
+    </div>
+  );
+}
+
+/* PORTFOLIO TRACKER — the contribution planner: split new money to target */
+function ArtifactContribution() {
+  const [amt, setAmt] = useState(500);
+  const growth = Math.round(amt * 0.6);
+  const div = amt - growth;
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-baseline justify-between">
+        <span className={`font-mono text-[10px] uppercase tracking-[0.3em] ${DIM}`}>next contribution</span>
+        <span className={`font-sans text-3xl ${BONE}`}>${amt.toLocaleString()}</span>
+      </div>
+      <input
+        type="range"
+        min="100"
+        max="2000"
+        step="50"
+        value={amt}
+        onChange={(e) => setAmt(Number(e.target.value))}
+        onClick={(e) => e.stopPropagation()}
+        className="seesaw mt-3 w-full"
+        aria-label="Contribution amount"
+      />
+      <div className="mt-4 flex h-3 w-full overflow-hidden rounded-full">
+        <div className="h-full bg-[#0D3B66]" style={{ width: "60%" }} />
+        <div className="h-full bg-[#C9A227]" style={{ width: "40%" }} />
+      </div>
+      <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-[0.15em]">
+        <span className={CY}>growth 60% · ${growth}</span>
+        <span className={DIM}>dividend 40% · ${div}</span>
+      </div>
+      <p className={`mt-3 font-mono text-[10px] uppercase tracking-[0.2em] ${FAINT}`}>
+        drag the amount · proposals only, you place every trade
+      </p>
+    </div>
+  );
+}
+
 /* ---------- artifact registry ---------- */
 const ARTIFACTS = [
+  { match: /earnings|forecast/i, label: "a forecast ledger", el: <ArtifactForecast /> },
+  { match: /portfolio tracker/i, label: "a contribution planner", el: <ArtifactContribution /> },
   { match: /patent/i, label: "a forming memory", el: <ArtifactForming /> },
   { match: /atr|signal/i, label: "a scrubbable tape", el: <ArtifactViewport /> },
   { match: /election/i, label: "a model bench", el: <ArtifactBench /> },
@@ -682,7 +764,7 @@ const ART_FRAMES = [
    same-colour frames sit next to each other — the two blues (periwinkle,
    sky-blue) and the navy are always separated by a green or white neighbour.
    0 green · 1 periwinkle · 2 sky-blue · 3 antique-white · 4 navy+gold */
-const FRAME_SEQUENCE = [2, 0, 4, 3, 1, 0, 4, 3, 2];
+const FRAME_SEQUENCE = [1, 3, 2, 0, 4, 3, 1, 0, 4, 3, 2];
 
 /* Puts `children` inside an ornate frame image; the artwork sits in the
    frame's window. */

@@ -173,6 +173,23 @@ export const EXPERIENCE = [
 
 export const PROJECTS = [
   {
+    title: "Earnings Forecast Tracker",
+    description:
+      "Point-in-time company financials from SEC filings: every number keeps each version that was filed, so a backtest only sees what was known on that day. On top sit next-quarter revenue and EPS forecasts, tested walk-forward over 2,507 company-quarters from 40 companies (2012–2026), plus a simple DCF valuation range. On the held-out years, revenue forecasts land within a 4.3% median error against 7.4% for the same-quarter-last-year baseline. Forecasts for all 40 companies were frozen in git before the Oct 2026 earnings season, to be scored live.",
+    tech: ["Python", "SEC EDGAR XBRL", "React", "Recharts"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Keneisha3/Earnings-forecast-tracker" },
+      { label: "Live dashboard", href: "https://keneisha3.github.io/Earnings-forecast-tracker/" },
+    ],
+  },
+  {
+    title: "Portfolio Tracker",
+    description:
+      "A personal investing workbench in plain Python for two real accounts with different jobs: an aggressive growth account and a steady dividend account. It reviews each against its own strategy, splits new contributions toward a target mix, values everything in CAD with Canadian tax rules (TFSA vs RRSP withholding), and runs a daily briefing with news, Congress stock-trade filings and price alerts on a local dashboard. An ATR breakout bot paper-trades every day and has to pass a backtest checklist before it is trusted. It never trades for you.",
+    tech: ["Python", "Questrade API", "Paper Trading", "Dashboard"],
+    links: [{ label: "GitHub", href: "https://github.com/Keneisha3/public-stock-trade-tracker" }],
+  },
+  {
     title: "WealthLens",
     description:
       "An intelligent decision-support system (IDSS) for stock & portfolio selection — an XGBoost return regressor and buy/hold/sell classifier, FinBERT news sentiment, and a GARCH(1,1) volatility model feeding a mean-variance / HRP portfolio optimizer. Chronological time-series splits (no lookahead bias), with 29 CI-run unit tests.",
@@ -452,7 +469,17 @@ export const CHAT_KB = [
   {
     keywords: ["project", "projects", "built", "build", "portfolio", "made", "work on"],
     answer:
-      "Six of them: an ATR news-triggered trading signal system, Electionomics (predicting markets from policy cycles), a Nikkei 225 vs Dow Jones divergence study, the FamFlow UX prototype, a Markov chain fleet-transition model, and Patent Landscape Intelligence (in progress). Ask about any one for the details.",
+      "Eleven of them: the Earnings Forecast Tracker (point-in-time SEC financials with walk-forward-tested forecasts), a personal Portfolio Tracker with a paper-trading bot, WealthLens (an ML stock and portfolio decision-support system), an ATR news-triggered trading signal system, Electionomics (predicting markets from election cycles), a Nikkei 225 vs Dow Jones research report, the FamFlow UX prototype, a Markov chain truck-rental vs 3PL model, a Nespresso supply chain optimization study, a Java Deal or No Deal game, and Patent Landscape Intelligence. Ask about any one for the details.",
+  },
+  {
+    keywords: ["earnings", "forecast", "sec", "edgar", "xbrl", "point in time", "point-in-time", "eps", "revenue", "dcf", "walk-forward", "walk forward"],
+    answer:
+      "The Earnings Forecast Tracker keeps company financials from SEC filings point in time, so every number keeps each version that was filed and a backtest never sees the future. On top are next-quarter revenue and EPS forecasts tested walk-forward over 2,507 company-quarters from 40 companies. On held-out years the revenue model's median error is 4.3% against 7.4% for the same-quarter-last-year baseline. She also froze forecasts for all 40 companies before the October 2026 earnings season to score them live. Python, SEC EDGAR XBRL, and a React dashboard.",
+  },
+  {
+    keywords: ["portfolio tracker", "tracker", "questrade", "wealthsimple", "tfsa", "rrsp", "dividend", "paper trading", "paper bot", "briefing", "congress", "crypto bot"],
+    answer:
+      "Her Portfolio Tracker is a personal investing workbench in plain Python for two real accounts: an aggressive growth account and a steady dividend account. It reviews each against its own strategy, splits new contributions toward a target mix, handles Canadian tax rules, and runs a daily briefing with news, Congress stock-trade filings and price alerts on a local dashboard. An ATR breakout bot paper-trades daily and must pass a backtest checklist before it's trusted. It only proposes trades; she places every real one herself.",
   },
   {
     keywords: ["atr", "signal", "stock", "trading", "trade", "quant", "equities", "backtest", "news", "yfinance"],
