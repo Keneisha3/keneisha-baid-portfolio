@@ -1923,18 +1923,30 @@ function BrainArcPhoto({ item, pos }) {
    FORTUNE CARDS — a little pick-a-card fortune teller, vintage playing-card
    style, with fortunes drawn from my actual world.
 ===================================================================== */
+// Short and open-ended on purpose, like a real fortune: each one should fit
+// whoever draws it. Edit freely; the numeral and suit are added automatically.
 const FORTUNES = [
-  { emoji: "☕", title: "The All-Nighter", text: "A coffee and a Red Bull walk into a deadline. You ship the model at 3 a.m. — and it's your best work yet." },
-  { emoji: "⚖️", title: "The Harvey", text: "You'll be as right as Harvey Specter today. A Suits rerun is optional but encouraged." },
-  { emoji: "📈", title: "The Analyst", text: "A spreadsheet reveals a pattern nobody else caught. Trust the regression." },
-  { emoji: "🗼", title: "La Vie en Rose", text: "Pack a bag — Paris is calling, and the pastries are non-negotiable." },
-  { emoji: "🎸", title: "The Six-String", text: "Pick up the guitar; the chords remember you even when your keys don't." },
-  { emoji: "🚤", title: "The Grand Canal", text: "Venice is asking when it'll see you next. The correct answer is: soon." },
-  { emoji: "💹", title: "The Market Open", text: "An Industry marathon tonight — you'll catch a trade you missed the first time." },
-  { emoji: "🧠", title: "The Flow State", text: "Two stubborn problems collide and solve each other. Keep the notebook close." },
-  { emoji: "🎯", title: "The Optimizer", text: "Run the numbers once more — the efficient frontier shifts in your favour." },
-  { emoji: "📍", title: "The Next Pin", text: "A new city is coming to your map. Window seat, obviously." },
-];
+  { title: "The Return", text: "Something you set down a while ago is worth picking back up." },
+  { title: "The Key", text: "A door you thought was locked was only stuck." },
+  { title: "The Leap", text: "Say yes to the plan you almost talked yourself out of." },
+  { title: "The Friend", text: "Someone is thinking of you more kindly than you know." },
+  { title: "The Detour", text: "The answer arrives sideways, while you're busy with something else." },
+  { title: "The Tide", text: "Go slower this week. It will get you there sooner." },
+  { title: "The Wager", text: "A small risk pays out more than it should." },
+  { title: "The Signal", text: "You'll know the moment when it comes. Don't wait for a second one." },
+  { title: "The Horizon", text: "What feels like an ending is mostly a change of scenery." },
+  { title: "The Compass", text: "Trust the instinct you keep explaining away." },
+  { title: "The Journey", text: "Somewhere new is closer than it looks." },
+  { title: "The Record", text: "An old song will mean something different soon." },
+  { title: "The Letter", text: "Good news travels slowly, but it is on its way." },
+  { title: "The Pause", text: "Not everything needs an answer today." },
+  { title: "The Turn", text: "What you're counting on comes through, just not the way you pictured." },
+  { title: "The Star", text: "Luck is already in the room. Look up." },
+].map((f, i) => ({
+  ...f,
+  numeral: ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI"][i] ?? String(i + 1),
+  suit: ["♥", "♠", "♦", "♣"][i % 4],
+}));
 
 function shuffle(arr) {
   const a = [...arr];
@@ -1970,14 +1982,20 @@ function FortuneCard({ fortune, flipped, onFlip }) {
 
         {/* front — the fortune */}
         <div className="absolute inset-0 overflow-hidden rounded-xl border border-[#0D3B66]/15 bg-[#FBF6E9] shadow-[0_10px_26px_rgba(13,59,102,0.16)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
-          <span className="absolute left-2.5 top-1.5 font-serif text-[12px] text-[#9b2d3a]">♥</span>
-          <span className="absolute bottom-1.5 right-2.5 font-serif text-[12px] text-[#9b2d3a] [transform:rotate(180deg)]">♥</span>
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-3.5 text-center">
-            <span className="text-[30px] leading-none sm:text-[34px]">{fortune.emoji}</span>
+          <span className="absolute left-2.5 top-1.5 flex flex-col items-center font-serif text-[11px] leading-none text-[#9b2d3a]">
+            {fortune.numeral}
+            <span className="mt-0.5 text-[11px]">{fortune.suit}</span>
+          </span>
+          <span className="absolute bottom-1.5 right-2.5 flex flex-col items-center font-serif text-[11px] leading-none text-[#9b2d3a] [transform:rotate(180deg)]">
+            {fortune.numeral}
+            <span className="mt-0.5 text-[11px]">{fortune.suit}</span>
+          </span>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center">
+            <span className="font-serif text-[26px] leading-none text-[#9b2d3a] sm:text-[30px]">{fortune.suit}</span>
             <span className="font-serifDisplay text-[13px] font-semibold uppercase leading-tight tracking-[0.08em] text-[#0D3B66]">
               {fortune.title}
             </span>
-            <span className="font-sans text-[11px] leading-snug text-[#0D3B66]/75 sm:text-[12px]">
+            <span className="font-serif text-[12px] italic leading-snug text-[#0D3B66]/80 sm:text-[13px]">
               {fortune.text}
             </span>
           </div>
