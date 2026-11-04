@@ -1,0 +1,8 @@
+node_modules
+data/*
+!data/.gitkeep
+config/profile.json
+config/targets.json
+browser-profile/
+*.pdf
+config/resume.txt

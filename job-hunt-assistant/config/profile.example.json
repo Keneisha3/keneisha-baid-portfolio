@@ -1,0 +1,31 @@
+{
+  "name": "Keneisha Baid",
+  "firstName": "Keneisha",
+  "lastName": "Baid",
+  "email": "kbaid@uwaterloo.ca",
+  "phone": "",
+  "location": "Waterloo, ON",
+  "linkedin": "https://www.linkedin.com/in/keneisha-baid/",
+  "github": "https://github.com/Keneisha3",
+  "website": "",
+  "pronouns": "",
+  "currentCompany": "",
+  "schoolName": "University of Waterloo",
+  "program": "Management Engineering",
+  "gradDate": "",
+  "school": "University of Waterloo, Management Engineering (2022 to present)",
+  "headline": "Management Engineering student at the University of Waterloo who builds data, automation, and finance tools",
+  "shortIntro": "Waterloo Management Engineering student",
+  "targetArea": "data, business analysis, and fintech roles",
+  "outreachGoal": "learn about their path, what the team works on, and what makes new grads/co-ops successful there",
+  "highlights": [
+    "Built an Earnings Forecast Tracker and a Portfolio Tracker with interactive analytics",
+    "Nespresso supply chain optimization project (MSE 434)",
+    "Automated workflows with Power Platform, Power Automate, and SharePoint (SPFx)",
+    "Python data work with Pandas, NumPy, and scikit-learn"
+  ],
+  "skills": ["Python", "SQL", "Pandas", "scikit-learn", "Power BI", "Power Automate", "JavaScript", "TypeScript", "R", "AWS", "Azure", "Process Mapping", "Requirements Gathering"],
+  "voice": "Friendly, direct, a little playful. Short sentences.",
+  "resumePdfPath": "config/resume.pdf",
+  "resumeTextPath": "config/resume.txt"
+}

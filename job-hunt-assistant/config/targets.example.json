@@ -1,0 +1,22 @@
+{
+  "_help": "board = the slug in the company's job-board URL: boards.greenhouse.io/<board>, jobs.lever.co/<board>, jobs.ashbyhq.com/<board>",
+  "companies": [
+    { "name": "Stripe", "ats": "greenhouse", "board": "stripe" },
+    { "name": "Databricks", "ats": "greenhouse", "board": "databricks" },
+    { "name": "Plaid", "ats": "lever", "board": "plaid" },
+    { "name": "Cohere", "ats": "ashby", "board": "cohere" },
+    { "name": "Ramp", "ats": "ashby", "board": "ramp" }
+  ],
+  "filters": {
+    "titleInclude": ["intern", "co-op", "coop", "new grad", "analyst", "data", "business", "operations", "product"],
+    "titleExclude": ["senior", "sr.", "staff", "principal", "director", "manager", "lead", "head of", "vp"],
+    "locations": ["Toronto", "Waterloo", "Canada", "Remote", "New York", "San Francisco"],
+    "keywords": ["python", "sql", "excel", "power bi", "tableau", "analytics", "forecast", "automation", "dashboard", "finance", "modeling", "stakeholder", "process", "machine learning"],
+    "minScore": 55
+  },
+  "outreach": {
+    "roles": ["Business Analyst", "Data Analyst", "Data Scientist", "Product Manager", "Strategy"],
+    "schoolSlug": "uwaterloo",
+    "dailyLimit": 15
+  }
+}

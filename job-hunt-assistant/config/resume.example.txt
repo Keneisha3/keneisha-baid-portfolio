@@ -1,0 +1,3 @@
+Paste a plain-text copy of your resume into config/resume.txt (git-ignored).
+Claude reads it to tailor cover letters and messages; it never invents
+experience that isn't here or in profile.json.

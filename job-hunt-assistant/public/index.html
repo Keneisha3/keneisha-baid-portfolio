@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Job Hunt Tracker</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e4e2dc;
+    --accent: #3b5bdb; --accent-ink: #fff; --good: #2b8a3e; --warn: #c2410c; --chip: #efede8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151517; --panel: #1f1f22; --ink: #ededee; --muted: #9a9aa1; --line: #2e2e33;
+      --accent: #7c95ff; --accent-ink: #0f1020; --good: #69db7c; --warn: #ffa94d; --chip: #2a2a2f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 20px 24px 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  main { padding: 0 24px 40px; }
+  button, .btn { font: inherit; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 6px 12px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-block; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button:disabled { opacity: .5; cursor: wait; }
+  input, select, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; width: 100%; }
+  textarea { min-height: 90px; resize: vertical; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 8px 0 18px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat b { font-size: 22px; display: block; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .tab { border: 0; background: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 12px; color: var(--muted); }
+  .tab.on { color: var(--ink); border-color: var(--accent); }
+  .due { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; }
+  .due ul { margin: 4px 0 0; padding-left: 18px; }
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  .col { background: var(--chip); border-radius: 12px; padding: 10px; min-height: 120px; }
+  .col h3 { font-size: 12px; margin: 0 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; display: flex; justify-content: space-between; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; margin-bottom: 8px; cursor: pointer; }
+  .card:hover { border-color: var(--accent); }
+  .card .t { font-weight: 600; }
+  .card .s { color: var(--muted); font-size: 12px; }
+  .pill { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--chip); color: var(--muted); margin-top: 4px; }
+  .pill.warn { color: var(--warn); }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 18px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .panel label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 3px; }
+  dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); width: min(760px, 94vw); max-height: 88vh; padding: 0; }
+  dialog::backdrop { background: rgba(0,0,0,.35); }
+  .dlg { padding: 18px 20px; overflow: auto; max-height: 88vh; }
+  .dlg label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
+  .muted { color: var(--muted); }
+  code { background: var(--chip); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+  .log { font-size: 12px; color: var(--muted); max-height: 220px; overflow: auto; }
+  .log div { padding: 3px 0; border-bottom: 1px dashed var(--line); }
+  .count { font-variant-numeric: tabular-nums; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 600px) { header, main { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Job Hunt Tracker</h1>
+  <div class="row">
+    <button id="discoverBtn" class="primary">Find new jobs</button>
+    <button onclick="load()">Refresh</button>
+  </div>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div id="due"></div>
+  <div class="tabs">
+    <button class="tab on" data-tab="jobs">Applications</button>
+    <button class="tab" data-tab="contacts">Coffee chats</button>
+    <button class="tab" data-tab="activity">Activity</button>
+  </div>
+  <section id="tab-jobs"><div class="board" id="jobsBoard"></div></section>
+  <section id="tab-contacts" hidden><div class="board" id="contactsBoard"></div></section>
+  <section id="tab-activity" hidden><div class="panel log" id="log"></div></section>
+
+  <div class="tools">
+    <div class="panel">
+      <h2>Find people for coffee chats</h2>
+      <div class="row"><input id="peopleCompany" placeholder="Company, e.g. Stripe" style="flex:1" /><button onclick="findPeople()">Search links</button></div>
+      <div id="peopleLinks" style="margin-top:8px"></div>
+      <p class="muted" style="font-size:12px;margin-bottom:0">Tip: drag this to your bookmarks bar, then click it on any LinkedIn profile to add that person here:
+        <a class="btn" id="bookmarklet" href="#">+ Add to tracker</a></p>
+    </div>
+    <div class="panel">
+      <h2>Add a contact</h2>
+      <form id="contactForm">
+        <label>LinkedIn profile URL</label><input name="linkedinUrl" placeholder="https://www.linkedin.com/in/…" />
+        <div class="row"><div style="flex:1"><label>Name</label><input name="name" required /></div><div style="flex:1"><label>Company</label><input name="company" /></div></div>
+        <label>Title</label><input name="title" />
+        <label>Why them? (shared school, team you want, something they posted)</label><input name="reason" />
+        <div style="margin-top:10px"><button class="primary">Add</button></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h2>Add a job manually</h2>
+      <form id="jobForm">
+        <div class="row"><div style="flex:1"><label>Company</label><input name="company" required /></div><div style="flex:1"><label>Title</label><input name="title" required /></div></div>
+        <label>Posting URL</label><input name="url" />
+        <label>Description (paste it so Claude can tailor the draft)</label><textarea name="description"></textarea>
+        <div style="margin-top:10px"><button class="primary">Add</button></div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const LABEL = { found: "Found", drafted: "Drafted", applied: "Applied", interviewing: "Interviewing", offer: "Offer", rejected: "Rejected", skipped: "Skipped",
+  to_contact: "To contact", sent: "Invite sent", accepted: "Connected", replied: "Replied", chat_booked: "Chat booked", chat_done: "Chat done", no_response: "No response" };
+const today = new Date().toISOString().slice(0, 10);
+let S = null;
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); }
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+async function load() {
+  S = await api("/api/state");
+  render();
+}
+
+function render() {
+  const js = S.stats.jobs, cs = S.stats.contacts;
+  const active = js.applied + js.interviewing + js.offer;
+  const sent = cs.sent + cs.accepted + cs.replied + cs.chat_booked + cs.chat_done + cs.no_response;
+  const replied = cs.replied + cs.chat_booked + cs.chat_done;
+  $("#stats").innerHTML = [
+    [js.applied + js.interviewing + js.offer + js.rejected, "applications sent"],
+    [js.interviewing, "interviewing"],
+    [js.offer, "offers"],
+    [sent, "LinkedIn invites sent"],
+    [sent ? Math.round((replied / sent) * 100) + "%" : "–", "reply rate"],
+    [cs.chat_booked + cs.chat_done, "coffee chats booked"],
+    [S.stats.sentToday, "invites sent today"],
+  ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
+
+  const dj = S.due.jobs, dc = S.due.contacts;
+  $("#due").innerHTML = dj.length || dc.length ? `<div class="due"><h2 style="color:var(--warn)">Follow up today</h2><ul>
+    ${dj.map((j) => `<li><a href="#" data-job="${j.id}">${esc(j.company)} · ${esc(j.title)}</a> <span class="muted">applied ${j.appliedAt?.slice(0, 10)}: email the recruiter or message someone on the team</span></li>`).join("")}
+    ${dc.map((c) => `<li><a href="#" data-contact="${c.id}">${esc(c.name)}</a> <span class="muted">${LABEL[c.status]} ${(c.sentAt || "").slice(0, 10)}: send the nudge (<code>message ${c.id} --nudge</code>)</span></li>`).join("")}
+  </ul></div>` : "";
+
+  const jobCols = ["found", "drafted", "applied", "interviewing", "offer", "rejected"];
+  $("#jobsBoard").innerHTML = jobCols.map((st) => {
+    const items = S.jobs.filter((j) => j.status === st).sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
+    return `<div class="col"><h3>${LABEL[st]} <span class="count">${items.length}</span></h3>${items.map(jobCard).join("") || '<div class="muted" style="font-size:12px">—</div>'}</div>`;
+  }).join("");
+
+  const cCols = ["to_contact", "drafted", "sent", "accepted", "replied", "chat_booked", "chat_done"];
+  $("#contactsBoard").innerHTML = cCols.map((st) => {
+    const items = S.contacts.filter((c) => c.status === st);
+    return `<div class="col"><h3>${LABEL[st]} <span class="count">${items.length}</span></h3>${items.map(contactCard).join("") || '<div class="muted" style="font-size:12px">—</div>'}</div>`;
+  }).join("");
+
+  $("#log").innerHTML = S.log.map((l) => `<div>${l.at.slice(0, 16).replace("T", " ")} · ${esc(l.message)}</div>`).join("") || "No activity yet.";
+}
+
+const jobCard = (j) => `<div class="card" data-job="${j.id}"><div class="t">${esc(j.company)}</div><div class="s">${esc(j.title)}</div>
+  ${j.matchScore != null ? `<span class="pill">match ${j.matchScore}</span> ` : ""}${j.followUpOn && j.followUpOn <= today && j.status === "applied" ? '<span class="pill warn">follow up</span>' : ""}</div>`;
+const contactCard = (c) => `<div class="card" data-contact="${c.id}"><div class="t">${esc(c.name)}</div><div class="s">${esc(c.title || "")}${c.company ? " @ " + esc(c.company) : ""}</div>
+  ${c.followUpOn && c.followUpOn <= today && ["sent", "accepted"].includes(c.status) ? '<span class="pill warn">nudge</span>' : ""}${c.chatAt ? `<span class="pill">chat ${esc(c.chatAt)}</span>` : ""}</div>`;
+
+document.addEventListener("click", (e) => {
+  const j = e.target.closest("[data-job]"), c = e.target.closest("[data-contact]"), tab = e.target.closest("[data-tab]");
+  if (j) { e.preventDefault(); openJob(j.dataset.job); }
+  else if (c) { e.preventDefault(); openContact(c.dataset.contact); }
+  else if (tab) {
+    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("on", t === tab));
+    ["jobs", "contacts", "activity"].forEach((n) => ($("#tab-" + n).hidden = n !== tab.dataset.tab));
+  }
+});
+
+const opts = (list, cur) => list.map((s) => `<option value="${s}" ${s === cur ? "selected" : ""}>${LABEL[s]}</option>`).join("");
+const copyBtn = (id) => `<button type="button" onclick="navigator.clipboard.writeText(document.getElementById('${id}').value);toast('Copied')">Copy</button>`;
+
+function openJob(id) {
+  const j = S.jobs.find((x) => x.id === id), d = j.draft || {};
+  $("#dlgBody").innerHTML = `
+    <div class="row" style="justify-content:space-between"><div><h1>${esc(j.company)}</h1><div class="muted">${esc(j.title)} · ${esc(j.location || "")}</div></div>
+      <div class="row">${j.url ? `<a class="btn" target="_blank" rel="noopener" href="${esc(j.url)}">Posting ↗</a>` : ""}<button onclick="dlg.close()">Close</button></div></div>
+    ${j.matchReasons ? `<p class="muted" style="font-size:12px">Why it matched: ${esc(j.matchReasons.join(" · "))}</p>` : ""}
+    <div class="row"><div style="flex:1"><label>Status</label><select id="f-status">${opts(S.statuses.jobs, j.status)}</select></div>
+      <div style="flex:1"><label>Follow up on</label><input type="date" id="f-follow" value="${j.followUpOn || ""}" /></div></div>
+    <p style="margin:14px 0 0"><button id="draftBtn" class="primary" onclick="draft('jobs','${j.id}')">${j.draft ? "Re-draft" : "Draft"} with Claude</button>
+      <span class="muted" style="font-size:12px"> Autofill the form: <code>npm run jha -- apply ${j.id}</code></span></p>
+    ${j.draft ? `<p class="muted">Fit ${d.fitScore ?? "?"} · ${esc(d.fitSummary || "")}</p>` : ""}
+    <label>Cover letter ${copyBtn("f-cl")}</label><textarea id="f-cl" style="min-height:220px">${esc(d.coverLetter || "")}</textarea>
+    <label>Why this company ${copyBtn("f-wc")}</label><textarea id="f-wc">${esc(d.whyCompany || "")}</textarea>
+    <label>Why you're a fit ${copyBtn("f-wr")}</label><textarea id="f-wr">${esc(d.whyRole || "")}</textarea>
+    <label>Notes (recruiter name, referral, interview dates…)</label><textarea id="f-notes">${esc(j.notes || "")}</textarea>
+    <p><button class="primary" onclick="saveJob('${j.id}')">Save</button></p>`;
+  dlg.showModal();
+}
+
+async function saveJob(id) {
+  const j = S.jobs.find((x) => x.id === id);
+  const draft = j.draft || $("#f-cl").value ? { ...(j.draft || {}), coverLetter: $("#f-cl").value, whyCompany: $("#f-wc").value, whyRole: $("#f-wr").value } : undefined;
+  await api(`/api/jobs/${id}`, { status: $("#f-status").value, followUpOn: $("#f-follow").value || null, notes: $("#f-notes").value, ...(draft ? { draft } : {}) });
+  dlg.close(); toast("Saved"); load();
+}
+
+function openContact(id) {
+  const c = S.contacts.find((x) => x.id === id), d = c.draft || {};
+  const jobsOpts = `<option value="">—</option>` + S.jobs.filter((j) => !["rejected", "skipped"].includes(j.status)).map((j) => `<option value="${j.id}" ${j.id === c.jobId ? "selected" : ""}>${esc(j.company)} · ${esc(j.title)}</option>`).join("");
+  $("#dlgBody").innerHTML = `
+    <div class="row" style="justify-content:space-between"><div><h1>${esc(c.name)}</h1><div class="muted">${esc(c.title || "")}${c.company ? " @ " + esc(c.company) : ""}</div></div>
+      <div class="row">${c.linkedinUrl ? `<a class="btn" target="_blank" rel="noopener" href="${esc(c.linkedinUrl)}">Profile ↗</a>` : ""}<button onclick="dlg.close()">Close</button></div></div>
+    <div class="row"><div style="flex:1"><label>Status</label><select id="f-status">${opts(S.statuses.contacts, c.status)}</select></div>
+      <div style="flex:1"><label>Follow up on</label><input type="date" id="f-follow" value="${c.followUpOn || ""}" /></div>
+      <div style="flex:1"><label>Coffee chat date</label><input type="date" id="f-chat" value="${c.chatAt || ""}" /></div></div>
+    <label>Why them</label><input id="f-reason" value="${esc(c.reason || "")}" />
+    <label>Related application</label><select id="f-job">${jobsOpts}</select>
+    <p style="margin:14px 0 0"><button id="draftBtn" class="primary" onclick="draft('contacts','${c.id}')">${c.draft ? "Re-draft" : "Draft"} with Claude</button>
+      <span class="muted" style="font-size:12px"> Paste into LinkedIn for you: <code>npm run jha -- connect ${c.id}</code></span></p>
+    <label>Connection note <span id="cnt" class="muted"></span> ${copyBtn("f-note")}</label><textarea id="f-note" oninput="cnt()">${esc(d.connectionNote || "")}</textarea>
+    <label>Coffee-chat ask (after they accept) ${copyBtn("f-fu")}</label><textarea id="f-fu">${esc(d.followUp || "")}</textarea>
+    <label>Nudge ${copyBtn("f-nudge")}</label><textarea id="f-nudge" style="min-height:60px">${esc(d.nudge || "")}</textarea>
+    <label>Notes (what you talked about, who they referred you to…)</label><textarea id="f-notes">${esc(c.notes || "")}</textarea>
+    <p><button class="primary" onclick="saveContact('${c.id}')">Save</button></p>`;
+  cnt(); dlg.showModal();
+}
+function cnt() { const n = $("#f-note")?.value.length ?? 0; $("#cnt").textContent = `${n}/300`; $("#cnt").style.color = n > 300 ? "var(--warn)" : ""; }
+
+async function saveContact(id) {
+  const c = S.contacts.find((x) => x.id === id);
+  const draft = { ...(c.draft || {}), connectionNote: $("#f-note").value, followUp: $("#f-fu").value, nudge: $("#f-nudge").value };
+  await api(`/api/contacts/${id}`, { status: $("#f-status").value, followUpOn: $("#f-follow").value || null, chatAt: $("#f-chat").value || null,
+    reason: $("#f-reason").value, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
+  dlg.close(); toast("Saved"); load();
+}
+
+async function draft(kind, id) {
+  const b = $("#draftBtn"); b.disabled = true; b.textContent = "Drafting…";
+  try { await api(`/api/${kind}/${id}/draft`, {}); await load(); kind === "jobs" ? openJob(id) : openContact(id); }
+  catch (e) { toast(e.message); b.disabled = false; b.textContent = "Draft with Claude"; }
+}
+
+async function findPeople() {
+  const co = $("#peopleCompany").value.trim(); if (!co) return;
+  const links = await api("/api/people?company=" + encodeURIComponent(co));
+  $("#peopleLinks").innerHTML = links.map((l) => `<div><a target="_blank" rel="noopener" href="${esc(l.url)}">${esc(l.label)} ↗</a></div>`).join("");
+  $("#contactForm").company.value = co;
+}
+
+$("#contactForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  try { await api("/api/contacts", data); e.target.reset(); toast("Contact added"); load(); } catch (err) { toast(err.message); }
+});
+$("#jobForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try { await api("/api/jobs", Object.fromEntries(new FormData(e.target))); e.target.reset(); toast("Job added"); load(); } catch (err) { toast(err.message); }
+});
+$("#discoverBtn").addEventListener("click", async (e) => {
+  e.target.disabled = true; e.target.textContent = "Searching…";
+  try { const r = await api("/api/discover", {}); toast(`${r.added} new matching job(s) out of ${r.fetched} postings`); load(); }
+  catch (err) { toast(err.message); }
+  e.target.disabled = false; e.target.textContent = "Find new jobs";
+});
+
+// Bookmarklet: run on a LinkedIn profile → opens this page with the form pre-filled.
+const origin = location.origin;
+$("#bookmarklet").href = "javascript:" + encodeURIComponent(`(()=>{const n=(document.querySelector('main h1')||{}).innerText||document.title.split(' | ')[0];const t=(document.querySelector('main .text-body-medium')||{}).innerText||'';const u=location.href.split('?')[0];window.open('${origin}/#add?'+new URLSearchParams({url:u,name:n.trim(),title:t.trim()}),'_blank')})()`);
+$("#bookmarklet").addEventListener("click", (e) => { e.preventDefault(); toast("Drag me to your bookmarks bar"); });
+
+function fromHash() {
+  if (!location.hash.startsWith("#add?")) return;
+  const p = new URLSearchParams(location.hash.slice(5)), f = $("#contactForm");
+  f.linkedinUrl.value = p.get("url") || ""; f.name.value = p.get("name") || "";
+  const title = p.get("title") || "", at = title.split(/ (?:at|@) /i);
+  f.title.value = at[0] || title; if (at[1]) f.company.value = at[1];
+  f.reason.focus(); f.scrollIntoView({ behavior: "smooth" });
+  history.replaceState(null, "", "/");
+}
+
+const dlg = $("#dlg");
+load().then(fromHash);
+</script>
+</body>
+</html>

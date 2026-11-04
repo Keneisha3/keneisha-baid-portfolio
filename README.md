@@ -31,3 +31,7 @@ repo and Vercel auto-detects Vite (build command `npm run build`, output `dist`)
 
 The chat widget is fully client-side, a small built-in Q&A, so there are no API
 keys or backend to configure.
+
+## Also in this repo
+
+`job-hunt-assistant/` is a separate local tool, not part of the site build. It finds jobs, drafts applications, autofills forms, lines up LinkedIn coffee chats, and tracks everything. See its [README](job-hunt-assistant/README.md).
