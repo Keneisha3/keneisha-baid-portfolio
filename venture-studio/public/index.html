@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Venture Studio</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Venture Studio</div>
+      <p class="mode" id="mode">Checking AI status…</p>
+      <form id="new-idea" class="new-idea">
+        <label for="idea">New business idea</label>
+        <textarea id="idea" rows="4" placeholder="e.g. An app that helps nail techs book clients and sell aftercare kits"></textarea>
+        <button class="btn primary" type="submit">Analyze &amp; build</button>
+      </form>
+      <h2 class="side-h">Your ventures</h2>
+      <ul id="projects" class="projects"></ul>
+    </aside>
+
+    <main id="main" class="main">
+      <section class="empty">
+        <h1>Turn an idea into a live, monitored product</h1>
+        <ol class="how">
+          <li><b>Analyze:</b> researches the market, customers and competitors on the web, then scores the idea.</li>
+          <li><b>Plan:</b> writes the MVP spec, brand, KPIs and go-to-market.</li>
+          <li><b>Build:</b> generates a working web app with analytics built in.</li>
+          <li><b>Launch:</b> hosts it here, or deploys it to Vercel.</li>
+          <li><b>Monitor:</b> tracks visitors and signups, re-checks the market on a schedule, and recommends what to change next.</li>
+        </ol>
+        <p class="muted">Type an idea on the left to start.</p>
+      </section>
+    </main>
+  </div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

@@ -31,3 +31,7 @@ repo and Vercel auto-detects Vite (build command `npm run build`, output `dist`)
 
 The chat widget is fully client-side, a small built-in Q&A, so there are no API
 keys or backend to configure.
+
+## Venture Studio
+
+`venture-studio/` is a separate tool (not part of the portfolio build) that takes a business idea through market analysis, an MVP plan, an auto-built web app, launch and ongoing monitoring. See [venture-studio/README.md](venture-studio/README.md).

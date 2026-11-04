@@ -1,0 +1,17 @@
+{
+  "name": "venture-studio",
+  "version": "1.0.0",
+  "description": "Idea -> market analysis -> MVP app -> launch -> monitoring, powered by Claude",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  },
+  "type": "module",
+  "private": true
+}
