@@ -22,7 +22,7 @@ const { loadProfile } = await import("../src/config.js");
 
 test("outreach draft goes through Claude with structured output + fallback", async () => {
   try {
-    const d = await draftOutreach(loadProfile(), { name: "Ada", title: "Analyst", company: "Acme" });
+    const d = await draftOutreach({ ...loadProfile(), ai: "api" }, { name: "Ada", title: "Analyst", company: "Acme" });
     assert.equal(d.by, "claude-opus-5-5");
     assert.match(d.connectionNote, /Waterloo/);
     assert.equal(lastReq.body.model, "claude-opus-5-5");

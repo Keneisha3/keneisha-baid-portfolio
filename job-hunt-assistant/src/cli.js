@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import * as db from "./db.js";
 import { loadProfile, loadTargets } from "./config.js";
 import { CONFIG_DIR } from "./paths.js";
-import { discover, draftJob, draftContact, draftMany, importLinks, todayPlan, researchMany, matches } from "./commands.js";
+import { discover, draftJob, draftContact, draftMany, importLinks, todayPlan, researchMany, matches, importLinkedIn, checkLinks } from "./commands.js";
 import { importPipeline } from "./pipeline.js";
 import { buildPack, applyPack, nextForPack } from "./manual.js";
 import { engineFor, canResearch } from "./ai.js";
@@ -36,6 +36,7 @@ FIND JOBS
   add-job <url> [<url>...]       Import postings from any career site or LinkedIn job link
   import-pipeline [file]         Load a tracker table (defaults to seed/winter-2027-pipeline.md)
   import-jobs <links.txt>        Same, one link per line
+  check-links                    Re-check saved postings; closed/expired ones move to skipped
   jobs [--status drafted] [--category consulting]
 
 APPLY
@@ -190,7 +191,7 @@ async function main() {
     case "import-jobs": {
       const all = (cmd === "add-job" ? pos : fs.readFileSync(pos[0], "utf8").split(/\s+/)).filter((u) => /^https?:\/\//.test(u));
       const li = all.filter(isLinkedInJob), urls = all.filter((u) => !isLinkedInJob(u));
-      if (li.length) await importLinkedIn(li, loadTargets());
+      if (li.length) console.log(`Imported ${(await importLinkedIn(li, loadTargets())).added} LinkedIn job(s).`);
       if (!urls.length) return;
       const r = await importLinks(urls, loadTargets());
       console.log(`Imported ${r.added} new job(s) (${r.read} read, ${r.failed.length} failed).`);
@@ -203,6 +204,9 @@ async function main() {
       console.log("Cold-pitch targets have no posting: find a person with `people <company>`, then add-contact --email ... --job <id>.");
       return;
     }
+    case "check-links":
+      await checkLinks();
+      return;
     case "jobs": {
       const jobs = db.read().jobs.filter((j) => (!opt.status || j.status === opt.status) && matches(j, F())).sort(byScore);
       jobs.forEach((j) => console.log(fmtJob(j)));
@@ -454,36 +458,6 @@ async function emailBatch() {
     console.log(`  ✓ ${sent.length} tracked (nudge reminder in 5 days)`);
   }
   await browser.close();
-}
-
-/** LinkedIn job links: opened one at a time in your logged-in browser; follows Apply to the company's site. */
-async function importLinkedIn(urls, targets) {
-  const browser = await openBrowser();
-  const page = browser.pages()[0] || (await browser.newPage());
-  await ensureLoggedIn(page);
-  let added = 0;
-  for (const [k, url] of [...new Set(urls)].entries()) {
-    try {
-      const li = await resolveLinkedInJob(browser, page, url);
-      let job;
-      if (li.externalUrl && !/linkedin\.com/.test(li.externalUrl)) {
-        job = await importJobUrl(li.externalUrl).catch(() => null);
-      }
-      job = {
-        ...(job || { source: "linkedin", externalId: url, url, applyUrl: li.externalUrl || url, manualApply: true }),
-        title: job?.title || li.title, company: job?.company || li.company, location: job?.location || li.location,
-        description: job?.description?.length > 200 ? job.description : li.description,
-        linkedinUrl: url, easyApply: li.easyApply,
-        notes: li.easyApply ? "Easy Apply on LinkedIn: apply there (takes a minute)." : li.externalUrl ? "" : "Couldn't find the company's apply link; apply from LinkedIn.",
-      };
-      const { score, reasons } = scoreJob(job, { ...targets.filters, titleRequire: [], titleInclude: [], locations: [] });
-      added += db.upsertJobs([{ ...job, matchScore: score || null, matchReasons: reasons }]);
-      console.log(`  [${k + 1}/${urls.length}] ${job.company} · ${job.title}${li.easyApply ? "  (Easy Apply)" : li.externalUrl ? "  → company site" : ""}`);
-    } catch (e) { console.log(`  ! ${url}: ${e.message.split("\n")[0]}`); }
-    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 2000)); // human pace
-  }
-  await browser.close();
-  console.log(`Imported ${added} LinkedIn job(s).`);
 }
 
 async function emailFollowups() {

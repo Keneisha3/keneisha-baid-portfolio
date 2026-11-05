@@ -3,7 +3,8 @@ import * as db from "./db.js";
 import { fetchAll, mapLimit } from "./jobs/sources.js";
 import { scoreJob, titlePasses } from "./jobs/score.js";
 import { importJobUrl } from "./jobs/import.js";
-import { draftApplication, draftOutreach, researchContact, engineFor } from "./ai.js";
+import { draftApplication, draftOutreach, researchContact, engineFor, runClaudeCode } from "./ai.js";
+import { buildPack, applyPack, packSchema } from "./manual.js";
 
 export const matches = (o, { category, region, size } = {}) =>
   (!category || o.category === category) && (!region || o.region === region) && (!size || (o.size || o.companySize) === size);
@@ -66,7 +67,9 @@ export async function draftContact(profile, contactId, opts = {}) {
 }
 
 /** Drafts many at once (Claude calls in parallel). */
-export async function draftMany(profile, kind, ids, { concurrency, log = console.log, engine } = {}) {
+export async function draftMany(profile, kind, ids, { concurrency, log = console.log, engine, batch = 8 } = {}) {
+  // With a Claude subscription, draft 8 per request: ~8x less of your usage limit than one request per item.
+  if (!engine && engineFor(profile) === "claude-code" && ids.length > 1) return draftBatchesClaudeCode(profile, kind, ids, { batch, log });
   let done = 0;
   concurrency ??= engineFor(profile) === "claude-code" ? 2 : 4;
   return mapLimit(ids, concurrency, async (id) => {
@@ -103,4 +106,81 @@ export async function researchMany(ids, { concurrency = 3, log = console.log, pr
       log(`  [${++done}/${ids.length}] ${c.company || c.name}`);
     } catch (e) { log(`  [${++done}/${ids.length}] ! ${c.company || c.name}: ${e.message}`); }
   });
+}
+
+async function draftBatchesClaudeCode(profile, kind, ids, { batch, log }) {
+  const groups = [];
+  for (let i = 0; i < ids.length; i += batch) groups.push(ids.slice(i, i + batch));
+  let saved = 0;
+  await mapLimit(groups, 2, async (group, g) => {
+    const s = db.read();
+    const items = group.map((id) => s[kind].find((x) => x.id === id)).filter(Boolean);
+    try {
+      const out = await runClaudeCode(buildPack(kind, items, profile), { schema: packSchema(kind) });
+      const r = applyPack(out.structured_output?.items ?? JSON.parse(out.result).items, "claude-code");
+      saved += r.saved.length;
+      r.saved.forEach((x) => log(`  ✓ ${x}`));
+      r.errors.forEach((x) => log(`  ! ${x}`));
+      const missing = group.filter((id) => !db.read()[kind].find((x) => x.id === id)?.draft);
+      if (missing.length) { log(`  (${missing.length} missing from batch ${g + 1}; using templates)`); await draftMany(profile, kind, missing, { engine: "template", log }); }
+    } catch (e) {
+      log(`  ! batch ${g + 1} failed (${e.message}); using templates for it`);
+      await draftMany(profile, kind, group, { engine: "template", log });
+    }
+  });
+  log(`Drafted ${saved} with Claude.`);
+}
+
+/** LinkedIn job links: opened one at a time in your logged-in browser; follows Apply to the company's site. */
+export async function importLinkedIn(urls, targets, { log = console.log } = {}) {
+  const { openBrowser } = await import("./browser.js");
+  const { ensureLoggedIn, resolveLinkedInJob } = await import("./outreach/linkedin.js");
+  const browser = await openBrowser();
+  const page = browser.pages()[0] || (await browser.newPage());
+  await ensureLoggedIn(page);
+  let added = 0;
+  const failed = [];
+  const list = [...new Set(urls)];
+  for (const [k, url] of list.entries()) {
+    try {
+      const li = await resolveLinkedInJob(browser, page, url);
+      let job = null;
+      if (li.externalUrl && !/linkedin\.com/.test(li.externalUrl)) job = await importJobUrl(li.externalUrl).catch(() => null);
+      job = {
+        ...(job || { source: "linkedin", externalId: url, url, applyUrl: li.externalUrl || url, manualApply: true }),
+        title: job?.title || li.title, company: job?.company || li.company, location: job?.location || li.location,
+        description: job?.description?.length > 200 ? job.description : li.description,
+        linkedinUrl: url, easyApply: li.easyApply,
+        notes: li.easyApply ? "Easy Apply on LinkedIn: apply there (takes a minute)." : li.externalUrl ? "" : "Couldn't find the company's apply link; apply from LinkedIn.",
+      };
+      const { score, reasons } = scoreJob(job, { ...targets.filters, titleRequire: [], titleInclude: [], locations: [] });
+      added += db.upsertJobs([{ ...job, matchScore: score || null, matchReasons: reasons }]);
+      log(`  [${k + 1}/${list.length}] ${job.company} · ${job.title}${li.easyApply ? "  (Easy Apply)" : li.externalUrl ? "  → company site" : ""}`);
+    } catch (e) { failed.push({ url, error: e.message.split("\n")[0] }); log(`  ! ${url}: ${e.message.split("\n")[0]}`); }
+    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 2000)); // human pace
+  }
+  await browser.close();
+  return { added, read: list.length - failed.length, failed };
+}
+
+/** Re-checks saved postings and moves dead ones (404, "no longer accepting") to skipped. */
+export async function checkLinks({ log = console.log, statuses = ["found", "drafted"] } = {}) {
+  const jobs = db.read().jobs.filter((j) => statuses.includes(j.status) && j.url && !/linkedin\.com/.test(j.url) && !j.pitch);
+  const DEAD = /no longer (accepting|available|open)|position (has been|is) (filled|closed)|job (is )?(not found|closed|expired)|this (job|posting) (has )?(expired|closed)|page (you('re| are) looking for|not found)/i;
+  let closed = 0;
+  await mapLimit(jobs, 6, async (j) => {
+    let verdict = "";
+    try {
+      const res = await fetch(j.url, { headers: { "User-Agent": "Mozilla/5.0 (Macintosh) Chrome/130 Safari/537.36" }, redirect: "follow" });
+      if ([404, 410].includes(res.status)) verdict = `HTTP ${res.status}`;
+      else if (res.ok) { const html = (await res.text()).slice(0, 200000); const m = html.replace(/<[^>]+>/g, " ").match(DEAD); if (m) verdict = `"${m[0]}"`; }
+    } catch { /* network hiccup: leave it alone */ }
+    if (verdict) {
+      closed++;
+      db.updateJob(j.id, { status: "skipped", notes: `${j.notes ? j.notes + " · " : ""}Closed (${verdict}, checked ${db.today()})` });
+      log(`  ✗ ${j.company} · ${j.title}: ${verdict}`);
+    }
+  });
+  log(`Checked ${jobs.length} postings; ${closed} closed.`);
+  return { checked: jobs.length, closed };
 }

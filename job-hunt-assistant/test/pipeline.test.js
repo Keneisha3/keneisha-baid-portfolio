@@ -34,7 +34,7 @@ test("the seed tracker imports with sizes, pitches, closed rows, and is idempote
 
 test("London: UK work questions use their own answers; targets carry region and size", () => {
   const p = loadProfile();
-  assert.equal(screeningAnswer("Do you have the right to work in the UK?", p), "");
+  assert.equal(screeningAnswer("Do you have the right to work in the UK?", p), "Yes");
   assert.equal(screeningAnswer("Will you require visa sponsorship to work in the United Kingdom?", p), "No");
   assert.equal(screeningAnswer("Are you legally authorized to work in Canada?", p), "Yes");
   const t = loadTargets();
@@ -58,9 +58,9 @@ test("research uses Claude web search; outreach drafts carry a 3-email sequence"
   try {
     const { researchMany, draftContact } = await import("../src/commands.js");
     const c = db.addContact({ name: "Bree team", company: "Bree", email: "founders@bree.com", companySize: "startup" });
-    await researchMany([c.id], { log: () => {} });
+    await researchMany([c.id], { log: () => {}, profile: { ...loadProfile(), ai: "api" } });
     assert.equal(reqs[0].tools[0].type, "web_search_20260209");
-    const d = await draftContact(loadProfile(), c.id);
+    const d = await draftContact({ ...loadProfile(), ai: "api" }, c.id);
     assert.equal(d.draft.emailFollowUp2, "f2");
     assert.match(reqs[1].messages[0].content, /Launched Bree Credit/);
     assert.match(reqs[1].messages[0].content, /VALUE-FIRST/);

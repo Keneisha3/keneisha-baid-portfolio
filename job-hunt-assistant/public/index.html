@@ -71,6 +71,7 @@
   <h1>Job Hunt Tracker</h1>
   <div class="row">
     <button id="discoverBtn" class="primary">Find new jobs</button>
+    <button id="checkBtn">Remove closed postings</button>
     <button onclick="load()">Refresh</button>
   </div>
 </header>
@@ -115,7 +116,7 @@
     </div>
     <div class="panel">
       <h2>Paste job links</h2>
-      <p class="muted" style="font-size:12px;margin-top:0">Any career site (Workday, bank and airline sites, Greenhouse…). One per line, up to 200.</p>
+      <p class="muted" style="font-size:12px;margin-top:0">Any career site or LinkedIn job link, one per line, up to 200. LinkedIn links open in your logged-in Chrome window and follow "Apply" to the company's site.</p>
       <textarea id="links" placeholder="https://jobs.bombardier.com/job/...&#10;https://careers.aircanada.com/..."></textarea>
       <div style="margin-top:10px"><button class="primary" id="importBtn">Import</button> <span id="importMsg" class="muted" style="font-size:12px"></span></div>
     </div>
@@ -313,6 +314,11 @@ async function savePack() {
     if (r.saved.length) { $("#packReply").value = ""; load(); }
   } catch (e) { $("#packMsg").textContent = e.message; }
 }
+$("#checkBtn").addEventListener("click", async (e) => {
+  e.target.disabled = true; e.target.textContent = "Checking…";
+  try { const r = await api("/api/check-links", {}); toast(`${r.closed} closed posting(s) moved to skipped`); load(); } catch (err) { toast(err.message); }
+  e.target.disabled = false; e.target.textContent = "Remove closed postings";
+});
 $("#importBtn").addEventListener("click", async (e) => {
   const urls = $("#links").value.split(/\s+/).filter(Boolean);
   if (!urls.length) return;

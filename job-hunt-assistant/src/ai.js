@@ -32,7 +32,7 @@ export function engineFor(profile = {}) {
 export const canResearch = (profile) => ["api", "claude-code"].includes(engineFor(profile));
 
 /** Runs the Claude Code CLI headlessly. Uses whatever account `claude` is logged in with. */
-function runClaudeCode(prompt, { schema, tools = "" } = {}) {
+export function runClaudeCode(prompt, { schema, tools = "" } = {}) {
   const args = ["-p", "--output-format", "json", "--no-session-persistence", "--tools", tools];
   if (tools) args.push("--allowedTools", tools);
   if (schema) args.push("--json-schema", JSON.stringify(schema));

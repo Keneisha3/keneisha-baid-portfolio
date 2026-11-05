@@ -33,11 +33,21 @@ ${blocks.join("\n\n")}
 `;
 }
 
-/** Saves the JSON reply from claude.ai. Accepts code fences and stray text around the array. */
-export function applyPack(text) {
-  const start = text.indexOf("["), end = text.lastIndexOf("]");
-  if (start < 0 || end < start) throw new Error("couldn't find a JSON array in what you pasted");
-  const arr = JSON.parse(text.slice(start, end + 1));
+/** JSON schema for a whole batch: { items: [{ id, ...draft fields }] }. */
+export function packSchema(kind) {
+  const one = jsonSchemaOf(kind === "jobs" ? ApplicationDraft : OutreachDraft);
+  return { type: "object", additionalProperties: false, required: ["items"], properties: { items: { type: "array",
+    items: { ...one, properties: { id: { type: "string" }, ...one.properties }, required: ["id", ...(one.required || [])] } } } };
+}
+
+/** Saves the JSON reply from claude.ai (or an array). Accepts code fences and stray text around the array. */
+export function applyPack(text, by = "claude.ai") {
+  let arr = Array.isArray(text) ? text : null;
+  if (!arr) {
+    const start = text.indexOf("["), end = text.lastIndexOf("]");
+    if (start < 0 || end < start) throw new Error("couldn't find a JSON array in what you pasted");
+    arr = JSON.parse(text.slice(start, end + 1));
+  }
   const state = db.read();
   const saved = [], errors = [];
   for (const o of arr) {
@@ -46,7 +56,7 @@ export function applyPack(text) {
     if (!job && !contact) { errors.push(`${o.id}: no job or contact with that id`); continue; }
     const parsed = (job ? ApplicationDraft : OutreachDraft).safeParse(o);
     if (!parsed.success) { errors.push(`${o.id}: ${z.prettifyError(parsed.error).split("\n")[0]}`); continue; }
-    const draft = { ...parsed.data, by: "claude.ai", at: db.now() };
+    const draft = { ...parsed.data, by, at: db.now() };
     if (contact && draft.connectionNote.length > NOTE_LIMIT) errors.push(`${o.id}: connection note is ${draft.connectionNote.length} chars, trim it before sending`);
     if (job) db.updateJob(job.id, { draft, status: job.status === "found" ? "drafted" : job.status });
     else db.updateContact(contact.id, { draft, status: contact.status === "to_contact" ? "drafted" : contact.status });

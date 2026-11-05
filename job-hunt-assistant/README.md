@@ -27,10 +27,10 @@ All data stays on your machine in `data/tracker.json`.
 |---|---|---|---|
 | `template` (default with no key) | Free | Decent. Picks your most relevant highlights and the "angle" you wrote for that kind of role, and quotes the posting | Bulk applications |
 | **claude.ai copy-paste** (`prompt-pack` → paste in chat → `paste-drafts`, or the dashboard panel) | Free | Claude-quality, 8 items per paste | Your top jobs and all outreach |
-| `claude-code` | Included in Claude Pro/Max | Claude-quality, fully automatic (about 30s per draft), and `research` can search the web | Hands-off, if you have a subscription |
+| `claude-code` | Included in Claude Pro/Max | Claude-quality, fully automatic: 8 drafts per request (about 30s), and `research` can search the web | Hands-off, if you have a subscription |
 | `api` | Pay per use | Claude-quality, fastest | Only if you want it |
 
-For `claude-code`: `npm install -g @anthropic-ai/claude-code`, run `claude` once to log in with your Claude account, then set `"ai": "claude-code"`. It counts against your plan's usage limits, so `apply` uses free templates for bulk jobs. Run `draft --top 20` for the ones that matter.
+For `claude-code`: `npm install -g @anthropic-ai/claude-code`, run `claude` once to log in with your Claude account, then set `"ai": "claude-code"`. Batching keeps it light on your plan's usage limits: 100 jobs is about 13 requests. `draft --all` before `apply` gets everything Claude-written. If you hit your limit, it falls back to templates.
 
 Recommended split:
 - Free templates for the bulk applications. Many forms don't even ask for a cover letter.

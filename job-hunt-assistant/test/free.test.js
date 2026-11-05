@@ -85,3 +85,44 @@ test("LinkedIn jobs: searches filter to internships posted this week; links norm
   assert.equal(li.linkedInJobUrl("https://www.linkedin.com/jobs/view/finance-intern-at-acme-4012345678?trk=x"), "https://www.linkedin.com/jobs/view/4012345678/");
   assert.equal(li.linkedInJobUrl("https://www.linkedin.com/jobs/search/?currentJobId=4012345678"), "https://www.linkedin.com/jobs/view/4012345678/");
 });
+
+test("Claude Pro: many jobs are drafted 8 per request, with template fallback for gaps", async () => {
+  const fake = path.join(tmp, "claude-batch");
+  const calls = path.join(tmp, "calls.txt");
+  fs.writeFileSync(fake, `#!/usr/bin/env node
+const fs=require("fs");let input="";process.stdin.on("data",d=>input+=d).on("end",()=>{
+fs.appendFileSync(${JSON.stringify(calls)},"x");
+const ids=[...input.matchAll(/### id: (\\w+)/g)].map(m=>m[1]);
+const items=ids.slice(0, ids.length-1).map(id=>({id,fitScore:75,fitSummary:"s",coverLetter:"Dear team from batch",whyCompany:"w",whyRole:"r"}));
+console.log(JSON.stringify({type:"result",is_error:false,result:"",structured_output:{items}}));});`);
+  fs.chmodSync(fake, 0o755);
+  process.env.JHA_CLAUDE_BIN = fake;
+  try {
+    const { draftMany } = await import("../src/commands.js");
+    db.upsertJobs(Array.from({ length: 10 }, (_, i) => ({ source: "b", externalId: String(i), company: `Co${i}`, title: "Analyst Intern", description: "Excel" })));
+    const ids = db.read().jobs.filter((j) => j.source === "b").map((j) => j.id);
+    await draftMany({ ...profile, ai: "claude-code" }, "jobs", ids, { log: () => {} });
+    assert.equal(fs.readFileSync(calls, "utf8").length, 2, "10 jobs → 2 requests");
+    const drafted = db.read().jobs.filter((j) => j.source === "b");
+    assert.equal(drafted.filter((j) => j.draft?.by === "claude-code").length, 8);
+    assert.equal(drafted.filter((j) => j.draft?.by === "template").length, 2, "the one missing from each batch falls back");
+  } finally { delete process.env.JHA_CLAUDE_BIN; }
+});
+
+test("check-links moves closed postings to skipped and leaves live ones", async () => {
+  const { checkLinks } = await import("../src/commands.js");
+  db.upsertJobs([
+    { source: "c", externalId: "live", company: "Live", title: "Intern", url: "https://x.test/live" },
+    { source: "c", externalId: "gone", company: "Gone", title: "Intern", url: "https://x.test/gone" },
+    { source: "c", externalId: "filled", company: "Filled", title: "Intern", url: "https://x.test/filled" },
+  ]);
+  const real = globalThis.fetch;
+  globalThis.fetch = async (u) => ({ ok: !u.endsWith("gone"), status: u.endsWith("gone") ? 404 : 200,
+    text: async () => (u.endsWith("filled") ? "<p>Sorry, this job is no longer accepting applications.</p>" : "<p>Apply now</p>") });
+  try {
+    const r = await checkLinks({ log: () => {} });
+    const by = Object.fromEntries(db.read().jobs.filter((j) => j.source === "c").map((j) => [j.company, j.status]));
+    assert.deepEqual(by, { Live: "found", Gone: "skipped", Filled: "skipped" });
+    assert.ok(r.closed >= 2);
+  } finally { globalThis.fetch = real; }
+});

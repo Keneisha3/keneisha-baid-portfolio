@@ -58,12 +58,12 @@
   "jobAsk": "a Winter 2027 (January to April) internship or co-op, and I can relocate anywhere in Canada",
   "emailProvider": "outlook",
   "screeningAnswers": {
-    "_help": "Used to answer common form questions. Empty = always answer it yourself. UK: Youth Mobility Scheme needs no employer sponsor, but you don't hold it yet, so 'right to work in the UK' stays manual. US: TN needs a finished degree, so as a student you'd need a J-1 sponsor; answer honestly.",
+    "_help": "Used to answer common form questions. Empty = always answer it yourself. UK: Youth Mobility Scheme, no employer sponsor needed. US: TN needs a finished degree, so as a student you'd likely need a J-1 sponsor; answer honestly.",
     "workAuthCanada": "Yes",
     "workAuthUS": "No",
     "needsSponsorshipCanada": "No",
     "needsSponsorshipUS": "Yes",
-    "workAuthUK": "",
+    "workAuthUK": "Yes",
     "needsSponsorshipUK": "No",
     "willingToRelocate": "Yes",
     "startDate": "January 2027",
@@ -74,7 +74,7 @@
     "salaryExpectation": "",
     "declineDemographicQuestions": true
   },
-  "ai": "auto",
+  "ai": "claude-code",
   "_ai": "auto | claude-code (uses your Claude Pro/Max login, no API key) | api (needs ANTHROPIC_API_KEY) | template (free, offline). Free claude.ai chat works via prompt-pack / paste-drafts.",
   "angles": {
     "_help": "One or two sentences per kind of role, in your own words, used by the free templates. Only true claims.",

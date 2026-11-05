@@ -5,7 +5,8 @@ import path from "node:path";
 import * as db from "./db.js";
 import { ROOT } from "./paths.js";
 import { loadProfile, loadTargets } from "./config.js";
-import { discover, draftJob, draftContact, importLinks, todayPlan } from "./commands.js";
+import { discover, draftJob, draftContact, importLinks, todayPlan, importLinkedIn, checkLinks } from "./commands.js";
+import { isLinkedInJob } from "./outreach/linkedin.js";
 import { searchLinks } from "./outreach/linkedin.js";
 import { buildPack, applyPack, nextForPack } from "./manual.js";
 
@@ -57,11 +58,16 @@ export function createServer() {
       if (!String(req.headers["content-type"]).includes("application/json")) return send(415, { error: "JSON only" });
 
       if (p === "/api/discover") return send(200, await discover(loadProfile(), loadTargets(), { log: () => {} }));
+      if (p === "/api/check-links") return send(200, await checkLinks({ log: () => {} }));
       if (p === "/api/pack") return send(200, applyPack(String((await body(req)).text || "")));
       if (p === "/api/import") {
         const { urls = [] } = await body(req);
         if (!Array.isArray(urls) || urls.length > 200) return send(400, { error: "send up to 200 urls" });
-        return send(200, await importLinks(urls, loadTargets(), { log: () => {} }));
+        const li = urls.filter(isLinkedInJob), rest = urls.filter((u) => !isLinkedInJob(u));
+        const a = rest.length ? await importLinks(rest, loadTargets(), { log: () => {} }) : { added: 0, read: 0, failed: [] };
+        // LinkedIn links open in your logged-in Chrome window on this Mac (the dashboard runs locally).
+        const b = li.length ? await importLinkedIn(li, loadTargets(), { log: () => {} }) : { added: 0, read: 0, failed: [] };
+        return send(200, { added: a.added + b.added, read: a.read + b.read, failed: [...a.failed, ...b.failed] });
       }
       if ((r = m(/^\/api\/jobs\/(\w+)$/))) return send(200, db.updateJob(r[1], pick(await body(req), JOB_FIELDS)));
       if ((r = m(/^\/api\/jobs\/(\w+)\/draft$/))) return send(200, await draftJob(loadProfile(), r[1]));
