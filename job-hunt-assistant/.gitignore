@@ -6,3 +6,4 @@ config/targets.json
 browser-profile/
 *.pdf
 config/resume.txt
+config/resume.tex

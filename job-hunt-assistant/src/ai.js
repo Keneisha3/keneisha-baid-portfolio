@@ -1,11 +1,9 @@
 // Drafting with Claude. Every draft is saved for you to review/edit before it is
 // used anywhere. If no API credentials are configured, falls back to templates.
-import fs from "node:fs";
-import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import * as z from "zod/v4";
-import { ROOT } from "./paths.js";
+import { loadResumeText } from "./resume.js";
 
 const MODEL = process.env.JHA_MODEL || "claude-opus-5-5";
 // LinkedIn caps connection-request notes at 300 characters (200 on some free accounts).
@@ -20,11 +18,7 @@ function getClient() {
 }
 
 export function profileBlurb(profile) {
-  let resume = profile.resumeText || "";
-  if (!resume && profile.resumeTextPath) {
-    const p = path.resolve(ROOT, profile.resumeTextPath);
-    if (fs.existsSync(p)) resume = fs.readFileSync(p, "utf8");
-  }
+  const resume = loadResumeText(profile);
   return [
     `Name: ${profile.name}`,
     `School/program: ${profile.school}`,

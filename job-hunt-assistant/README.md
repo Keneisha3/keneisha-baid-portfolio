@@ -12,6 +12,27 @@ All data stays on your machine in `data/tracker.json`.
 
 > **Why you press Send on LinkedIn:** LinkedIn's User Agreement bans bots that send invitations or messages, and accounts that use them get restricted. This tool does everything except that one click, limits you to 15 invites a day by default, and spaces out its actions. That keeps your account safe, and you still read every message before it goes out.
 
+## What you need
+
+| | Needed? | Cost |
+|---|---|---|
+| **Node.js 20+** ([nodejs.org](https://nodejs.org), LTS installer) | Yes | Free |
+| **Google Chrome** (or Playwright's Chromium) | For `apply` / `connect` / `message` | Free |
+| **Your resume**: `config/resume.tex` (LaTeX works as-is) + `config/resume.pdf` | Yes | – |
+| **Anthropic API key** | Only for Claude-written drafts | Pay per use, roughly 5–10¢ per application and 2–4¢ per person messaged |
+
+Everything except drafting works without a key: job discovery, autofill, LinkedIn assist, and the tracker. Without a key, drafts come from fill-in-the-blank templates, which are noticeably more generic.
+
+**Getting a key:** sign up at [console.anthropic.com](https://console.anthropic.com), add a few dollars of credit under Billing, then create a key under API Keys (it starts with `sk-ant-`). This is separate from a Claude.ai Pro/Max subscription, which doesn't include API usage. $10 covers roughly 100 applications plus 100 outreach messages. You can set a monthly spend limit in the console.
+
+Keep the key off GitHub. Set it in your terminal instead:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...      # macOS/Linux; add to ~/.zshrc to keep it
+```
+
+On Windows PowerShell: `$env:ANTHROPIC_API_KEY="sk-ant-..."`.
+
 ## Setup
 
 ```bash
@@ -25,8 +46,8 @@ Then:
 
 - Edit `config/profile.json`: phone, grad date, highlights, and how you like to write.
 - Edit `config/targets.json`: companies and their job-board slug (the part after `boards.greenhouse.io/`, `jobs.lever.co/` or `jobs.ashbyhq.com/`), plus title, location and keyword filters.
-- Put your resume at `config/resume.pdf`, and a plain-text copy at `config/resume.txt` so Claude can read it.
-- For AI drafts, set `export ANTHROPIC_API_KEY=sk-ant-...`. Without a key you get decent template drafts.
+- Copy your resume's LaTeX source to `config/resume.tex` (Claude reads it) and the compiled PDF to `config/resume.pdf` (uploaded to applications). A plain `config/resume.txt` also works.
+- Add your phone number to `config/profile.json`.
 
 These files are git-ignored, so your personal details never get committed.
 

@@ -98,3 +98,21 @@ test("dashboard API", async () => {
     server.close();
   }
 });
+
+test("LaTeX resume is converted to readable text (last document wins)", async () => {
+  const { latexToText } = await import("../src/resume.js");
+  const tex = String.raw`\begin{document}OLD\end{document}
+\begin{document}
+\section{Skills}
+\item\fontsize{9}{10.2}\selectfont{ \textbf{Languages:} Python, SQL \\ }
+% a comment
+\resumeOneLine{Pratt \& Whitney}{Intern}{Sep 2026 -- Dec 2026}
+\resumeItem{Cut time \textbf{30\%} via \href{https://x}{\underline{a tool}} $|$ done}
+\end{document}`;
+  const out = latexToText(tex);
+  assert.ok(!out.includes("OLD"));
+  assert.match(out, /SKILLS\n+Languages: Python, SQL/);
+  assert.match(out, /Pratt & Whitney, Intern \(Sep 2026 – Dec 2026\)/);
+  assert.match(out, /- Cut time 30% via a tool \| done/);
+  assert.ok(!/[\\{}]|comment/.test(out), out);
+});

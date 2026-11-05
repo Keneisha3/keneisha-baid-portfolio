@@ -1,3 +1,5 @@
-Paste a plain-text copy of your resume into config/resume.txt (git-ignored).
-Claude reads it to tailor cover letters and messages; it never invents
-experience that isn't here or in profile.json.
+Put your resume in config/ (git-ignored):
+  config/resume.tex  - your LaTeX source, used as-is (or config/resume.txt for plain text)
+  config/resume.pdf  - the compiled PDF, uploaded to applications
+Claude reads the text version to tailor drafts and never invents experience
+that isn't in it or in profile.json.
