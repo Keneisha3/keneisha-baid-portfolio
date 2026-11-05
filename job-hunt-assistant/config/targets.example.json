@@ -1461,6 +1461,77 @@
       "region": "us",
       "size": "startup",
       "careersUrl": "https://sierra.ai/careers"
+    },
+    {
+      "name": "Collins Aerospace Canada (RTX)",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Raytheon Canada (RTX)",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "L3Harris Canada",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "General Dynamics Land Systems–Canada",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Lockheed Martin Canada",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Thales Canada",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "MDA Space",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Babcock Canada",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Kraken Robotics",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large"
+    },
+    {
+      "name": "Government of Canada student jobs (FSWEP, incl. DND/DRDC)",
+      "ats": "careers",
+      "category": "defense",
+      "region": "canada",
+      "size": "large",
+      "careersUrl": "https://www.canada.ca/en/public-service-commission/jobs/services/recruitment/students/federal-student-work-program.html"
     }
   ],
   "filters": {
@@ -1705,7 +1776,7 @@
     ]
   },
   "priorities": {
-    "_help": "Jobs in these lanes or places get +boost each, so they sort first everywhere. Lanes: tech sales (incl. fintech sales and bank sales/BD), finance, founding (founding engineer/GTM, founder's associate, chief of staff). Add --priority to only see them.",
+    "_help": "Jobs in these lanes or places get +boost each, so they sort first everywhere. Lanes: tech sales (incl. fintech sales and bank sales/BD), finance, founding (founding engineer/GTM, founder's associate, chief of staff). Add --priority to only see them. backupLanes (airlines, aerospace, defence) get half a boost, and only in Canada, where your Pratt & Whitney/RTX experience is an edge and no clearance or visa blocks you.",
     "lanes": [
       "tech sales",
       "finance",
@@ -1732,6 +1803,14 @@
       "Irvine",
       "Playa Vista"
     ],
-    "boost": 15
+    "boost": 15,
+    "backupLanes": [
+      "airlines",
+      "aerospace",
+      "defense"
+    ],
+    "backupRegions": [
+      "canada"
+    ]
   }
 }

@@ -128,6 +128,7 @@ export async function draftApplication(profile, job, { engine } = {}) {
 const ANGLE_RULES = [
   ["founding", /founding|founder'?s? associate|chief of staff|first (sales|gtm|ops|engineer|hire)|early[- ]stage generalist/i],
   ["engineering", /engineer|developer|full[- ]?stack|software/i],
+  ["defense", /defen[cs]e|military|missile|naval|national security/i],
   ["airlines", /airline|airport|aviation|aerospace|flight|aircraft|loyalty|network planning|revenue management/i],
   ["sales", /sales|sdr|bdr|business development|account (exec|manag)|partnership|gtm|go-to-market|revenue|customer success|commercial/i],
   ["consulting", /consult|advisory|strategy|transformation/i],

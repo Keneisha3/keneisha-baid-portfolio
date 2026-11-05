@@ -55,3 +55,21 @@ test("founding pitch: angle + email that offers a small build and a trial-to-ful
   assert.match(ai.angleFor(p, "Founding Engineer"), /build the thing/);
   assert.match(ai.OUTREACH_GUIDE, /FOUNDING roles/);
 });
+
+test("defence: US/UK roles needing citizenship or clearance are dropped; Canadian aerospace/defence is a backup lane", async () => {
+  const { scoreJob, applyPriorities } = await import("../src/jobs/score.js");
+  const pr = targets.priorities;
+  const us = scoreJob({ title: "Program Management Intern", location: "Arlington, VA, United States", description: "Must be a U.S. citizen due to ITAR." }, f);
+  assert.equal(us.score, 0);
+  assert.match(us.reasons[0], /clearance/);
+  const uk = scoreJob({ title: "Finance Intern", location: "London", description: "Applicants must be eligible for SC clearance." }, f);
+  assert.equal(uk.score, 0);
+  const ca = scoreJob({ title: "Program Management Co-op", location: "Ottawa, ON", description: "Controlled Goods Program registration required. Excel, project management." }, f);
+  assert.ok(ca.score > 0, "Canadian controlled-goods roles are fine for a citizen");
+  const cae = applyPriorities({ title: "Program Management Co-op", category: "defense", location: "Montreal, QC", matchScore: 60 }, pr);
+  assert.ok(cae.backup && !cae.priority);
+  assert.ok(cae.matchScore > 60 && cae.matchScore < 75, "half boost");
+  const ukAir = applyPriorities({ title: "Network Planning Intern", category: "airlines", location: "London", matchScore: 60 }, pr);
+  assert.ok(!ukAir.backup, "backup lanes only count in Canada");
+  assert.match(ai.angleFor(loadProfile(), "Program Analyst, Defence Systems"), /RTX/);
+});

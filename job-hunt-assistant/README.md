@@ -101,6 +101,12 @@ Timing reality: January starts are rare outside Canada.
 - **UK:** search **off-cycle** (often 6 months).
 - **US:** search **Spring 2027** (Jan–May). You'll likely need a J-1 sponsor, so ask early whether a company will host one.
 
+## Airlines, aerospace and defence
+
+These are **backup lanes, Canada only**. Two terms at Pratt & Whitney Canada (RTX) are a real edge with Canadian airlines, aerospace firms and defence primes. Jobs there get half a priority boost.
+- **US/UK roles that need citizenship or clearance are skipped automatically.** That covers US citizen, ITAR, security clearance, SC/DV clearance and BPSS-type requirements, because a Canadian student can't meet them.
+- **Canadian defence is fine for a citizen,** but registration and reliability checks can take weeks. Apply early and ask about timing.
+
 ## Founding and early-stage roles
 
 The third priority lane, **founding**, covers founding engineer, founding GTM/AE, founder's associate, chief of staff and "first hire" roles.

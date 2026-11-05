@@ -27,6 +27,8 @@ export function scoreJob(job, filters = {}) {
   if (termExclude.some((t) => has(job.description || "", t) && !termPrefer.some((p) => has(text, p))))
     return { score: 0, reasons: ["wrong term"] };
   if (job.closesAt && new Date(job.closesAt) < new Date()) return { score: 0, reasons: ["closed"] };
+  // US/UK defence and many government-adjacent roles need citizenship or clearance a Canadian student can't get.
+  if (needsForeignClearance(job)) return { score: 0, reasons: ["needs US/UK citizenship or security clearance"] };
   if (locations.length && job.location && !locations.some((l) => has(job.location, l)))
     return { score: 0, reasons: [`location "${job.location}" not in target list`] };
 
@@ -42,13 +44,20 @@ export function scoreJob(job, filters = {}) {
   return { score: Math.min(score, 100), reasons };
 }
 
+const CLEARANCE = /\b(u\.?s\.? citizen(ship)?|us persons?\b|itar|security clearance|active (secret|ts)|ts\/sci|top secret|sc clearance|dv clearance|bpss|eligible (for|to obtain) (sc|security) clearance|sole british|british citizen)/i;
+export function needsForeignClearance(job) {
+  const where = regionOf(job.location || "") || job.region || "";
+  return (where === "us" || where === "uk") && CLEARANCE.test(`${job.title}\n${job.description || ""}`);
+}
+
 const LANES = [
   ["founding", /founding|founder'?s? associate|chief of staff|first (sales|gtm|ops|engineer|hire|employee)|employee #?\d\b|early[- ]stage generalist/i],
   ["tech sales", /sales|sdr|bdr|business development|account (exec|manag)|partnerships?|gtm|go-to-market|revenue|customer success|commercial/i],
   ["finance", /financ|fintech|invest|venture|valuation|fp&a|treasury|risk|credit|audit|bank|wealth|capital markets|equity|m&a|trading/i],
   ["consulting", /consult|advisory|strategy/i],
   ["project management", /project|program|pmo|coordinator/i],
-  ["airlines", /airline|airport|aviation|aerospace|flight/i],
+  ["defense", /defen[cs]e|military|missile|naval|army|national security|govt|government contract/i],
+  ["airlines", /airline|airport|aviation|aerospace|flight|aircraft|revenue management|network planning/i],
 ];
 /** Which kind of role this is, from its title first, then the company's category. */
 export function laneOf(job) {
@@ -69,8 +78,16 @@ export function regionOf(location = "") {
 export function applyPriorities(job, priorities = {}) {
   job.lane = laneOf(job);
   job.region = regionOf(job.location) || job.region || "";
-  const { lanes = [], regions = [], locations = [], boost = 15 } = priorities;
+  const { lanes = [], regions = [], locations = [], boost = 15, backupLanes = [], backupRegions = ["canada"] } = priorities;
   const inLane = lanes.includes(job.lane) || (job.lane === "fintech" && lanes.includes("finance"));
+  // Backup lanes (airlines, aerospace, defence) only count where you have a real edge: Canada.
+  const lane2 = laneOf({ title: job.title }) || job.lane;
+  const backup = !inLane && [job.lane, lane2, job.category].some((l) => backupLanes.includes(l)) && backupRegions.includes(job.region);
+  if (backup) {
+    job.backup = true;
+    if (job.matchScore != null) job.matchScore = Math.min(100, job.matchScore + Math.round(boost / 2));
+    job.matchReasons = [...(job.matchReasons || []), `backup: ${job.lane || job.category} in Canada`];
+  }
   const inPlace = locations.some((l) => has(job.location || "", l)) || (!job.location && regions.includes(job.region));
   job.priority = Boolean(inLane || inPlace);
   if (job.matchScore != null) job.matchScore = Math.min(100, job.matchScore + (inLane ? boost : 0) + (inPlace ? boost : 0));
