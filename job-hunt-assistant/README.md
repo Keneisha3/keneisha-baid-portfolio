@@ -123,6 +123,27 @@ LinkedIn doesn't allow automated crawling, so this is assisted:
 3. `import-jobs linkedin.txt` opens each one in your logged-in browser, at a human pace, and follows **Apply** to the company's own posting. That posting gets read, scored and autofilled like any other.
 4. Easy Apply jobs are tracked with a note to apply on LinkedIn.
 
+## Pitch them a real idea
+
+The strongest cold outreach shows you've already thought about their problems. `idea` does the homework:
+1. Claude reads the company's **blog, changelog, docs, open roles, customer reviews (G2, Reddit, app stores) and founder posts**, and lists 4–8 concrete signals with links.
+2. It names 2–4 likely **problems** (as hypotheses, with evidence) and proposes **3 builds** that use your skills. Each comes with a one-week plan, a success metric, and impact and feasibility scores.
+3. It writes a **one-page proposal** for the best idea. Edit it, then `idea publish <id>`, which makes it an unlisted, non-indexed page on your portfolio (`/pitches/...`). Deploy the site, and the cold email links it instead of attaching anything.
+4. `draft-outreach` builds on it: the problem becomes the hook, the proposal is the value, and the other ideas feed follow-up 1.
+
+```bash
+npm run jha -- idea --all --priority --next 10   # 10 priority companies, ~1.5 min each with Claude Pro
+npm run jha -- idea show <id>                     # read and edit data/pitches/<company>.md
+npm run jha -- idea publish <id>                  # then deploy the portfolio
+npm run jha -- draft-outreach <id>
+```
+
+The dashboard has the same flow on each contact and job ("Research & pitch an idea"). Without Claude Pro, `idea --pack <id>` copies a prompt for claude.ai (turn on web search) and `paste-idea <id>` saves the reply.
+
+`seed/ideas/deliverect.json` is a real example generated on Nov 5. Load it with `paste-idea <Deliverect job id> seed/ideas/deliverect.json`.
+
+**When they reply "sure, send it" or "interesting":** build the one-week v1. That's the step that turns a cold email into an offer.
+
 ## Cold outreach that gets replies
 
 Most cold emails fail because they ask for something and offer nothing. Each draft follows this structure:

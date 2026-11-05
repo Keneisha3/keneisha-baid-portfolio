@@ -231,6 +231,8 @@ function openJob(id) {
     <label>Why this company ${copyBtn("f-wc")}</label><textarea id="f-wc">${esc(d.whyCompany || "")}</textarea>
     <label>Why you're a fit ${copyBtn("f-wr")}</label><textarea id="f-wr">${esc(d.whyRole || "")}</textarea>
     <label>Notes (recruiter name, referral, interview dates…)</label><textarea id="f-notes">${esc(j.notes || "")}</textarea>
+    <h2 style="margin-top:22px">Pitch an idea</h2>
+    ${IDEA(j)}
     <p><button class="primary" onclick="saveJob('${j.id}')">Save</button></p>`;
   dlg.showModal();
 }
@@ -265,6 +267,8 @@ function openContact(id) {
     <label>Research / hook (one specific recent thing about them; drafts use it)</label><textarea id="f-research" style="min-height:60px">${esc(c.research || "")}</textarea>
     <label>Email address</label><input id="f-email" type="email" value="${esc(c.email || "")}" />
     <label>Notes (what you talked about, who they referred you to…)</label><textarea id="f-notes">${esc(c.notes || "")}</textarea>
+    <h2 style="margin-top:22px">Pitch an idea</h2>
+    ${IDEA(c)}
     <p><button class="primary" onclick="saveContact('${c.id}')">Save</button></p>`;
   cnt(); dlg.showModal();
 }
@@ -277,6 +281,30 @@ async function saveContact(id) {
     reason: $("#f-reason").value, research: $("#f-research").value, email: $("#f-email").value || undefined, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
   dlg.close(); toast("Saved"); load();
 }
+
+function IDEA(r) {
+  const i = r.idea;
+  if (!i) return `<p class="muted" style="font-size:13px">Claude reads their blog, changelog, job posts and reviews, finds problems with sources, and writes a one-page proposal for a build you could ship in a week.</p>
+    <button class="primary" id="ideaBtn" onclick="ideaGen('${r.id}')">Research &amp; pitch an idea (2–4 min)</button>`;
+  return `<p><b>${esc(i.bestIdea)}</b> <span class="muted" style="font-size:12px">· ${esc(i.by || "")}${i.url ? ` · <a href="${esc(i.url)}" target="_blank" rel="noopener">published page</a>` : ""}</span></p>
+    <details><summary class="muted" style="font-size:13px;cursor:pointer">Evidence (${i.signals.length} sources) and other ideas</summary>
+      <ul style="font-size:13px">${i.signals.map((s) => `<li>${esc(s.finding)} <a href="${esc(s.source)}" target="_blank" rel="noopener">source</a></li>`).join("")}</ul>
+      <ul style="font-size:13px">${i.ideas.map((x) => `<li><b>${esc(x.title)}</b> (${esc(x.kind)}, impact ${x.impact}/5, feasibility ${x.feasibility}/5): ${esc(x.pitch)}</li>`).join("")}</ul></details>
+    <label>One-pager (edit freely, it's yours) ${copyBtn("f-idea")}</label><textarea id="f-idea" style="min-height:260px">${esc(i.onePager)}</textarea>
+    <p><button onclick="ideaSave('${r.id}')">Save one-pager</button> <button class="primary" onclick="ideaPublish('${r.id}')">${i.url ? "Republish" : "Publish to my site"}</button>
+    <span class="muted" style="font-size:12px"> then re-draft outreach so the email links it</span></p>`;
+}
+async function ideaGen(id) {
+  const b = $("#ideaBtn"); b.disabled = true; b.textContent = "Researching… (2–4 min)";
+  try { await api(`/api/idea/${id}/generate`, {}); await load(); reopen(id); } catch (e) { toast(e.message); b.disabled = false; b.textContent = "Research & pitch an idea"; }
+}
+async function ideaSave(id) { await api(`/api/idea/${id}`, { onePager: $("#f-idea").value }); toast("Saved"); await load(); reopen(id); }
+async function ideaPublish(id) {
+  await api(`/api/idea/${id}`, { onePager: $("#f-idea").value });
+  const r = await api(`/api/idea/${id}/publish`, {});
+  toast("Published. Deploy your portfolio to make it live"); await load(); reopen(id);
+}
+const reopen = (id) => (S.contacts.some((c) => c.id === id) ? openContact(id) : openJob(id));
 
 async function draft(kind, id) {
   const b = $("#draftBtn"); b.disabled = true; b.textContent = "Drafting…";

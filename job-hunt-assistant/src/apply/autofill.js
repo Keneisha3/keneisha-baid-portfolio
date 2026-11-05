@@ -26,6 +26,8 @@ const FIELD_MAP = [
 ];
 
 export async function autofill(page, job, profile, draft) {
+  const sa = profile.screeningAnswers || {};
+  if (job.region === "uk" && sa.termLengthUK) profile = { ...profile, screeningAnswers: { ...sa, termLength: sa.termLengthUK } };
   const filled = [];
   const unfilled = [];
 

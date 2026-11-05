@@ -55,7 +55,7 @@
   "resumePdfPath": "config/resume.pdf",
   "resumeTextPath": "config/resume.tex",
   "_phone": "Add your phone number in config/profile.json (git-ignored), not here: this example file is committed.",
-  "jobAsk": "a Winter 2027 (January to April) internship or co-op, and I can relocate anywhere in Canada",
+  "jobAsk": "a Winter 2027 internship or co-op starting January (4 months in Canada and the US; up to 6 months for a London off-cycle), and I'm open to a full-time founding role after I graduate in 2027",
   "emailProvider": "outlook",
   "screeningAnswers": {
     "_help": "Used to answer common form questions. Empty = always answer it yourself. UK: Youth Mobility Scheme, no employer sponsor needed. US: TN needs a finished degree, so as a student you'd likely need a J-1 sponsor; answer honestly.",
@@ -68,6 +68,7 @@
     "willingToRelocate": "Yes",
     "startDate": "January 2027",
     "termLength": "4 months",
+    "termLengthUK": "6 months",
     "currentlyEnrolled": "Yes",
     "coopProgram": "Yes",
     "heardFrom": "Company careers page",

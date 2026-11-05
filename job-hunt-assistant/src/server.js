@@ -9,6 +9,8 @@ import { discover, draftJob, draftContact, importLinks, todayPlan, importLinkedI
 import { isLinkedInJob } from "./outreach/linkedin.js";
 import { searchLinks } from "./outreach/linkedin.js";
 import { buildPack, applyPack, nextForPack } from "./manual.js";
+import { generateIdea, saveIdea, publishIdea } from "./ideas.js";
+import fsp from "node:fs";
 
 const JOB_FIELDS = ["status", "notes", "followUpOn", "draft"];
 const CONTACT_FIELDS = ["status", "notes", "followUpOn", "draft", "name", "title", "company", "reason", "linkedinUrl", "email", "jobId", "chatAt", "research"];
@@ -58,6 +60,19 @@ export function createServer() {
       if (!String(req.headers["content-type"]).includes("application/json")) return send(415, { error: "JSON only" });
 
       if (p === "/api/discover") return send(200, await discover(loadProfile(), loadTargets(), { log: () => {} }));
+      if ((r = m(/^\/api\/idea\/(\w+)(\/generate|\/publish)?$/))) {
+        const st = db.read();
+        const kind = st.contacts.some((c) => c.id === r[1]) ? "contacts" : "jobs";
+        const rec = st[kind].find((x) => x.id === r[1]);
+        if (!rec) return send(404, { error: "not found" });
+        if (r[2] === "/generate") return send(200, saveIdea(kind, rec.id, await generateIdea(loadProfile(), { ...rec, company: rec.company || rec.name })));
+        if (r[2] === "/publish") return send(200, publishIdea(loadProfile(), kind, rec.id));
+        const { onePager } = await body(req);
+        if (!rec.idea || typeof onePager !== "string") return send(400, { error: "nothing to save" });
+        if (rec.idea.file) { const old = fsp.existsSync(rec.idea.file) ? fsp.readFileSync(rec.idea.file, "utf8").split("\n---\n") : []; fsp.writeFileSync(rec.idea.file, [onePager, ...old.slice(1)].join("\n---\n")); }
+        const patch = { idea: { ...rec.idea, onePager } };
+        return send(200, kind === "jobs" ? db.updateJob(rec.id, patch) : db.updateContact(rec.id, patch));
+      }
       if (p === "/api/check-links") return send(200, await checkLinks({ log: () => {} }));
       if (p === "/api/pack") return send(200, applyPack(String((await body(req)).text || "")));
       if (p === "/api/import") {

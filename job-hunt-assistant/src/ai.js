@@ -18,7 +18,7 @@ export const NOTE_LIMIT = Number(process.env.JHA_NOTE_LIMIT || 300);
 
 let client;
 const hasApiKey = () => Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_PROFILE);
-function getClient() {
+export function getClient() {
   client ??= new Anthropic();
   return client;
 }
@@ -210,7 +210,7 @@ export const OUTREACH_GUIDE = `VALUE-FIRST cold outreach rules:
 2. Bridge (1-2 sentences): the ONE proof point from her background that maps to their likely problem, with a number.
 3. Value (1-2 sentences): a concrete, small idea or offer for them: e.g. "I sketched how I'd automate X" ONLY if offering to do it, phrased as an offer ("happy to send a one-page take on..."). Never claim she already made something she didn't.
 4. Ask (1 sentence): specific and easy. Startups: a Winter 2027 (Jan-Apr) internship pitched as a project she'd own. Large companies: a 15-minute chat or a referral/pointer to the right team or recruiter, plus the posting if one exists.
-5. Logistics line: Waterloo co-op, 4 months from January 2027, open to relocating (and for UK roles: she'd sort her own UK work authorization; never state a visa she doesn't hold).
+5. Logistics line: Waterloo co-op starting January 2027 (4 months; up to 6 for a London off-cycle), open to relocating, and open to a full-time founding role after graduating in 2027 when the company is an early startup (and for UK roles: she'd sort her own UK work authorization; never state a visa she doesn't hold).
 6. Close with her name, portfolio link, and an easy opt-out ("if this isn't on your radar, a quick no is totally fine").
 For FOUNDING roles (founding engineer/GTM, founder's associate, chief of staff) or very early startups (<15 people): lead with something she has actually built or shipped and link it; offer to build or do one small, specific thing for them in a week (a prototype, a pipeline list, a teardown) ONLY as an offer; ask for a Winter 2027 (Jan-Apr) trial internship that could turn into a full-time founding role after she graduates in 2027. Email a founder directly.
 Tone: peer-to-peer, short sentences, no "I hope this email finds you well", no "passionate", no wall of credentials, no attachments.`;
@@ -227,6 +227,7 @@ If the recipient is a company inbox or team rather than a named person, greet th
 ---
 ${contact.companySize ? `Company size: ${contact.companySize}` : ""}${contact.region === "uk" ? "\nThis is a London/UK company." : ""}
 Research on them (may be empty):\n${contact.research || "(none)"}
+${contact.idea ? `\nShe has written a one-page proposal for them: "${contact.idea.bestIdea}".${contact.idea.url ? ` Link: ${contact.idea.url}` : " (not published yet: offer to send it)"}\nThe problem it addresses: ${contact.idea.problems?.[0]?.problem || ""}\nSuggested hook: ${contact.idea.emailHook || ""}\nMake the proposal the VALUE step of email 1 (name the idea in a few words and include the link if there is one). Follow-up 1 can add one more of her ideas: ${(contact.idea.ideas || []).filter((i) => i.title !== contact.idea.bestIdea).map((i) => i.title).join("; ")}` : ""}
 `;
 
 export async function draftOutreach(profile, contact, job, { engine } = {}) {
@@ -252,7 +253,8 @@ function templateOutreach(profile, contact) {
   const [h1, h2] = rankHighlights(profile, ctx);
   const angle = angleFor(profile, contact.title, contact.category, contact.reason);
   // Your own research note (from `research`) becomes the hook: first bullet, source stripped.
-  const hook = (contact.research || contact.reason || "").split("\n").map((l) => l.replace(/^[\s\-*•]+/, "").replace(/\s*\(?[a-z0-9.-]+\.[a-z]{2,}\)?\s*$/i, "").trim()).find((l) => l.length > 10);
+  const idea = contact.idea;
+  const hook = idea?.problems?.[0]?.problem || (contact.research || contact.reason || "").split("\n").map((l) => l.replace(/^[\s\-*•]+/, "").replace(/\s*\(?[a-z0-9.-]+\.[a-z]{2,}\)?\s*$/i, "").trim()).find((l) => l.length > 10);
   const startup = contact.companySize === "startup";
   const ask = startup
     ? `Would you be open to an intern this winter? I'd happily own a specific project, whether that's reporting, ops tooling or customer research, whatever is most useful.`
@@ -264,9 +266,9 @@ function templateOutreach(profile, contact) {
     emailSubject: `Winter 2027 intern for ${co}?`,
     emailBody: `Hi ${first},
 
-${hook ? `Saw this about ${co}: ${hook.replace(/\.?$/, ".")} ` : ""}I'm ${profile.name}, a ${profile.shortIntro || profile.headline}.${angle ? ` ${angle}` : ""}
+${idea?.emailHook ? `${idea.emailHook} ` : hook ? `Saw this about ${co}: ${hook.replace(/\.?$/, ".")} ` : ""}I'm ${profile.name}, a ${profile.shortIntro || profile.headline}.${angle ? ` ${angle}` : ""}
 
-Most relevant to you: ${h1 || ""}. If it's useful, I'm happy to send a one-page take on how I'd approach a similar problem at ${co}.
+Most relevant to you: ${h1 || ""}. ${idea ? `I put together a one-page idea for ${co}: ${idea.bestIdea}.${idea.url ? ` ${idea.url}` : " Happy to send it over."}` : `If it's useful, I'm happy to send a one-page take on how I'd approach a similar problem at ${co}.`}
 
 ${ask} ${termLine(profile)}
 

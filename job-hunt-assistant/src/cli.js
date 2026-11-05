@@ -19,6 +19,8 @@ import { importJobUrl } from "./jobs/import.js";
 import { scoreJob } from "./jobs/score.js";
 import { composeUrl } from "./outreach/email.js";
 import { startServer } from "./server.js";
+import { generateIdea, saveIdea, publishIdea, ideaPackPrompt, parseIdea } from "./ideas.js";
+import { mapLimit } from "./jobs/sources.js";
 
 const HELP = `
 job-hunt-assistant: find roles, apply in bulk, line up coffee chats, track it all.
@@ -51,6 +53,10 @@ OUTREACH
   people <company>               LinkedIn search links (alumni, roles, recruiters)
   add-contact --name ".." [--url <linkedin>] [--email ..] [--title ..] [--company ..] [--reason ..] [--job <id>]
   import-contacts <file.csv>     Columns: name,title,company,linkedinurl,email,reason,notes
+  idea <id> | --all [--priority] Research a company's blog, changelog, jobs and reviews, then pitch a build:
+                                 problems with sources, 3 ideas, and a one-page proposal (Claude Pro/API)
+  idea --pack <id> / paste-idea <id>   Same, free, via claude.ai (turn on web search)
+  idea show <id> | idea publish <id>   Read it; publish as an unlisted page on your portfolio site
   research <id> | --all [--open] Recent news per company for the hook (automatic with claude-code/api;
                                  otherwise opens the searches and you type one line each)
   prompt-pack [--jobs 8 | --contacts 8]
@@ -77,7 +83,7 @@ const { values: opt, positionals: pos } = parseArgs({
   options: {
     port: { type: "string" }, status: { type: "string" }, top: { type: "string" }, next: { type: "string" }, tabs: { type: "string" },
     concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" }, priority: { type: "boolean" },
-    submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
+    submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, pack: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
     url: { type: "string" }, email: { type: "string" }, name: { type: "string" }, title: { type: "string" }, company: { type: "string" },
     reason: { type: "string" }, job: { type: "string" }, notes: { type: "string" },
   },
@@ -295,6 +301,49 @@ async function main() {
       r.saved.forEach((x) => console.log(`  ✓ ${x}`));
       r.errors.forEach((x) => console.log(`  ! ${x}`));
       console.log(`Saved ${r.saved.length} draft(s).`);
+      return;
+    }
+    case "idea": {
+      const profile = loadProfile();
+      const find = (id) => { const s = db.read(); const c = s.contacts.find((x) => x.id === id); if (c) return { kind: "contacts", rec: c }; const j = s.jobs.find((x) => x.id === id); if (j) return { kind: "jobs", rec: j }; throw new Error(`No contact or job ${id}`); };
+      if (pos[0] === "publish") {
+        const { kind, rec } = find(pos[1]);
+        const r = publishIdea(profile, kind, rec.id);
+        console.log(`Published (unlisted, not indexed): ${r.url}\nFile: ${r.file}\nIt goes live when you deploy the portfolio (PUSH-TO-DEPLOY.command, or commit and push). Then re-draft so emails include the link: draft-outreach ${kind === "contacts" ? rec.id : "--all"}`);
+        return;
+      }
+      if (pos[0] === "show") { const { rec } = find(pos[1]); console.log(rec.idea ? `${rec.idea.onePager}\n\n(edit: ${rec.idea.file})` : "No idea yet."); return; }
+      if (opt.pack) {
+        const { rec } = find(pos[0]);
+        const text = ideaPackPrompt(profile, { ...rec, company: rec.company || rec.name });
+        try { execFileSync("pbcopy", { input: text }); console.log("Prompt copied. Paste into claude.ai with web search on, then: npm run jha -- paste-idea " + rec.id); }
+        catch { console.log(text); }
+        return;
+      }
+      const s = db.read();
+      const targets = pos.length ? pos.map(find)
+        : [...s.contacts.filter((c) => !c.idea && ["to_contact", "drafted"].includes(c.status) && matches(c, F())).map((rec) => ({ kind: "contacts", rec })),
+           ...s.jobs.filter((j) => !j.idea && j.pitch && j.status === "found" && matches(j, F())).map((rec) => ({ kind: "jobs", rec }))]
+          .slice(0, Number(opt.next || 10));
+      console.log(`Researching and pitching ${targets.length} compan${targets.length === 1 ? "y" : "ies"} (2-4 min each, 2 at a time)…`);
+      await mapLimit(targets, 2, async ({ kind, rec }) => {
+        try {
+          const idea = await generateIdea(profile, { ...rec, company: rec.company || rec.name });
+          const saved = saveIdea(kind, rec.id, idea);
+          console.log(`  ✓ ${rec.company || rec.name}: ${idea.bestIdea}\n    ${saved.idea.file}`);
+        } catch (e) { console.log(`  ! ${rec.company || rec.name}: ${e.message}`); }
+      });
+      console.log("Read each one-pager (idea show <id>), fix anything off, then: idea publish <id> → draft-outreach <id>");
+      return;
+    }
+    case "paste-idea": {
+      const id = pos[0];
+      let text = pos[1] ? fs.readFileSync(pos[1], "utf8") : "";
+      if (!text) try { text = execFileSync("pbpaste", { encoding: "utf8" }); } catch { throw new Error("Usage: paste-idea <id> reply.json"); }
+      const s = db.read();
+      const kind = s.contacts.some((c) => c.id === id) ? "contacts" : "jobs";
+      const saved = saveIdea(kind, id, { ...parseIdea(text), by: "claude.ai", at: db.now() });
+      console.log(`Saved: ${saved.idea.bestIdea}\n${saved.idea.file}`);
       return;
     }
     case "research": {

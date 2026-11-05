@@ -1,0 +1,95 @@
+{
+  "oneLiner": "Deliverect is restaurant software that connects a restaurant's POS to delivery apps, its own online ordering, kiosks and now AI agents, so menus stay in sync and every order lands in the kitchen.",
+  "signals": [
+    {
+      "type": "news",
+      "finding": "On Oct 8, 2026, Deliverect and Yext announced a partnership that feeds Deliverect's live menus, hours, item availability and allergen data into Yext so it shows up correctly in search, maps and AI assistants.",
+      "source": "https://www.morningstar.com/news/pr-newswire/20261008ny66016/deliverect-and-yext-partner-to-keep-restaurant-data-accurate-across-every-digital-surface-including-ai-search"
+    },
+    {
+      "type": "news",
+      "finding": "In fall 2026, mid-sized US chains KPOT (about 140 locations, delivery aggregation and menu management) and Big Greek Cafe (with Thanx for loyalty) picked Deliverect.",
+      "source": "https://www.fastcasual.com/companies/deliverect/media/"
+    },
+    {
+      "type": "news",
+      "finding": "In August 2026, Deliverect partnered with Bounteous to pair the NomNom branded ordering platform with Deliverect's fulfillment layer. It's one of several 2026 channel partnerships (SoundHound in July, 5&5 in June).",
+      "source": "https://www.prnewswire.com/news-releases/deliverect-and-bounteous-forge-global-partnership-to-advance-branded-digital-ordering-302858088.html"
+    },
+    {
+      "type": "jobs",
+      "finding": "Toronto is hiring a Head of Mid Market and SMB Sales to own the full North American SMB and mid-market sales cycle, set regional targets, raise conversion rates and design 'new and innovative sales plays' for high-volume segments.",
+      "source": "https://careers.redpoint.com/companies/deliverect/jobs/61064664-head-of-mid-market-and-smb-sales"
+    },
+    {
+      "type": "jobs",
+      "finding": "The Sales GTM Intern role (Toronto, hybrid) pulls data together from HubSpot, Planhat and Looker and builds dashboards for sales forecasting, pipeline health and growth visibility with the account management and GTM teams.",
+      "source": "https://jobs.smartfinvc.com/companies/deliverect/jobs/56445260-sales-gtm-intern"
+    },
+    {
+      "type": "news",
+      "finding": "On Apr 9, 2026, Deliverect launched Deliverect AI: menu agents that change deals, combos and pricing within limits the restaurant sets, plus support agents that watch for unsynced menus and broken integrations. It went live in the UK first, with North America to follow.",
+      "source": "https://www.fooddive.com/press-release/20260407-deliverect-launches-ai-agents-and-smart-assistants-to-supercharge-restauran-1/"
+    },
+    {
+      "type": "reviews",
+      "finding": "G2 shows about 2.3/5 from only 6 reviews. Reviewers like merging delivery platforms into one place but complain about support and integration reliability. Trustpilot snippets mention slow replies and one multi-location onboarding that was cancelled after months.",
+      "source": "https://www.g2.com/products/deliverect/reviews"
+    },
+    {
+      "type": "docs",
+      "finding": "Toast's integration guide says Deliverect onboarding usually takes two to three business weeks after first contact, and that not every channel (for example Uber Eats or Grubhub) can use every menu structure.",
+      "source": "https://support.toasttab.com/en/article/Get-Started-with-Deliverect-Integration"
+    }
+  ],
+  "problems": [
+    {
+      "problem": "North American mid-market and SMB sales needs a repeatable way to find and rank the next KPOT-sized chains. The US is the biggest market, and the team is building the motion under a new leader.",
+      "evidence": "A Head of Mid Market and SMB Sales role whose brief is conversion, regional targets and 'new sales plays'. A President of the Americas who called the US its largest market (July 2025). Recent wins are 20 to 150 location chains (KPOT, Big Greek Cafe), which is exactly the segment a scored target list helps with."
+    },
+    {
+      "problem": "GTM data is spread across HubSpot (CRM), Planhat (customer success) and Looker. That makes pipeline health and forecast accuracy hard to see in one place.",
+      "evidence": "The Sales GTM Intern posting exists to consolidate those three sources into forecasting and pipeline dashboards. Teams usually post that role when the joined view doesn't exist yet."
+    },
+    {
+      "problem": "Bad menu and hours data across channels and AI search hurts restaurants, and Deliverect hasn't yet put public numbers on how big that problem is to help sell its fix.",
+      "evidence": "The Oct 2026 Yext partnership is framed entirely around keeping data accurate 'including AI search'. The April AI launch includes agents that catch unsynced menus. Toast's docs say channels can't all handle the same menu structures."
+    },
+    {
+      "problem": "Slow onboarding and weak post-sale support may be hurting reputation and expansion revenue, especially for multi-location accounts.",
+      "evidence": "Low scores on small samples (G2 about 2.3 from 6 reviews, and support is the lowest sub-score on Software Advice per search snippets). A Trustpilot story of a failed multi-location onboarding. A stated 2 to 3 week setup time on Toast."
+    }
+  ],
+  "ideas": [
+    {
+      "title": "North America mid-market chain target list with a fit score",
+      "kind": "sales/GTM play",
+      "pitch": "A ranked list of 150 to 300 US and Canadian restaurant chains with 15 to 200 locations, each scored on how much it looks like Deliverect's recent wins: number of delivery channels, POS that Deliverect integrates with, whether it has its own online ordering or loyalty, and growth signals. It gives the new MM/SMB sales team a starting call list plus a 'why now' hook for each account.",
+      "weekPlan": "Day 1: write down the profile of recent public wins (KPOT, Big Greek Cafe, bb.q) and define 6 to 8 scoring features. Days 2 to 3: build the chain universe in Python (pandas) from public franchise and chain lists, then manually check a sample for location count, which delivery apps they're on, POS (from job posts or careers pages) and ordering stack. Day 4: build a simple weighted score and sanity-check it against known customers (do they rank high?). Day 5: hand over a Power BI or Looker-style view and a top-25 sheet with a one-line hook per account.",
+      "metric": "Share of the top 50 that an AE agrees are worth a call, and later the meeting-booked rate on scored accounts compared to their usual list",
+      "impact": 4,
+      "feasibility": 4
+    },
+    {
+      "title": "Pipeline health and forecast prototype (HubSpot + Planhat shaped)",
+      "kind": "internal tool",
+      "pitch": "A working mock of the dashboard the GTM intern role describes. It joins CRM deal data and CS health data, then shows stage aging, slipped deals, weighted versus committed forecast, and expansion pipeline ranked by account health. On day one it's something to react to instead of a blank page.",
+      "weekPlan": "Days 1 to 2: design a schema that mirrors HubSpot deals and Planhat company and health objects, and generate realistic synthetic data in Python. Day 3: write SQL for stage conversion, time in stage and win rate by segment. Day 4: add a simple forecast (stage-weighted, plus a logistic or XGBoost win-probability model) and backtest it on the synthetic history. Day 5: build it in Power BI with a one-page metric dictionary.",
+      "metric": "Forecast error (predicted vs actual bookings per quarter) of the model-based view compared to stage-weighted, once it's on real data",
+      "impact": 3,
+      "feasibility": 5
+    },
+    {
+      "title": "Menu-accuracy audit: '1 in X restaurants shows the wrong info'",
+      "kind": "growth experiment",
+      "pitch": "A public-data audit of about 50 North American chain locations. It compares hours, item availability and prices across Google Maps, Uber Eats, DoorDash, the brand's website and an AI assistant. The mismatch rate becomes outbound content and a personalized prospecting hook for the Yext partnership and the menu agents.",
+      "weekPlan": "Day 1: pick 50 locations across 10 non-customer chains and define what counts as a mismatch. Days 2 to 3: collect data by hand with a structured sheet (no scraping that breaks terms of service). Day 4: analyze in Python (mismatch rate by field and by channel, price gaps). Day 5: write a 1-page findings brief plus 10 personalized 'here's what we found at your location' email drafts for AEs.",
+      "metric": "Reply rate on the audit-based outreach compared to the standard sequence",
+      "impact": 4,
+      "feasibility": 4
+    }
+  ],
+  "bestIdea": "North America mid-market chain target list with a fit score",
+  "onePager": "# North America mid-market chain target list with a fit score, for Deliverect\n\n## The problem\nDeliverect is building its North American mid-market and SMB motion. It's hiring a [Head of Mid Market and SMB Sales](https://careers.redpoint.com/companies/deliverect/jobs/61064664-head-of-mid-market-and-smb-sales) whose brief includes new sales plays and higher conversion. Leadership calls the US [its largest market](https://www.deliverect.com/en/press/deliverect-1-billion-orders-papa-johns-veteran-president-americas). Recent wins are mid-sized chains like KPOT (about 140 locations) and Big Greek Cafe ([Fast Casual](https://www.fastcasual.com/companies/deliverect/media/)). My guess: the hard part isn't the pitch. It's knowing which of the thousands of 15 to 200 location chains to call next, and why now.\n\n## The idea\nA ranked list of 150 to 300 US and Canadian chains, scored on how closely they match Deliverect's recent public wins. Each account gets a one-line \"why now\" hook.\n\n## How it would work\n- Build the profile of a won account from public wins: location count, number of delivery channels, POS, own ordering or loyalty.\n- Score each chain on 6 to 8 public features: delivery app presence, POS that Deliverect integrates with (Toast, Square, Lightspeed), branded ordering, expansion news, hiring for digital roles.\n- Sanity check: known customers should rank near the top. If they don't, fix the weights.\n- Output: a dashboard plus a top-25 sheet with hooks like \"on 3 apps, just opened 12 stores.\"\n\n## A one-week plan\n- **Day 1:** Write the profile and define the features.\n- **Days 2 to 3:** Build the chain universe in Python. Check a sample by hand.\n- **Day 4:** Build the weighted score and backtest it against known customers.\n- **Day 5:** Ship a Power BI view and the top-25 list with hooks.\n\n## How we'd know it worked\nAEs rate most of the top 50 as worth a call. Later, the meeting-booked rate on scored accounts beats their usual list.\n\n## Why me\n- At Pratt & Whitney I built Power BI dashboards on 6+ data sources for 40+ users, replacing 4 manual reports.\n- I built an earnings forecast model from SEC filings: 4.3% median revenue error vs a 7.4% baseline over 771 held-out quarters. I like scoring things and then checking whether the score holds up.\n\n*This is built entirely from public information, so some of it is surely wrong. I'd love to be told what.*",
+  "emailHook": "KPOT and Big Greek Cafe both chose Deliverect this fall, and you're hiring someone to build North America's mid-market sales plays. So I started a scored list of the next 200 chains that look like those two wins, with a \"why now\" hook for each one. Want the top 25?"
+}
