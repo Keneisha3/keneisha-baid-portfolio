@@ -48,7 +48,7 @@ export function sourceFor(url) {
 
 /** Fetches and parses one URL. If the server-rendered page has nothing useful, renders it with Playwright when available. */
 export async function importJobUrl(url) {
-  if (/(^|\.)linkedin\.com$/i.test(new URL(url).hostname)) throw new Error("LinkedIn job pages can't be read automatically; open the posting and use the company's own apply link instead");
+  if (/(^|\.)linkedin\.com$/i.test(new URL(url).hostname)) throw new Error("LinkedIn links need your logged-in browser: run `npm run jha -- add-job <link>` (or import-jobs linkedin.txt) in Terminal");
   let job = null;
   try {
     const res = await fetch(url, { headers: { "User-Agent": UA, Accept: "text/html" }, redirect: "follow" });

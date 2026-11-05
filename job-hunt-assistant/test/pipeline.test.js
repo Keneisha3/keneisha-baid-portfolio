@@ -35,7 +35,7 @@ test("the seed tracker imports with sizes, pitches, closed rows, and is idempote
 test("London: UK work questions use their own answers; targets carry region and size", () => {
   const p = loadProfile();
   assert.equal(screeningAnswer("Do you have the right to work in the UK?", p), "");
-  assert.equal(screeningAnswer("Will you require visa sponsorship to work in the United Kingdom?", p), "");
+  assert.equal(screeningAnswer("Will you require visa sponsorship to work in the United Kingdom?", p), "No");
   assert.equal(screeningAnswer("Are you legally authorized to work in Canada?", p), "Yes");
   const t = loadTargets();
   assert.ok(t.companies.filter((c) => c.region === "uk").length >= 40);

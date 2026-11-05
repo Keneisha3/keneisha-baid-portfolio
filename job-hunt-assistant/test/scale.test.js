@@ -76,7 +76,7 @@ test("screening answers: only what you've set, EEO only declined, US vs Canada k
   const p = loadProfile();
   assert.equal(screeningAnswer("Are you legally eligible to work in Canada?", p), "Yes");
   assert.equal(screeningAnswer("Will you require visa sponsorship to work in Canada?", p), "No");
-  assert.equal(screeningAnswer("Are you authorized to work in the United States?", p), "");
+  assert.equal(screeningAnswer("Are you authorized to work in the United States?", p), "No");
   assert.equal(screeningAnswer("What is your gender?", p), "__decline__");
   assert.equal(screeningAnswer("What are your salary expectations?", p), "");
   assert.equal(pickOption(["Please select", "Yes", "No"], "Yes"), 1);

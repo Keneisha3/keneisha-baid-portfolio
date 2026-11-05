@@ -58,13 +58,13 @@
   "jobAsk": "a Winter 2027 (January to April) internship or co-op, and I can relocate anywhere in Canada",
   "emailProvider": "outlook",
   "screeningAnswers": {
-    "_help": "Used to answer common form questions. Leave a value empty to always answer it yourself. Check every one of these is true for you.",
+    "_help": "Used to answer common form questions. Empty = always answer it yourself. UK: Youth Mobility Scheme needs no employer sponsor, but you don't hold it yet, so 'right to work in the UK' stays manual. US: TN needs a finished degree, so as a student you'd need a J-1 sponsor; answer honestly.",
     "workAuthCanada": "Yes",
-    "workAuthUS": "",
+    "workAuthUS": "No",
     "needsSponsorshipCanada": "No",
-    "needsSponsorshipUS": "",
+    "needsSponsorshipUS": "Yes",
     "workAuthUK": "",
-    "needsSponsorshipUK": "",
+    "needsSponsorshipUK": "No",
     "willingToRelocate": "Yes",
     "startDate": "January 2027",
     "termLength": "4 months",
@@ -73,5 +73,18 @@
     "heardFrom": "Company careers page",
     "salaryExpectation": "",
     "declineDemographicQuestions": true
+  },
+  "ai": "auto",
+  "_ai": "auto | claude-code (uses your Claude Pro/Max login, no API key) | api (needs ANTHROPIC_API_KEY) | template (free, offline). Free claude.ai chat works via prompt-pack / paste-drafts.",
+  "angles": {
+    "_help": "One or two sentences per kind of role, in your own words, used by the free templates. Only true claims.",
+    "sales": "I like the front line of a business: at Creospark I ran client workshops, trained 40+ staff and clients, and built the RFP generator and outreach CRM the sales team used.",
+    "consulting": "At Creospark I led client work across 3 digital transformation projects, turning 8 workshops into plans that raised efficiency 24%, and I now present program status to C-suite at Pratt & Whitney.",
+    "project": "I'm currently an Operations Program Management Intern at Pratt & Whitney Canada, running requirements sessions, tracking risks with action owners and reporting status to executives.",
+    "finance": "I build finance tools for fun: an earnings forecast tracker from SEC filings (4.3% median revenue error vs a 7.4% baseline) and a walk-forward portfolio backtester, plus DCF and three-statement modeling.",
+    "operations": "I've made operations run smoother in four co-ops, from Excel inventory tracking that cut workload 20% at Greenhouse Juice to Power BI dashboards that replaced 4 manual reports at Pratt & Whitney.",
+    "airlines": "Two of my co-ops were in aerospace at Pratt & Whitney Canada, so I know how schedule, cost and risk data move in an aviation business, and I like turning that data into decisions.",
+    "data": "I turn messy data into tools people use: Power BI dashboards for 40+ users, Python reporting automation, and ML models like WealthLens (0.67 ROC-AUC).",
+    "general": "Across six co-op terms I've learned to pick up a new domain fast and leave behind tools and processes that keep working after I'm gone."
   }
 }

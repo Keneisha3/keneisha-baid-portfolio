@@ -3,7 +3,7 @@ import * as db from "./db.js";
 import { fetchAll, mapLimit } from "./jobs/sources.js";
 import { scoreJob, titlePasses } from "./jobs/score.js";
 import { importJobUrl } from "./jobs/import.js";
-import { draftApplication, draftOutreach, researchContact } from "./ai.js";
+import { draftApplication, draftOutreach, researchContact, engineFor } from "./ai.js";
 
 export const matches = (o, { category, region, size } = {}) =>
   (!category || o.category === category) && (!region || o.region === region) && (!size || (o.size || o.companySize) === size);
@@ -49,27 +49,28 @@ export async function importLinks(urls, targets, { log = console.log } = {}) {
   return { added, read: ok.length, failed: results.filter((r) => !r.ok).map(({ url, error }) => ({ url, error })) };
 }
 
-export async function draftJob(profile, jobId) {
+export async function draftJob(profile, jobId, opts = {}) {
   const job = db.read().jobs.find((j) => j.id === jobId);
   if (!job) throw new Error(`No job ${jobId}`);
-  const draft = await draftApplication(profile, job);
+  const draft = await draftApplication(profile, job, opts);
   return db.updateJob(jobId, { draft, status: job.status === "found" ? "drafted" : job.status });
 }
 
-export async function draftContact(profile, contactId) {
+export async function draftContact(profile, contactId, opts = {}) {
   const state = db.read();
   const contact = state.contacts.find((c) => c.id === contactId);
   if (!contact) throw new Error(`No contact ${contactId}`);
   const job = contact.jobId ? state.jobs.find((j) => j.id === contact.jobId) : null;
-  const draft = await draftOutreach(profile, contact, job);
+  const draft = await draftOutreach(profile, contact, job, opts);
   return db.updateContact(contactId, { draft, status: contact.status === "to_contact" ? "drafted" : contact.status });
 }
 
 /** Drafts many at once (Claude calls in parallel). */
-export async function draftMany(profile, kind, ids, { concurrency = 4, log = console.log } = {}) {
+export async function draftMany(profile, kind, ids, { concurrency, log = console.log, engine } = {}) {
   let done = 0;
+  concurrency ??= engineFor(profile) === "claude-code" ? 2 : 4;
   return mapLimit(ids, concurrency, async (id) => {
-    const r = await (kind === "jobs" ? draftJob(profile, id) : draftContact(profile, id)).catch((e) => ({ error: e.message, id }));
+    const r = await (kind === "jobs" ? draftJob(profile, id, { engine }) : draftContact(profile, id, { engine })).catch((e) => ({ error: e.message, id }));
     log(`  [${++done}/${ids.length}] ${r.error ? `! ${r.id}: ${r.error}` : kind === "jobs" ? `${r.company} · ${r.title}` : `${r.name} (${r.company || ""})`}`);
     return r;
   });
@@ -92,12 +93,12 @@ export function todayPlan(targets, state = db.read()) {
   };
 }
 
-export async function researchMany(ids, { concurrency = 3, log = console.log } = {}) {
+export async function researchMany(ids, { concurrency = 3, log = console.log, profile } = {}) {
   let done = 0;
   return mapLimit(ids, concurrency, async (id) => {
     const c = db.read().contacts.find((x) => x.id === id);
     try {
-      const research = await researchContact(c);
+      const research = await researchContact(c, profile);
       db.updateContact(id, { research, researchedAt: db.now() });
       log(`  [${++done}/${ids.length}] ${c.company || c.name}`);
     } catch (e) { log(`  [${++done}/${ids.length}] ! ${c.company || c.name}: ${e.message}`); }

@@ -30,6 +30,10 @@ const PAGES = {
     <div class="field"><label for="q5">What are your salary expectations? *</label><input id="q5" required></div>
     <button type="submit">Submit application</button></form>`,
   "/done": `<h1>Thank you for applying!</h1>`,
+  "/jobs/view/111/": `<main><h1>Finance Intern</h1><a href="/company/acme">Acme Air</a><div id="job-details">Forecast fares.</div>
+    <button class="jobs-apply-button" onclick="window.open('/company-apply')">Apply</button></main>`,
+  "/jobs/view/222/": `<main><h1>Ops Intern</h1><a href="/company/b">Beta</a><button class="jobs-apply-button">Easy Apply</button></main>`,
+  "/company-apply": `<h1>Acme careers</h1>`,
   "/lever": `<form>
     <input name="name"><input name="email"><input name="phone"><input name="org">
     <input name="urls[LinkedIn]"><input name="urls[GitHub]"><input type="file" name="resume">
@@ -81,6 +85,15 @@ test("autofill + LinkedIn assisted send against look-alike pages", { skip: !chro
     assert.equal(await page.inputValue('input[name="name"]'), "Keneisha Baid");
     assert.equal(await page.inputValue('input[name="urls[GitHub]"]'), profile.github);
     assert.equal(await page.inputValue('textarea[name="comments"]'), draft.coverLetter);
+
+    const { resolveLinkedInJob } = await import("../src/outreach/linkedin.js");
+    const ctx = page.context();
+    const ext = await resolveLinkedInJob(ctx, page, base + "/jobs/view/111/");
+    assert.equal(ext.title, "Finance Intern");
+    assert.equal(ext.company, "Acme Air");
+    assert.equal(ext.externalUrl, base + "/company-apply");
+    const easy = await resolveLinkedInJob(ctx, page, base + "/jobs/view/222/");
+    assert.equal(easy.easyApply, true);
 
     const r = await prepareConnect(page, base + "/in/ada", "Hi Ada!");
     assert.deepEqual(r, { ok: true });

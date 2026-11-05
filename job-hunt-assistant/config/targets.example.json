@@ -1180,5 +1180,25 @@
     ],
     "schoolSlug": "uwaterloo",
     "dailyLimit": 20
+  },
+  "linkedinJobs": {
+    "roles": [
+      "business analyst intern",
+      "project management co-op",
+      "sales development intern",
+      "finance intern",
+      "consulting intern",
+      "operations intern",
+      "airline intern",
+      "off-cycle internship"
+    ],
+    "locations": [
+      "Toronto, Ontario, Canada",
+      "Vancouver, British Columbia, Canada",
+      "Montreal, Quebec, Canada",
+      "Calgary, Alberta, Canada",
+      "Canada",
+      "London, England, United Kingdom"
+    ]
   }
 }

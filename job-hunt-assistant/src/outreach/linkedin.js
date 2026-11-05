@@ -77,3 +77,54 @@ export function searchLinks(company, { roles = [], school, schoolSlug } = {}) {
   if (school) links.push({ label: `${school} + ${company} (any role)`, url: `https://www.linkedin.com/search/results/people/?keywords=${q(`${company} ${school}`)}` });
   return links;
 }
+
+// ---------- LinkedIn jobs ----------
+// LinkedIn doesn't allow automated crawling, so: the tool builds the searches,
+// you browse and pick, and for each job you pick it follows the "Apply" button
+// to the company's own posting (which the rest of the tool can read and autofill).
+
+/** Job searches: internship experience level, posted in the last week, newest first. */
+export function jobSearchLinks(roles = [], locations = []) {
+  const q = encodeURIComponent;
+  const out = [];
+  for (const loc of locations) for (const r of roles)
+    out.push({ label: `${r} · ${loc}`, url: `https://www.linkedin.com/jobs/search/?keywords=${q(r)}&location=${q(loc)}&f_E=1&f_TPR=r604800&sortBy=DD` });
+  return out;
+}
+
+export const isLinkedInJob = (u) => /linkedin\.com\/jobs\/(view|collections|search)/i.test(u) || /linkedin\.com\/.*currentJobId=/i.test(u);
+export function linkedInJobUrl(u) {
+  const id = (u.match(/currentJobId=(\d+)/) || u.match(/jobs\/view\/(?:[^/]*?-)?(\d+)/) || [])[1];
+  return id ? `${new URL(u).origin}/jobs/view/${id}/` : u;
+}
+
+/** Opens one LinkedIn job (in your logged-in browser) and returns its basics plus the company's apply link, if it has one. */
+export async function resolveLinkedInJob(context, page, url) {
+  await page.goto(linkedInJobUrl(url), { waitUntil: "domcontentloaded" });
+  await pause(1500, 2500);
+  const top = await page.evaluate(() => {
+    const t = (sel) => document.querySelector(sel)?.innerText?.trim() || "";
+    return {
+      title: t("h1") || document.title.split(" | ")[0],
+      company: t(".job-details-jobs-unified-top-card__company-name, .jobs-unified-top-card__company-name, a[href*='/company/']"),
+      location: t(".job-details-jobs-unified-top-card__primary-description-container span, .jobs-unified-top-card__bullet"),
+      description: t("#job-details, .jobs-description__content, .jobs-box__html-content").slice(0, 15000),
+    };
+  });
+  const apply = page.locator('button.jobs-apply-button, button:has-text("Apply"), a:has-text("Apply")').first();
+  const label = (await apply.innerText().catch(() => "")) || "";
+  if (!label || /easy apply/i.test(label)) return { ...top, easyApply: /easy apply/i.test(label), externalUrl: null };
+  // Clicking Apply opens the company site in a new tab (sometimes after a "Continue" dialog).
+  const popup = context.waitForEvent("page", { timeout: 8000 }).catch(() => null);
+  await apply.click().catch(() => {});
+  const cont = page.locator('button:has-text("Continue")').first();
+  if (await cont.isVisible({ timeout: 1500 }).catch(() => false)) await cont.click().catch(() => {});
+  const ext = await popup;
+  let externalUrl = null;
+  if (ext) {
+    await ext.waitForLoadState("domcontentloaded").catch(() => {});
+    externalUrl = ext.url();
+    await ext.close().catch(() => {});
+  }
+  return { ...top, easyApply: false, externalUrl };
+}

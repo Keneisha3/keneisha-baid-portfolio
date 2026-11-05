@@ -7,11 +7,16 @@ import { loadProfile, loadTargets } from "./config.js";
 import { CONFIG_DIR } from "./paths.js";
 import { discover, draftJob, draftContact, draftMany, importLinks, todayPlan, researchMany, matches } from "./commands.js";
 import { importPipeline } from "./pipeline.js";
+import { buildPack, applyPack, nextForPack } from "./manual.js";
+import { engineFor, canResearch } from "./ai.js";
+import { execFileSync } from "node:child_process";
 import { FETCHERS } from "./jobs/sources.js";
 import { parseCsv } from "./csv.js";
 import { openBrowser, ask } from "./browser.js";
 import { openApplication, autofill, clickSubmit, isConfirmed } from "./apply/autofill.js";
-import { ensureLoggedIn, prepareConnect, prepareMessage, searchLinks } from "./outreach/linkedin.js";
+import { ensureLoggedIn, prepareConnect, prepareMessage, searchLinks, jobSearchLinks, isLinkedInJob, resolveLinkedInJob } from "./outreach/linkedin.js";
+import { importJobUrl } from "./jobs/import.js";
+import { scoreJob } from "./jobs/score.js";
 import { composeUrl } from "./outreach/email.js";
 import { startServer } from "./server.js";
 
@@ -27,7 +32,8 @@ FIND JOBS
   check-targets [--disable-failed]  Test every feed; optionally switch off the broken ones
   careers [--category airlines] [--tabs 8]
                                  Open career pages for companies with no feed, so you can grab links
-  add-job <url> [<url>...]       Import postings from any career site link
+  linkedin-jobs [--region uk]    Opens LinkedIn job searches (internships, past week) for you to browse
+  add-job <url> [<url>...]       Import postings from any career site or LinkedIn job link
   import-pipeline [file]         Load a tracker table (defaults to seed/winter-2027-pipeline.md)
   import-jobs <links.txt>        Same, one link per line
   jobs [--status drafted] [--category consulting]
@@ -35,7 +41,7 @@ FIND JOBS
 APPLY
   draft <jobId> | --top N | --all [--concurrency 4]
                                  Tailored cover letter + answers (Claude)
-  apply <jobId> | --next N [--tabs 4] [--category ..] [--auto-submit]
+  apply <jobId> | --next N [--tabs 4] [--category ..] [--auto-submit] [--ai]
                                  Opens N applications in batches of tabs, autofilled. You review and
                                  submit; confirmations are detected and marked applied automatically.
                                  --auto-submit clicks Submit only when every required field is filled.
@@ -44,7 +50,11 @@ OUTREACH
   people <company>               LinkedIn search links (alumni, roles, recruiters)
   add-contact --name ".." [--url <linkedin>] [--email ..] [--title ..] [--company ..] [--reason ..] [--job <id>]
   import-contacts <file.csv>     Columns: name,title,company,linkedinurl,email,reason,notes
-  research <id> | --all          Claude looks up recent news about each company/person for the hook
+  research <id> | --all [--open] Recent news per company for the hook (automatic with claude-code/api;
+                                 otherwise opens the searches and you type one line each)
+  prompt-pack [--jobs 8 | --contacts 8]
+                                 FREE drafting: copies one prompt for 8 items to paste into claude.ai
+  paste-drafts [reply.txt]       Saves Claude's reply (reads the clipboard on a Mac)
   draft-outreach <id> | --all    LinkedIn note + coffee-chat ask, and a 3-email value-first sequence
   email --next N                 Opens N cold emails in Outlook/Gmail compose tabs; you press Send
   email --followups              Opens the due follow-up emails (day 4-5, then day 10-12)
@@ -65,7 +75,7 @@ const { values: opt, positionals: pos } = parseArgs({
   options: {
     port: { type: "string" }, status: { type: "string" }, top: { type: "string" }, next: { type: "string" }, tabs: { type: "string" },
     concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" },
-    submit: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
+    submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
     url: { type: "string" }, email: { type: "string" }, name: { type: "string" }, title: { type: "string" }, company: { type: "string" },
     reason: { type: "string" }, job: { type: "string" }, notes: { type: "string" },
   },
@@ -91,6 +101,15 @@ async function main() {
     case "serve":
       return startServer(Number(opt.port || 4321));
 
+    case "engine": {
+      const p = loadProfile(), e = engineFor(p);
+      console.log(`Drafting engine: ${e}`);
+      if (e === "claude-code") {
+        try { console.log(execFileSync(process.env.JHA_CLAUDE_BIN || "claude", ["--version"], { encoding: "utf8" }).trim(), "found. Make sure you've run `claude` once and logged in with your Claude account."); }
+        catch { console.log("`claude` not found: npm install -g @anthropic-ai/claude-code, then run `claude` and log in."); }
+      } else if (e === "template") console.log("Free templates. For Claude-quality drafts without paying: prompt-pack → claude.ai → paste-drafts.");
+      return;
+    }
     case "today": {
       const p = todayPlan(loadTargets());
       const g = p.goals;
@@ -148,9 +167,31 @@ async function main() {
       await browser.close();
       return;
     }
+    case "linkedin-jobs": {
+      const t = loadTargets();
+      const roles = t.linkedinJobs?.roles || ["intern", "co-op"];
+      const locs = (t.linkedinJobs?.locations || ["Canada"]).filter((l) => !opt.region || (opt.region === "uk") === /london|united kingdom|uk/i.test(l));
+      const links = jobSearchLinks(roles, locs);
+      const browser = await openBrowser();
+      const page = browser.pages()[0] || (await browser.newPage());
+      await ensureLoggedIn(page);
+      for (let i = 0; i < links.length; i += 6) {
+        for (const l of links.slice(i, i + 6)) { const p = await browser.newPage(); await p.goto(l.url, { waitUntil: "domcontentloaded" }).catch(() => {}); await new Promise((r) => setTimeout(r, 1200)); }
+        console.log(`\nOpened: ${links.slice(i, i + 6).map((l) => l.label).join(" | ")}`);
+        console.log("Copy the link of each job you like (Share → Copy link, or the address bar) into linkedin.txt, one per line.");
+        if ((await ask(i + 6 < links.length ? "Enter = next searches, q = done browsing: " : "Enter = done: ")).toLowerCase() === "q") break;
+        for (const p of browser.pages().slice(1)) await p.close();
+      }
+      await browser.close();
+      console.log("Then: npm run jha -- import-jobs linkedin.txt");
+      return;
+    }
     case "add-job":
     case "import-jobs": {
-      const urls = cmd === "add-job" ? pos : fs.readFileSync(pos[0], "utf8").split(/\s+/);
+      const all = (cmd === "add-job" ? pos : fs.readFileSync(pos[0], "utf8").split(/\s+/)).filter((u) => /^https?:\/\//.test(u));
+      const li = all.filter(isLinkedInJob), urls = all.filter((u) => !isLinkedInJob(u));
+      if (li.length) await importLinkedIn(li, loadTargets());
+      if (!urls.length) return;
       const r = await importLinks(urls, loadTargets());
       console.log(`Imported ${r.added} new job(s) (${r.read} read, ${r.failed.length} failed).`);
       return;
@@ -227,11 +268,53 @@ async function main() {
       } else await draftMany(profile, "contacts", ids, { concurrency: Number(opt.concurrency || 4) });
       return;
     }
+    case "prompt-pack": {
+      const kind = opt.contacts ? "contacts" : "jobs";
+      const items = pos.length ? pos.map((id) => db.read()[kind].find((x) => x.id === id)).filter(Boolean) : nextForPack(kind, Number(opt.contacts || opt.jobs || 8), (o) => matches(o, F()));
+      if (!items.length) return console.log(`Nothing waiting to be drafted (${kind}).`);
+      const text = buildPack(kind, items, loadProfile());
+      const file = path.join(path.dirname(new URL(import.meta.url).pathname), "..", "data", "prompt-pack.txt");
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, text);
+      let copied = false;
+      try { execFileSync("pbcopy", { input: text }); copied = true; } catch {}
+      console.log(`Prompt for ${items.length} ${kind} ${copied ? "copied to your clipboard" : `saved to ${file}`}.`);
+      console.log("1. Paste it into a new chat at claude.ai (free works)\n2. Copy Claude's whole reply\n3. Run: npm run jha -- paste-drafts   (reads your clipboard), or paste it in the dashboard");
+      return;
+    }
+    case "paste-drafts": {
+      let text = pos[0] ? fs.readFileSync(pos[0], "utf8") : "";
+      if (!text) try { text = execFileSync("pbpaste", { encoding: "utf8" }); } catch { throw new Error("Pass a file: paste-drafts reply.json"); }
+      const r = applyPack(text);
+      r.saved.forEach((x) => console.log(`  ✓ ${x}`));
+      r.errors.forEach((x) => console.log(`  ! ${x}`));
+      console.log(`Saved ${r.saved.length} draft(s).`);
+      return;
+    }
     case "research": {
       const state = db.read();
       const ids = opt.all ? state.contacts.filter((c) => !c.research && ["to_contact", "drafted"].includes(c.status) && matches(c, F())).map((c) => c.id) : pos;
-      console.log(`Researching ${ids.length} contact(s) with web search…`);
-      await researchMany(ids);
+      const profile = loadProfile();
+      if (canResearch(profile) && !opt.open) {
+        console.log(`Researching ${ids.length} contact(s) with web search…`);
+        await researchMany(ids, { profile });
+      } else {
+        // Free version: opens the right searches; you skim and type one line.
+        const browser = await openBrowser();
+        for (const id of ids) {
+          const c = db.read().contacts.find((x) => x.id === id);
+          const q = encodeURIComponent(c.company || c.name);
+          for (const u of [`https://www.google.com/search?q=${q}&tbm=nws`, `https://www.linkedin.com/company/${(c.company || "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}/posts/`, ...(c.linkedinUrl ? [`${c.linkedinUrl.replace(/\/$/, "")}/recent-activity/all/`] : [])]) {
+            const page = await browser.newPage();
+            await page.goto(u, { waitUntil: "domcontentloaded" }).catch(() => {});
+          }
+          const hook = await ask(`\n${c.name} (${c.company || ""}): one specific recent thing to mention (Enter to skip, q to stop): `);
+          if (hook.toLowerCase() === "q") break;
+          if (hook) db.updateContact(id, { research: `- ${hook}`, researchedAt: db.now() });
+          for (const p of browser.pages().slice(1)) await p.close();
+        }
+        await browser.close();
+      }
       console.log("Done. Re-draft them so the research is used: draft-outreach --all (or <id>)");
       return;
     }
@@ -291,7 +374,12 @@ async function applyBatch() {
     : pos.map((p) => state.jobs.find((j) => j.id === p)).filter(Boolean);
   if (!jobs.length) throw new Error("Nothing to apply to. Try: discover, then draft --top 20");
   const undrafted = jobs.filter((j) => !j.draft).map((j) => j.id);
-  if (undrafted.length) { console.log(`Drafting ${undrafted.length} first…`); await draftMany(profile, "jobs", undrafted); }
+  if (undrafted.length) {
+    // Bulk applying: undrafted jobs get instant free drafts unless you pay per use (api) or pass --ai.
+    const engine = opt.ai || engineFor(profile) === "api" ? undefined : "template";
+    console.log(`Drafting ${undrafted.length} first${engine ? " (free templates; use `draft` or prompt-pack for your top picks)" : ""}…`);
+    await draftMany(profile, "jobs", undrafted, { engine, log: () => {} });
+  }
   const fresh = db.read().jobs;
   const queue = jobs.map((j) => fresh.find((f) => f.id === j.id));
   const tabs = Math.max(1, Number(opt.tabs || 4));
@@ -366,6 +454,36 @@ async function emailBatch() {
     console.log(`  ✓ ${sent.length} tracked (nudge reminder in 5 days)`);
   }
   await browser.close();
+}
+
+/** LinkedIn job links: opened one at a time in your logged-in browser; follows Apply to the company's site. */
+async function importLinkedIn(urls, targets) {
+  const browser = await openBrowser();
+  const page = browser.pages()[0] || (await browser.newPage());
+  await ensureLoggedIn(page);
+  let added = 0;
+  for (const [k, url] of [...new Set(urls)].entries()) {
+    try {
+      const li = await resolveLinkedInJob(browser, page, url);
+      let job;
+      if (li.externalUrl && !/linkedin\.com/.test(li.externalUrl)) {
+        job = await importJobUrl(li.externalUrl).catch(() => null);
+      }
+      job = {
+        ...(job || { source: "linkedin", externalId: url, url, applyUrl: li.externalUrl || url, manualApply: true }),
+        title: job?.title || li.title, company: job?.company || li.company, location: job?.location || li.location,
+        description: job?.description?.length > 200 ? job.description : li.description,
+        linkedinUrl: url, easyApply: li.easyApply,
+        notes: li.easyApply ? "Easy Apply on LinkedIn: apply there (takes a minute)." : li.externalUrl ? "" : "Couldn't find the company's apply link; apply from LinkedIn.",
+      };
+      const { score, reasons } = scoreJob(job, { ...targets.filters, titleRequire: [], titleInclude: [], locations: [] });
+      added += db.upsertJobs([{ ...job, matchScore: score || null, matchReasons: reasons }]);
+      console.log(`  [${k + 1}/${urls.length}] ${job.company} · ${job.title}${li.easyApply ? "  (Easy Apply)" : li.externalUrl ? "  → company site" : ""}`);
+    } catch (e) { console.log(`  ! ${url}: ${e.message.split("\n")[0]}`); }
+    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 2000)); // human pace
+  }
+  await browser.close();
+  console.log(`Imported ${added} LinkedIn job(s).`);
 }
 
 async function emailFollowups() {

@@ -107,6 +107,13 @@
       </form>
     </div>
     <div class="panel">
+      <h2>Free drafting with claude.ai</h2>
+      <p class="muted" style="font-size:12px;margin-top:0">Copy a prompt for 8 items, paste it into a claude.ai chat, then paste Claude's reply here.</p>
+      <div class="row"><button onclick="copyPack('jobs')">Copy prompt: next 8 jobs</button><button onclick="copyPack('contacts')">Copy prompt: next 8 contacts</button></div>
+      <textarea id="packReply" placeholder="Paste Claude's reply (the JSON) here" style="margin-top:8px"></textarea>
+      <div style="margin-top:8px"><button class="primary" onclick="savePack()">Save drafts</button> <span id="packMsg" class="muted" style="font-size:12px"></span></div>
+    </div>
+    <div class="panel">
       <h2>Paste job links</h2>
       <p class="muted" style="font-size:12px;margin-top:0">Any career site (Workday, bank and airline sites, Greenhouse…). One per line, up to 200.</p>
       <textarea id="links" placeholder="https://jobs.bombardier.com/job/...&#10;https://careers.aircanada.com/..."></textarea>
@@ -254,7 +261,7 @@ function openContact(id) {
     <textarea id="f-ebody" style="min-height:160px;margin-top:6px">${esc(d.emailBody || "")}</textarea>
     <label>Follow-up 1 (day 4–5) ${copyBtn("f-ef1")}</label><textarea id="f-ef1" style="min-height:70px">${esc(d.emailFollowUp1 || "")}</textarea>
     <label>Follow-up 2 (day 10–12) ${copyBtn("f-ef2")}</label><textarea id="f-ef2" style="min-height:60px">${esc(d.emailFollowUp2 || "")}</textarea>
-    ${c.research ? `<label>Research</label><div class="panel" style="white-space:pre-wrap;font-size:12px">${esc(c.research)}</div>` : ""}
+    <label>Research / hook (one specific recent thing about them; drafts use it)</label><textarea id="f-research" style="min-height:60px">${esc(c.research || "")}</textarea>
     <label>Email address</label><input id="f-email" type="email" value="${esc(c.email || "")}" />
     <label>Notes (what you talked about, who they referred you to…)</label><textarea id="f-notes">${esc(c.notes || "")}</textarea>
     <p><button class="primary" onclick="saveContact('${c.id}')">Save</button></p>`;
@@ -266,7 +273,7 @@ async function saveContact(id) {
   const c = S.contacts.find((x) => x.id === id);
   const draft = { ...(c.draft || {}), connectionNote: $("#f-note").value, followUp: $("#f-fu").value, nudge: $("#f-nudge").value, emailSubject: $("#f-esub").value, emailBody: $("#f-ebody").value, emailFollowUp1: $("#f-ef1").value, emailFollowUp2: $("#f-ef2").value };
   await api(`/api/contacts/${id}`, { status: $("#f-status").value, followUpOn: $("#f-follow").value || null, chatAt: $("#f-chat").value || null,
-    reason: $("#f-reason").value, email: $("#f-email").value || undefined, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
+    reason: $("#f-reason").value, research: $("#f-research").value, email: $("#f-email").value || undefined, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
   dlg.close(); toast("Saved"); load();
 }
 
@@ -292,6 +299,20 @@ $("#jobForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   try { await api("/api/jobs", Object.fromEntries(new FormData(e.target))); e.target.reset(); toast("Job added"); load(); } catch (err) { toast(err.message); }
 });
+async function copyPack(kind) {
+  const r = await api(`/api/pack?kind=${kind}&n=8`);
+  if (!r.count) return toast(`Nothing waiting to draft (${kind})`);
+  await navigator.clipboard.writeText(r.text);
+  toast(`Prompt for ${r.count} ${kind} copied. Paste into claude.ai`);
+  window.open("https://claude.ai/new", "_blank", "noopener");
+}
+async function savePack() {
+  try {
+    const r = await api("/api/pack", { text: $("#packReply").value });
+    $("#packMsg").textContent = `Saved ${r.saved.length}${r.errors.length ? ` · ${r.errors.length} problem(s): ${r.errors[0]}` : ""}`;
+    if (r.saved.length) { $("#packReply").value = ""; load(); }
+  } catch (e) { $("#packMsg").textContent = e.message; }
+}
 $("#importBtn").addEventListener("click", async (e) => {
   const urls = $("#links").value.split(/\s+/).filter(Boolean);
   if (!urls.length) return;

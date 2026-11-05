@@ -7,9 +7,10 @@ import { ROOT } from "./paths.js";
 import { loadProfile, loadTargets } from "./config.js";
 import { discover, draftJob, draftContact, importLinks, todayPlan } from "./commands.js";
 import { searchLinks } from "./outreach/linkedin.js";
+import { buildPack, applyPack, nextForPack } from "./manual.js";
 
 const JOB_FIELDS = ["status", "notes", "followUpOn", "draft"];
-const CONTACT_FIELDS = ["status", "notes", "followUpOn", "draft", "name", "title", "company", "reason", "linkedinUrl", "email", "jobId", "chatAt"];
+const CONTACT_FIELDS = ["status", "notes", "followUpOn", "draft", "name", "title", "company", "reason", "linkedinUrl", "email", "jobId", "chatAt", "research"];
 const pick = (obj, keys) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => keys.includes(k)));
 
 async function body(req) {
@@ -45,12 +46,18 @@ export function createServer() {
         const t = loadTargets(), prof = loadProfile();
         return send(200, searchLinks(url.searchParams.get("company") || "", { roles: t.outreach?.roles, school: prof.schoolName, schoolSlug: t.outreach?.schoolSlug }));
       }
+      if (req.method === "GET" && p === "/api/pack") {
+        const kind = url.searchParams.get("kind") === "contacts" ? "contacts" : "jobs";
+        const items = nextForPack(kind, Math.min(15, Number(url.searchParams.get("n") || 8)));
+        return send(200, { count: items.length, text: items.length ? buildPack(kind, items, loadProfile()) : "" });
+      }
       if (req.method !== "POST") return send(404, { error: "Not found" });
 
       // Simple CSRF guard: only accept JSON posts from this page.
       if (!String(req.headers["content-type"]).includes("application/json")) return send(415, { error: "JSON only" });
 
       if (p === "/api/discover") return send(200, await discover(loadProfile(), loadTargets(), { log: () => {} }));
+      if (p === "/api/pack") return send(200, applyPack(String((await body(req)).text || "")));
       if (p === "/api/import") {
         const { urls = [] } = await body(req);
         if (!Array.isArray(urls) || urls.length > 200) return send(400, { error: "send up to 200 urls" });

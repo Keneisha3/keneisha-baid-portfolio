@@ -17,21 +17,24 @@ All data stays on your machine in `data/tracker.json`.
 | | Needed? | Cost |
 |---|---|---|
 | **Node.js 20+** ([nodejs.org](https://nodejs.org), LTS installer) | Yes | Free |
-| **Google Chrome** (or Playwright's Chromium) | For `apply` / `connect` / `message` | Free |
+| **Google Chrome** (or Playwright's Chromium) | For applying, LinkedIn and email | Free |
 | **Your resume**: `config/resume.tex` (LaTeX works as-is) + `config/resume.pdf` | Yes | – |
-| **Anthropic API key** | Only for Claude-written drafts | Pay per use, roughly 5–10¢ per application and 2–4¢ per person messaged |
+| **Something to write drafts with** | Pick one below | $0 to pay-as-you-go |
 
-Everything except drafting works without a key: job discovery, autofill, LinkedIn assist, and the tracker. Without a key, drafts come from fill-in-the-blank templates, which are noticeably more generic.
+### Drafting engines (set `"ai"` in `config/profile.json`)
 
-**Getting a key:** sign up at [console.anthropic.com](https://console.anthropic.com), add a few dollars of credit under Billing, then create a key under API Keys (it starts with `sk-ant-`). This is separate from a Claude.ai Pro/Max subscription, which doesn't include API usage. $10 covers roughly 100 applications plus 100 outreach messages. You can set a monthly spend limit in the console.
+| Engine | Cost | Quality | Best for |
+|---|---|---|---|
+| `template` (default with no key) | Free | Decent. Picks your most relevant highlights and the "angle" you wrote for that kind of role, and quotes the posting | Bulk applications |
+| **claude.ai copy-paste** (`prompt-pack` → paste in chat → `paste-drafts`, or the dashboard panel) | Free | Claude-quality, 8 items per paste | Your top jobs and all outreach |
+| `claude-code` | Included in Claude Pro/Max | Claude-quality, fully automatic (about 30s per draft), and `research` can search the web | Hands-off, if you have a subscription |
+| `api` | Pay per use | Claude-quality, fastest | Only if you want it |
 
-Keep the key off GitHub. Set it in your terminal instead:
+For `claude-code`: `npm install -g @anthropic-ai/claude-code`, run `claude` once to log in with your Claude account, then set `"ai": "claude-code"`. It counts against your plan's usage limits, so `apply` uses free templates for bulk jobs. Run `draft --top 20` for the ones that matter.
 
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...      # macOS/Linux; add to ~/.zshrc to keep it
-```
-
-On Windows PowerShell: `$env:ANTHROPIC_API_KEY="sk-ant-..."`.
+Recommended split:
+- Free templates for the bulk applications. Many forms don't even ask for a cover letter.
+- Claude (copy-paste or `claude-code`) for your top ~20 jobs a day and every cold email, since that's where a specific, researched message matters.
 
 ## Setup
 
@@ -85,6 +88,14 @@ LinkedIn restricts accounts that go much past ~100 invites a week, and free acco
 - **The job feeds** in `targets.json`. Run `check-targets` once, because the board slugs are best guesses.
 - **`careers` sweeps** for companies without feeds (airlines, banks, Big 4), plus VC portfolio job boards (Portage, Inovia, Base10).
 - **Cold emails** to companies that often hire interns without posting.
+
+## LinkedIn jobs
+
+LinkedIn doesn't allow automated crawling, so this is assisted:
+1. `linkedin-jobs` opens LinkedIn searches built from `linkedinJobs` in `targets.json`: internship level, past week, newest first, across Toronto, Vancouver, Montréal, Calgary, Canada and London.
+2. You browse and copy the links of jobs you like into `linkedin.txt`.
+3. `import-jobs linkedin.txt` opens each one in your logged-in browser, at a human pace, and follows **Apply** to the company's own posting. That posting gets read, scored and autofilled like any other.
+4. Easy Apply jobs are tracked with a note to apply on LinkedIn.
 
 ## Cold outreach that gets replies
 
