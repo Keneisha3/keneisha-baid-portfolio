@@ -78,6 +78,8 @@
   "_ai": "auto | claude-code (uses your Claude Pro/Max login, no API key) | api (needs ANTHROPIC_API_KEY) | template (free, offline). Free claude.ai chat works via prompt-pack / paste-drafts.",
   "angles": {
     "_help": "One or two sentences per kind of role, in your own words, used by the free templates. Only true claims.",
+    "founding": "I'm useful early because I cover both sides: I've shipped production code (SPFx web parts in TypeScript and React, Python automation) and done the business work (client workshops, RFP tooling, an outreach CRM, dashboards for executives), so I can build the thing and help sell it.",
+    "engineering": "I write real software: TypeScript and React web parts at Creospark, Python automation at Pratt & Whitney, and a full-stack forecasting platform from SEC filings with GitHub Actions and a React dashboard.",
     "sales": "I like the front line of a business: at Creospark I ran client workshops, trained 40+ staff and clients, and built the RFP generator and outreach CRM the sales team used.",
     "consulting": "At Creospark I led client work across 3 digital transformation projects, turning 8 workshops into plans that raised efficiency 24%, and I now present program status to C-suite at Pratt & Whitney.",
     "project": "I'm currently an Operations Program Management Intern at Pratt & Whitney Canada, running requirements sessions, tracking risks with action owners and reporting status to executives.",

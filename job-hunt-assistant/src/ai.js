@@ -126,6 +126,8 @@ export async function draftApplication(profile, job, { engine } = {}) {
 // plus the "angle" you wrote for that kind of role. No facts are made up.
 
 const ANGLE_RULES = [
+  ["founding", /founding|founder'?s? associate|chief of staff|first (sales|gtm|ops|engineer|hire)|early[- ]stage generalist/i],
+  ["engineering", /engineer|developer|full[- ]?stack|software/i],
   ["airlines", /airline|airport|aviation|aerospace|flight|aircraft|loyalty|network planning|revenue management/i],
   ["sales", /sales|sdr|bdr|business development|account (exec|manag)|partnership|gtm|go-to-market|revenue|customer success|commercial/i],
   ["consulting", /consult|advisory|strategy|transformation/i],
@@ -209,6 +211,7 @@ export const OUTREACH_GUIDE = `VALUE-FIRST cold outreach rules:
 4. Ask (1 sentence): specific and easy. Startups: a Winter 2027 (Jan-Apr) internship pitched as a project she'd own. Large companies: a 15-minute chat or a referral/pointer to the right team or recruiter, plus the posting if one exists.
 5. Logistics line: Waterloo co-op, 4 months from January 2027, open to relocating (and for UK roles: she'd sort her own UK work authorization; never state a visa she doesn't hold).
 6. Close with her name, portfolio link, and an easy opt-out ("if this isn't on your radar, a quick no is totally fine").
+For FOUNDING roles (founding engineer/GTM, founder's associate, chief of staff) or very early startups (<15 people): lead with something she has actually built or shipped and link it; offer to build or do one small, specific thing for them in a week (a prototype, a pipeline list, a teardown) ONLY as an offer; ask for a Winter 2027 (Jan-Apr) trial internship that could turn into a full-time founding role after she graduates in 2027. Email a founder directly.
 Tone: peer-to-peer, short sentences, no "I hope this email finds you well", no "passionate", no wall of credentials, no attachments.`;
 
 export const contactContext = (profile, contact, job) => `Recipient: ${contact.name}, ${contact.title || "?"} at ${contact.company || "?"}

@@ -91,7 +91,7 @@ LinkedIn restricts accounts that go much past ~100 invites a week, and free acco
 
 ## Your priorities
 
-`targets.json` → `priorities` is set to **tech sales and finance roles, in London and SF/LA**.
+`targets.json` → `priorities` is set to **tech sales (including fintech sales and bank sales/BD in London), finance and founding roles, in London and SF/LA**.
 - Matching jobs get a ★ and a score boost, so they come first in `jobs`, `draft --top`, `apply --next` and the dashboard.
 - Add `--priority` to any command to see only those jobs.
 - Region comes from the job's own location, so a Toronto role at a US company counts as Canada.
@@ -100,6 +100,14 @@ LinkedIn restricts accounts that go much past ~100 invites a week, and free acco
 Timing reality: January starts are rare outside Canada.
 - **UK:** search **off-cycle** (often 6 months).
 - **US:** search **Spring 2027** (Jan–May). You'll likely need a J-1 sponsor, so ask early whether a company will host one.
+
+## Founding and early-stage roles
+
+The third priority lane, **founding**, covers founding engineer, founding GTM/AE, founder's associate, chief of staff and "first hire" roles.
+- **Filters:** these roles pass even without "intern" in the title. Senior ones (senior, staff, lead…) are still filtered out.
+- **Hacker News "Who is hiring?":** read every `discover`. Founders post there directly. Matching posts become jobs, and any founder email in the post becomes an outreach contact linked to that job, ready for `research` → `draft-outreach` → `email`.
+- **Boards opened by `careers --category founding`:** YC Work at a Startup, Wellfound, a16z speedrun, startup.jobs, TrueUp, theInterna, Entrepreneur First.
+- **Pitch:** drafts lead with things you've shipped (code *and* business tools). They offer one small, concrete thing you'd do for them, and ask for a **Winter 2027 trial internship that can turn into a full-time founding role** after you graduate in 2027. Most founding roles are full-time, so that's the honest bridge.
 
 ## LinkedIn jobs
 

@@ -5,7 +5,13 @@ const has = (text, term) => new RegExp(`(^|[^a-z0-9])${esc(term)}($|[^a-z0-9])`,
 
 /** Title-only check, used to skip fetching full descriptions for obvious misses. */
 export function titlePasses(title, filters = {}) {
-  const { titleRequire = [], titleInclude = [], titleExclude = [], termExclude = [] } = filters;
+  const { titleRequire = [], titleInclude = [], titleExclude = [], termExclude = [], titleAlways = [], seniorityExclude = [] } = filters;
+  // Founding / founder's-associate style roles at startups: kept even without "intern" in the title,
+  // and even if they're engineering, as long as they aren't senior.
+  if (titleAlways.some((t) => has(title, t))) {
+    const t = title.replace(/chief of staff/gi, "");
+    return !seniorityExclude.some((x) => has(t, x)) && !termExclude.some((x) => has(title, x));
+  }
   if (titleExclude.some((t) => has(title, t))) return false;
   if (termExclude.some((t) => has(title, t))) return false;
   if (titleRequire.length && !titleRequire.some((t) => has(title, t))) return false;
@@ -37,6 +43,7 @@ export function scoreJob(job, filters = {}) {
 }
 
 const LANES = [
+  ["founding", /founding|founder'?s? associate|chief of staff|first (sales|gtm|ops|engineer|hire|employee)|employee #?\d\b|early[- ]stage generalist/i],
   ["tech sales", /sales|sdr|bdr|business development|account (exec|manag)|partnerships?|gtm|go-to-market|revenue|customer success|commercial/i],
   ["finance", /financ|fintech|invest|venture|valuation|fp&a|treasury|risk|credit|audit|bank|wealth|capital markets|equity|m&a|trading/i],
   ["consulting", /consult|advisory|strategy/i],

@@ -83,7 +83,9 @@ test("priorities: tech sales, finance, London and SF/LA rank first; region comes
   assert.ok(london.matchScore > toronto.matchScore);
   const md = fs.readFileSync(new URL("../seed/priority-leads.md", import.meta.url), "utf8");
   const r = importPipeline(md, { priorities: pr });
-  assert.equal(r.added, 6);
+  assert.equal(r.added, 11);
+  assert.ok(!db.read().jobs.some((j) => j.company === "Company"), "second table's header isn't a job");
+  assert.equal(db.read().jobs.find((j) => j.company === "Clera Labs").lane, "founding");
   const zip = db.read().jobs.find((j) => j.company === "Zipline");
   assert.equal(zip.region, "us");
   assert.ok(zip.priority);

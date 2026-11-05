@@ -16,7 +16,8 @@ function parseMarkdown(text) {
     if (!line.trim().startsWith("|")) { keys = keys && line.trim() === "" ? keys : keys; continue; }
     const cells = line.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
     if (cells.every((c) => /^:?-+:?$/.test(c))) continue;
-    if (!keys) { keys = cells.map((h) => h.toLowerCase().replace(/[^a-z]/g, "")); continue; }
+    const asKeys = cells.map((h) => h.toLowerCase().replace(/[^a-z]/g, ""));
+    if (!keys || (asKeys.includes("company") && asKeys.includes("link"))) { keys = asKeys; continue; } // header (incl. later tables)
     rows.push(Object.fromEntries(keys.map((k, i) => [k, cells[i] || ""])));
   }
   // "- Company | Role | City | Reason | ..." bullets under a "Closed or skipped" heading.

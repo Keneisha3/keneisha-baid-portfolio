@@ -16,11 +16,30 @@ export async function discover(profile, targets, { log = console.log, ...filter 
   log(`Checking ${feeds.length} job feeds…`);
   const filters = targets.filters || {};
   const { jobs, failures } = await fetchAll(companies, { onError: log, titleOk: (t) => titlePasses(t, filters) });
-  const found = scoreAll(jobs, filters).map((j) => applyPriorities(j, targets.priorities));
+  // Founder posts (HN) skip the location filter when remote and are scored on the whole post.
+  const found = [...scoreAll(jobs.filter((j) => j.source !== "hn"), filters),
+    ...jobs.filter((j) => j.source === "hn").map((j) => ({ ...j, ...scoreFounderPost(j, filters) })).filter((j) => j.matchScore > 0)]
+    .map((j) => applyPriorities(j, targets.priorities));
   const added = db.upsertJobs(found);
+  let contacts = 0;
+  for (const j of found.filter((x) => x.contactEmail)) {
+    const row = db.read().jobs.find((x) => x.source === j.source && x.externalId === j.externalId);
+    const before = db.read().contacts.length;
+    db.addContact({ name: `${j.company} hiring`, company: j.company, email: j.contactEmail, reason: `Posted "${j.title}" in HN ${j.hnThread || "Who is hiring"}`,
+      jobId: row?.id, companySize: "startup", region: j.region, category: "founding", notes: j.applyUrl });
+    contacts += db.read().contacts.length - before;
+  }
+  if (contacts) log(`${contacts} founder email(s) from Hacker News added as outreach contacts.`);
   log(`Fetched ${jobs.length} postings, ${found.length} match your filters (${found.filter((j) => j.priority).length} in your priorities), ${added} new.`);
   if (failures.length) log(`${failures.length} feed(s) failed. Run check-targets to see which addresses to fix or disable.`);
   return { fetched: jobs.length, matched: found.length, added, failed: failures.length };
+}
+
+function scoreFounderPost(job, filters) {
+  const firstLine = (job.description || "").split("\n")[0];
+  const remote = /remote/i.test(firstLine);
+  const r = scoreJob({ ...job, location: remote ? "" : job.location || firstLine }, { ...filters, titleRequire: [], titleInclude: [], titleExclude: filters.seniorityExclude || [] });
+  return { matchScore: r.score, matchReasons: [...r.reasons, "founder post"] };
 }
 
 function scoreAll(jobs, filters) {

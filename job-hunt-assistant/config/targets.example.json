@@ -1275,6 +1275,192 @@
       "category": "tech sales",
       "region": "uk",
       "size": "large"
+    },
+    {
+      "name": "Hacker News: Who is hiring? (founders post directly)",
+      "ats": "hn",
+      "category": "founding",
+      "region": "",
+      "size": "startup"
+    },
+    {
+      "name": "YC: founding roles",
+      "ats": "careers",
+      "category": "founding",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://www.workatastartup.com/jobs?jobType=intern"
+    },
+    {
+      "name": "Wellfound: founding roles",
+      "ats": "careers",
+      "category": "founding",
+      "region": "",
+      "size": "startup",
+      "careersUrl": "https://wellfound.com/role/founding-engineer"
+    },
+    {
+      "name": "a16z speedrun: all roles",
+      "ats": "careers",
+      "category": "founding",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://speedrun-talent-network.com/jobs"
+    },
+    {
+      "name": "Entrepreneur First (London)",
+      "ats": "careers",
+      "category": "founding",
+      "region": "uk",
+      "size": "startup",
+      "careersUrl": "https://www.joinef.com/"
+    },
+    {
+      "name": "Adyen (London)",
+      "ats": "greenhouse",
+      "board": "adyen",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Airwallex (London)",
+      "ats": "ashby",
+      "board": "airwallex",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Thought Machine",
+      "ats": "greenhouse",
+      "board": "thoughtmachine",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "TrueLayer",
+      "ats": "ashby",
+      "board": "truelayer",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Pleo (London)",
+      "ats": "ashby",
+      "board": "pleo",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "PrimaryBid",
+      "ats": "greenhouse",
+      "board": "primarybid",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Yapily",
+      "ats": "ashby",
+      "board": "yapily",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Stripe London",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://stripe.com/jobs/search?office_locations=Europe--London"
+    },
+    {
+      "name": "Barclays (Markets & Corporate Banking off-cycle)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://search.jobs.barclays"
+    },
+    {
+      "name": "Citi London (Markets/Banking off-cycle)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "BNP Paribas London (off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Deutsche Bank London (off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Bloomberg London (sales)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "LSEG (sales/BD)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "startup.jobs (SF internships)",
+      "ats": "careers",
+      "category": "founding",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://startup.jobs/locations/san-francisco/internships"
+    },
+    {
+      "name": "TrueUp (YC internships)",
+      "ats": "careers",
+      "category": "founding",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://www.trueup.io/yc/intern"
+    },
+    {
+      "name": "theInterna (Founder's Associate roles)",
+      "ats": "careers",
+      "category": "founding",
+      "region": "uk",
+      "size": "startup",
+      "careersUrl": "https://theinterna.com/jobtype/founders-associate/"
+    },
+    {
+      "name": "Wellfound Toronto",
+      "ats": "careers",
+      "category": "founding",
+      "region": "canada",
+      "size": "startup",
+      "careersUrl": "https://wellfound.com/location/toronto"
+    },
+    {
+      "name": "Sierra",
+      "ats": "careers",
+      "category": "founding",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://sierra.ai/careers"
     }
   ],
   "filters": {
@@ -1338,7 +1524,18 @@
       "commercial",
       "marketing",
       "procurement",
-      "supply chain"
+      "supply chain",
+      "fintech sales",
+      "client coverage",
+      "coverage",
+      "markets",
+      "global markets",
+      "sales & trading",
+      "sales and trading",
+      "corporate banking",
+      "relationship",
+      "payments",
+      "merchant"
     ],
     "titleExclude": [
       "senior",
@@ -1441,7 +1638,28 @@
       "operations research",
       "optimization"
     ],
-    "minScore": 45
+    "minScore": 45,
+    "titleAlways": [
+      "founding",
+      "founder's associate",
+      "founders associate",
+      "founder associate",
+      "chief of staff",
+      "first sales hire",
+      "first gtm hire",
+      "early stage generalist",
+      "bizops generalist"
+    ],
+    "seniorityExclude": [
+      "senior",
+      "sr.",
+      "staff",
+      "principal",
+      "director",
+      "head of",
+      "vp",
+      "lead"
+    ]
   },
   "goals": {
     "applicationsPerDay": 100,
@@ -1471,7 +1689,12 @@
       "investment intern",
       "strategic finance intern",
       "fintech intern",
-      "off-cycle internship"
+      "off-cycle internship",
+      "founding",
+      "founder's associate",
+      "chief of staff intern",
+      "fintech sales intern",
+      "business development off-cycle"
     ],
     "locations": [
       "London, England, United Kingdom",
@@ -1482,10 +1705,11 @@
     ]
   },
   "priorities": {
-    "_help": "Jobs in these lanes or places get +boost each, so they sort first everywhere (jobs, apply --next, draft --top). Add --priority to only see them.",
+    "_help": "Jobs in these lanes or places get +boost each, so they sort first everywhere. Lanes: tech sales (incl. fintech sales and bank sales/BD), finance, founding (founding engineer/GTM, founder's associate, chief of staff). Add --priority to only see them.",
     "lanes": [
       "tech sales",
-      "finance"
+      "finance",
+      "founding"
     ],
     "regions": [
       "uk",

@@ -9,7 +9,7 @@ const decodeEntities = (s = "") =>
   s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'").replace(/&nbsp;/g, " ")
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n)).replace(/&amp;/g, "&");
 export const htmlToText = (html = "") =>
-  decodeEntities(decodeEntities(String(html)).replace(/<\/(p|li|h\d|div|br)>/gi, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, ""))
+  decodeEntities(decodeEntities(String(html)).replace(/<\/(p|li|h\d|div|br)>|<p[^>]*>/gi, "\n").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, ""))
     .replace(/[ \t]+/g, " ").replace(/\n\s*\n\s*\n+/g, "\n\n").trim();
 
 async function get(url, opts = {}) {
@@ -118,7 +118,46 @@ export async function successfactors(t) {
   });
 }
 
-export const FETCHERS = { greenhouse, lever, ashby, workable, recruitee, smartrecruiters, workday, successfactors };
+// Hacker News "Ask HN: Who is hiring?" (monthly). Founders post directly, often with their own email,
+// so each match also becomes an outreach contact. Read through HN's public Algolia API.
+const HN_ROLE = /founding|founder'?s? associate|chief of staff|first (sales|gtm|ops|engineer|hire)|intern(ship)?|co-?op|new grad|graduate|junior|entry[- ]level|early career/i;
+const HN_SENIOR = /\b(senior|sr\.?|staff|principal|director|head of|vp)\b/i;
+const LOCATION_WORDS = /remote|onsite|on-site|hybrid|london|uk|san francisco|sf\b|bay area|los angeles|la\b|new york|nyc|toronto|vancouver|montreal|canada|usa|us\b|europe|emea/i;
+export function parseHnPost(text) {
+  const plain = htmlToText(text);
+  const [firstLine = ""] = plain.split("\n");
+  const parts = firstLine.split("|").map((x) => x.trim()).filter(Boolean);
+  const company = (parts[0] || "").replace(/\s*\(.*?\)\s*$/, "").slice(0, 80);
+  const role = parts.slice(1).find((x) => HN_ROLE.test(x)) || parts.slice(1).find((x) => /engineer|sales|account|growth|ops|operations|analyst|finance|gtm|business/i.test(x)) || "";
+  const location = parts.slice(1).filter((x) => LOCATION_WORDS.test(x) && x !== role).join(" · ");
+  const deob = plain.replace(/\s*[[(]\s*at\s*[\])]\s*|\s+at\s+(?=[a-z0-9-]+\s*(\.|\[?dot\]?|\(dot\)))/gi, "@").replace(/\s*[[(]?\s*dot\s*[\])]?\s*/gi, (m) => (/dot/i.test(m) ? "." : m));
+  const email = (deob.match(/[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z0-9-]+)+/i) || [])[0] || "";
+  const link = (plain.match(/https?:\/\/[^\s)\]]+/) || [])[0] || "";
+  return { company, role, location, email: /example\.com$/i.test(email) ? "" : email, link, plain };
+}
+
+export async function hn(t) {
+  const q = await get("https://hn.algolia.com/api/v1/search_by_date?tags=story,author_whoishiring&query=who%20is%20hiring&hitsPerPage=5");
+  const story = (q.hits || []).find((h) => /who is hiring/i.test(h.title));
+  if (!story) throw new Error("couldn't find this month's Who is hiring? thread");
+  const item = await get(`https://hn.algolia.com/api/v1/items/${story.objectID}`);
+  const out = [];
+  for (const c of item.children || []) {
+    if (!c.text) continue;
+    const p = parseHnPost(c.text);
+    const head = p.plain.slice(0, 400);
+    if (!p.company || !HN_ROLE.test(head)) continue;
+    const title = p.role || (head.match(HN_ROLE) || [])[0];
+    if (HN_SENIOR.test(title) && !/founding/i.test(title)) continue;
+    out.push(base(t, { source: "hn", externalId: String(c.id), company: p.company, title: /founding|founder|chief of staff/i.test(title) ? title : `${title} (${p.company})`.replace(/ \(.*\)$/, ""),
+      location: p.location, description: p.plain.slice(0, 8000), url: `https://news.ycombinator.com/item?id=${c.id}`,
+      applyUrl: p.link || `https://news.ycombinator.com/item?id=${c.id}`, postedAt: c.created_at, manualApply: true,
+      contactEmail: p.email, size: "startup", companySize: "startup", hnThread: story.title }));
+  }
+  return out;
+}
+
+export const FETCHERS = { greenhouse, lever, ashby, workable, recruitee, smartrecruiters, workday, successfactors, hn };
 
 /** targets.companies: [{ name, ats, board | host/tenant/site, category }]. Entries with ats "careers" are opened by hand. */
 export async function fetchAll(companies, { onError = console.warn, titleOk } = {}) {
