@@ -51,6 +51,41 @@ Then:
 
 These files are git-ignored, so your personal details never get committed.
 
+## Running 100 applications a day
+
+Budget about 3–4 hours. Most of it goes to the review-and-submit step, at roughly 1–2 minutes per application once the forms fill themselves.
+
+```bash
+npm run jha -- today                       # where you are vs. the goals in targets.json
+npm run jha -- discover                    # every job feed in targets.json
+npm run jha -- careers --category airlines # opens career pages that have no feed; copy links of good postings
+npm run jha -- import-jobs links.txt       # …and import them (or paste into the dashboard)
+npm run jha -- draft --all                 # Claude drafts everything new, 4 at a time
+npm run jha -- apply --next 100 --tabs 5   # 5 autofilled tabs at a time; submit, press Enter, repeat
+```
+
+How the apply loop behaves:
+- Each batch opens 5 applications already filled: contact details, resume, cover letter, the "why us" questions, and the screening questions you've answered in `profile.json` (work authorization, start date, relocation and so on).
+- It lists only what's left for you, usually salary or a company-specific question. You submit each tab and press Enter.
+- It sees the "Thank you for applying" page and marks the job applied by itself.
+- `--auto-submit` clicks Submit for you, but only on forms where every required field is already filled.
+- Career sites that need an account (Workday, SuccessFactors, bank and airline sites) still open with your drafts ready, but you sign in and paste.
+
+**Outreach at volume.** Use email for most of it, because LinkedIn caps you:
+
+| Channel | Safe daily volume | Command |
+|---|---|---|
+| Cold email from your own inbox | 30–40 | `email --next 40` opens compose tabs in Outlook (or Gmail via `emailProvider`) |
+| LinkedIn invites | ~20/day, ~100/week | `connect --next 20` |
+
+LinkedIn restricts accounts that go much past ~100 invites a week, and free accounts only get a few personalised notes a month. When the note box is missing, send without a note, then use `message <id>` once they accept. Small startups without job postings (from Wellfound, the U of T startup board, VC portfolio boards) are the best email targets. Put them in a CSV (`name,company,email,reason`) and run `import-contacts`.
+
+**Where the 100 postings come from.** Live Winter 2027 internships are scarce by November, so plan to combine:
+- **WaterlooWorks.** It's your biggest source as a Waterloo co-op student, but it can't be automated (it requires your school login). Add the good ones with the dashboard's "Add a job manually" form so they're tracked with everything else.
+- **The job feeds** in `targets.json`. Run `check-targets` once, because the board slugs are best guesses.
+- **`careers` sweeps** for companies without feeds (airlines, banks, Big 4), plus VC portfolio job boards (Portage, Inovia, Base10).
+- **Cold emails** to companies that often hire interns without posting.
+
 ## Daily routine
 
 ```bash

@@ -101,6 +101,8 @@ const OutreachDraft = z.object({
   connectionNote: z.string().describe(`LinkedIn connection note, STRICTLY under ${NOTE_LIMIT} characters including spaces`),
   followUp: z.string().describe("Message to send after they accept: asks for a 15-20 minute coffee chat, gives 2 concrete things to ask about, offers flexibility. Under 90 words."),
   nudge: z.string().describe("Polite one-line follow-up if no reply after a week. Under 40 words."),
+  emailSubject: z.string().describe("Cold email subject line, under 9 words, specific (e.g. names the term and the kind of role), no clickbait"),
+  emailBody: z.string().describe("Cold email, under 140 words, plain text: who she is in one line, 2 concrete proof points relevant to this company, the ask (a Winter 2027 internship/co-op, or a 15-minute chat if no role exists), portfolio link, sign-off with name. No attachments mentioned unless asked."),
 });
 
 export async function draftOutreach(profile, contact, job) {
@@ -109,6 +111,9 @@ Why them: ${contact.reason || "works in a field the sender is targeting"}
 ${contact.notes ? `Notes about them: ${contact.notes}` : ""}
 ${job ? `Related role the sender is applying to: ${job.title} at ${job.company}` : ""}
 Sender's coffee-chat goal: ${profile.outreachGoal || "learn about their path and the team, and get advice"}
+Sender's job-search ask: ${profile.jobAsk || "a Winter 2027 (January to April) internship or co-op"}
+Sender's portfolio: ${profile.website || profile.linkedin}
+If the recipient is a company inbox or team rather than a named person, greet the team and skip personal references.
 
 ---
 Draft the LinkedIn messages. Reference something specific to the recipient when the notes allow, and a genuine shared link (school, field, role) when one exists.`;
@@ -133,6 +138,19 @@ function templateOutreach(profile, contact) {
     ),
     followUp: `Thanks for connecting, ${first}! I'm exploring ${profile.targetArea || "roles like yours"} and would really value 15-20 minutes to hear about your path to ${contact.company} and what you'd tell someone starting out. Happy to work around your schedule. Would a quick virtual coffee sometime in the next couple of weeks work?`,
     nudge: `Hi ${first}, just floating this back up in case it got buried. No pressure at all if now's busy!`,
+    emailSubject: `${profile.jobAsk ? "Winter 2027 co-op" : "Internship"} inquiry: ${profile.shortIntro || profile.name}`,
+    emailBody: `Hi ${first},
+
+I'm ${profile.name}, a ${profile.shortIntro || profile.headline}. I'm looking for ${profile.jobAsk || "a Winter 2027 (January to April) internship or co-op"} and ${contact.company || "your team"} is high on my list.
+
+A couple of things I've done: ${(profile.highlights || []).slice(0, 2).join("; ")}.
+
+If there's room for an intern this winter, I'd love to be considered. If not, I'd still value 15 minutes to learn how the team works.
+
+Portfolio: ${profile.website || profile.linkedin}
+
+Thanks,
+${profile.name}`,
     by: "template",
     at: new Date().toISOString(),
   };

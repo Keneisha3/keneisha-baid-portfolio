@@ -54,5 +54,22 @@
   "voice": "Friendly, direct, a little playful. Short sentences.",
   "resumePdfPath": "config/resume.pdf",
   "resumeTextPath": "config/resume.tex",
-  "_phone": "Add your phone number in config/profile.json (git-ignored), not here: this example file is committed."
+  "_phone": "Add your phone number in config/profile.json (git-ignored), not here: this example file is committed.",
+  "jobAsk": "a Winter 2027 (January to April) internship or co-op, and I can relocate anywhere in Canada",
+  "emailProvider": "outlook",
+  "screeningAnswers": {
+    "_help": "Used to answer common form questions. Leave a value empty to always answer it yourself. Check every one of these is true for you.",
+    "workAuthCanada": "Yes",
+    "workAuthUS": "",
+    "needsSponsorshipCanada": "No",
+    "needsSponsorshipUS": "",
+    "willingToRelocate": "Yes",
+    "startDate": "January 2027",
+    "termLength": "4 months",
+    "currentlyEnrolled": "Yes",
+    "coopProgram": "Yes",
+    "heardFrom": "Company careers page",
+    "salaryExpectation": "",
+    "declineDemographicQuestions": true
+  }
 }

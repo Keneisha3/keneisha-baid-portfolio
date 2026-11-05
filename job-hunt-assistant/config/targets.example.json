@@ -1,22 +1,671 @@
 {
-  "_help": "board = the slug in the company's job-board URL: boards.greenhouse.io/<board>, jobs.lever.co/<board>, jobs.ashbyhq.com/<board>",
+  "_help": "ats: greenhouse | lever | ashby | workable | recruitee | smartrecruiters (board = slug in their job-board URL), workday (host, tenant, site from https://HOST/SITE), successfactors (host of jobs.company.com), or careers (no feed: `careers` opens the page / a search for you). Run `check-targets` to see which feeds work and set \"disabled\": true on the ones that 404.",
+  "_note": "Board slugs and SuccessFactors hosts are best guesses that couldn't be verified when this file was written. `check-targets` tells you which are wrong.",
   "companies": [
-    { "name": "Stripe", "ats": "greenhouse", "board": "stripe" },
-    { "name": "Databricks", "ats": "greenhouse", "board": "databricks" },
-    { "name": "Plaid", "ats": "lever", "board": "plaid" },
-    { "name": "Cohere", "ats": "ashby", "board": "cohere" },
-    { "name": "Ramp", "ats": "ashby", "board": "ramp" }
+    {
+      "name": "Wealthsimple",
+      "ats": "ashby",
+      "board": "wealthsimple",
+      "category": "fintech"
+    },
+    {
+      "name": "Stripe",
+      "ats": "greenhouse",
+      "board": "stripe",
+      "category": "fintech"
+    },
+    {
+      "name": "Plaid",
+      "ats": "lever",
+      "board": "plaid",
+      "category": "fintech"
+    },
+    {
+      "name": "Ramp",
+      "ats": "ashby",
+      "board": "ramp",
+      "category": "fintech"
+    },
+    {
+      "name": "Brex",
+      "ats": "greenhouse",
+      "board": "brex",
+      "category": "fintech"
+    },
+    {
+      "name": "Robinhood",
+      "ats": "greenhouse",
+      "board": "robinhood",
+      "category": "fintech"
+    },
+    {
+      "name": "Affirm",
+      "ats": "greenhouse",
+      "board": "affirm",
+      "category": "fintech"
+    },
+    {
+      "name": "Chime",
+      "ats": "greenhouse",
+      "board": "chime",
+      "category": "fintech"
+    },
+    {
+      "name": "Coinbase",
+      "ats": "greenhouse",
+      "board": "coinbase",
+      "category": "fintech"
+    },
+    {
+      "name": "Mercury",
+      "ats": "ashby",
+      "board": "mercury",
+      "category": "fintech"
+    },
+    {
+      "name": "KOHO",
+      "ats": "lever",
+      "board": "koho",
+      "category": "fintech"
+    },
+    {
+      "name": "Wave Financial",
+      "ats": "greenhouse",
+      "board": "wave",
+      "category": "fintech"
+    },
+    {
+      "name": "Float",
+      "ats": "ashby",
+      "board": "float",
+      "category": "fintech"
+    },
+    {
+      "name": "Neo Financial",
+      "ats": "lever",
+      "board": "neofinancial",
+      "category": "fintech"
+    },
+    {
+      "name": "Questrade",
+      "ats": "greenhouse",
+      "board": "questrade",
+      "category": "fintech"
+    },
+    {
+      "name": "Nesto",
+      "ats": "ashby",
+      "board": "nesto",
+      "category": "fintech"
+    },
+    {
+      "name": "Borrowell",
+      "ats": "greenhouse",
+      "board": "borrowell",
+      "category": "fintech"
+    },
+    {
+      "name": "Clearco",
+      "ats": "greenhouse",
+      "board": "clearco",
+      "category": "fintech"
+    },
+    {
+      "name": "Mogo",
+      "ats": "greenhouse",
+      "board": "mogo",
+      "category": "fintech"
+    },
+    {
+      "name": "Wealthica",
+      "ats": "lever",
+      "board": "wealthica",
+      "category": "fintech"
+    },
+    {
+      "name": "Portage Ventures (fintech VC)",
+      "ats": "careers",
+      "category": "finance",
+      "careersUrl": "https://portageventures.com/jobs"
+    },
+    {
+      "name": "Loop Financial",
+      "ats": "careers",
+      "category": "fintech"
+    },
+    {
+      "name": "Inovia Capital (portfolio job board)",
+      "ats": "careers",
+      "category": "finance",
+      "careersUrl": "https://www.inovia.vc/jobs"
+    },
+    {
+      "name": "Base10 (portfolio job board)",
+      "ats": "careers",
+      "category": "fintech",
+      "careersUrl": "https://careers.base10.vc/jobs"
+    },
+    {
+      "name": "Cohere",
+      "ats": "ashby",
+      "board": "cohere",
+      "category": "tech sales"
+    },
+    {
+      "name": "Databricks",
+      "ats": "greenhouse",
+      "board": "databricks",
+      "category": "tech sales"
+    },
+    {
+      "name": "Faire",
+      "ats": "greenhouse",
+      "board": "faire",
+      "category": "tech sales"
+    },
+    {
+      "name": "Dialpad",
+      "ats": "greenhouse",
+      "board": "dialpad",
+      "category": "tech sales"
+    },
+    {
+      "name": "Top Hat",
+      "ats": "greenhouse",
+      "board": "tophat",
+      "category": "tech sales"
+    },
+    {
+      "name": "Jobber",
+      "ats": "greenhouse",
+      "board": "jobber",
+      "category": "tech sales"
+    },
+    {
+      "name": "Klue",
+      "ats": "greenhouse",
+      "board": "klue",
+      "category": "tech sales"
+    },
+    {
+      "name": "Thinkific",
+      "ats": "greenhouse",
+      "board": "thinkific",
+      "category": "tech sales"
+    },
+    {
+      "name": "Visier",
+      "ats": "greenhouse",
+      "board": "visier",
+      "category": "tech sales"
+    },
+    {
+      "name": "Benevity",
+      "ats": "greenhouse",
+      "board": "benevity",
+      "category": "tech sales"
+    },
+    {
+      "name": "ApplyBoard",
+      "ats": "greenhouse",
+      "board": "applyboard",
+      "category": "tech sales"
+    },
+    {
+      "name": "League",
+      "ats": "greenhouse",
+      "board": "league",
+      "category": "tech sales"
+    },
+    {
+      "name": "Ada",
+      "ats": "greenhouse",
+      "board": "ada18",
+      "category": "tech sales"
+    },
+    {
+      "name": "1Password",
+      "ats": "ashby",
+      "board": "1password",
+      "category": "tech sales"
+    },
+    {
+      "name": "Vidyard",
+      "ats": "greenhouse",
+      "board": "vidyard",
+      "category": "tech sales"
+    },
+    {
+      "name": "Clio",
+      "ats": "greenhouse",
+      "board": "clio",
+      "category": "tech sales"
+    },
+    {
+      "name": "Unbounce",
+      "ats": "greenhouse",
+      "board": "unbounce",
+      "category": "tech sales"
+    },
+    {
+      "name": "Hootsuite",
+      "ats": "greenhouse",
+      "board": "hootsuite",
+      "category": "tech sales"
+    },
+    {
+      "name": "MetaOptima",
+      "ats": "lever",
+      "board": "metaoptima",
+      "category": "tech sales"
+    },
+    {
+      "name": "Withe",
+      "ats": "careers",
+      "category": "tech sales",
+      "careersUrl": "https://withe.co/jobs/gtm-operations-intern"
+    },
+    {
+      "name": "Refold AI",
+      "ats": "careers",
+      "category": "tech sales"
+    },
+    {
+      "name": "Trellis",
+      "ats": "careers",
+      "category": "tech sales"
+    },
+    {
+      "name": "Ontraccr",
+      "ats": "careers",
+      "category": "tech sales"
+    },
+    {
+      "name": "Shopify",
+      "ats": "careers",
+      "category": "tech sales",
+      "careersUrl": "https://www.shopify.com/careers"
+    },
+    {
+      "name": "Alpha FMC",
+      "ats": "greenhouse",
+      "board": "alphaawmnaearlycareers",
+      "category": "consulting"
+    },
+    {
+      "name": "Deloitte Canada",
+      "ats": "successfactors",
+      "host": "careers.deloitte.ca",
+      "search": "intern",
+      "category": "consulting",
+      "careersUrl": "https://careers.deloitte.ca"
+    },
+    {
+      "name": "Scotiabank",
+      "ats": "successfactors",
+      "host": "jobs.scotiabank.com",
+      "search": "intern",
+      "category": "finance",
+      "careersUrl": "https://jobs.scotiabank.com"
+    },
+    {
+      "name": "KPMG Canada",
+      "ats": "careers",
+      "category": "consulting",
+      "careersUrl": "https://kpmg.com/ca/en/careers/students.html"
+    },
+    {
+      "name": "PwC Canada",
+      "ats": "careers",
+      "category": "consulting",
+      "careersUrl": "https://jobs-ca.pwc.com/campus/ca/search-results"
+    },
+    {
+      "name": "EY Canada",
+      "ats": "careers",
+      "category": "consulting"
+    },
+    {
+      "name": "MNP",
+      "ats": "careers",
+      "category": "consulting"
+    },
+    {
+      "name": "CGI",
+      "ats": "careers",
+      "category": "consulting"
+    },
+    {
+      "name": "Accenture Canada",
+      "ats": "careers",
+      "category": "consulting"
+    },
+    {
+      "name": "RBC",
+      "ats": "careers",
+      "category": "finance",
+      "careersUrl": "https://jobs.rbc.com"
+    },
+    {
+      "name": "TD",
+      "ats": "careers",
+      "category": "finance"
+    },
+    {
+      "name": "BMO",
+      "ats": "careers",
+      "category": "finance",
+      "careersUrl": "https://jobs.bmo.com/ca/en/campus"
+    },
+    {
+      "name": "CIBC",
+      "ats": "careers",
+      "category": "finance"
+    },
+    {
+      "name": "Geotab",
+      "ats": "careers",
+      "category": "project management"
+    },
+    {
+      "name": "Sanctuary AI",
+      "ats": "careers",
+      "category": "project management"
+    },
+    {
+      "name": "SAP Vancouver (iXp)",
+      "ats": "careers",
+      "category": "project management"
+    },
+    {
+      "name": "Horizon Labs",
+      "ats": "careers",
+      "category": "project management"
+    },
+    {
+      "name": "Air Canada",
+      "ats": "careers",
+      "category": "airlines",
+      "careersUrl": "https://careers.aircanada.com"
+    },
+    {
+      "name": "WestJet",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Porter Airlines",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Air Transat",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Flair Airlines",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Jazz Aviation",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Sunwing",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Harbour Air",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Air Canada Vacations",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Aeroplan",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "NAV CANADA",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Toronto Pearson (GTAA)",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Vancouver Airport (YVR)",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "Montréal-Trudeau (ADM)",
+      "ats": "careers",
+      "category": "airlines"
+    },
+    {
+      "name": "CAE",
+      "ats": "careers",
+      "category": "aerospace"
+    },
+    {
+      "name": "Bombardier",
+      "ats": "successfactors",
+      "host": "jobs.bombardier.com",
+      "search": "intern",
+      "category": "aerospace",
+      "careersUrl": "https://jobs.bombardier.com"
+    },
+    {
+      "name": "De Havilland Canada",
+      "ats": "careers",
+      "category": "aerospace"
+    },
+    {
+      "name": "Pratt & Whitney Canada (RTX)",
+      "ats": "careers",
+      "category": "aerospace"
+    },
+    {
+      "name": "Airbus Canada",
+      "ats": "careers",
+      "category": "aerospace"
+    },
+    {
+      "name": "Boeing Canada",
+      "ats": "careers",
+      "category": "aerospace"
+    },
+    {
+      "name": "MRG Group",
+      "ats": "careers",
+      "category": "events"
+    },
+    {
+      "name": "Live Nation Canada",
+      "ats": "careers",
+      "category": "events"
+    },
+    {
+      "name": "StageKeep",
+      "ats": "careers",
+      "category": "events"
+    },
+    {
+      "name": "Open Music Networks",
+      "ats": "careers",
+      "category": "events"
+    }
   ],
   "filters": {
-    "titleInclude": ["intern", "co-op", "coop", "new grad", "analyst", "data", "business", "operations", "product"],
-    "titleExclude": ["senior", "sr.", "staff", "principal", "director", "manager", "lead", "head of", "vp"],
-    "locations": ["Toronto", "Waterloo", "Canada", "Remote", "New York", "San Francisco"],
-    "keywords": ["python", "sql", "excel", "power bi", "tableau", "analytics", "forecast", "automation", "dashboard", "finance", "modeling", "stakeholder", "process", "machine learning"],
-    "minScore": 55
+    "titleRequire": [
+      "intern",
+      "internship",
+      "co-op",
+      "coop",
+      "co op",
+      "student",
+      "stagiaire",
+      "stage",
+      "winter 2027"
+    ],
+    "titleInclude": [
+      "analyst",
+      "associate",
+      "sales",
+      "sdr",
+      "bdr",
+      "business development",
+      "account",
+      "partnerships",
+      "gtm",
+      "go-to-market",
+      "revenue",
+      "customer success",
+      "project",
+      "program",
+      "pmo",
+      "coordinator",
+      "consultant",
+      "consulting",
+      "advisory",
+      "operations",
+      "ops",
+      "strategy",
+      "finance",
+      "financial",
+      "fp&a",
+      "investment",
+      "venture",
+      "treasury",
+      "risk",
+      "valuation",
+      "audit",
+      "product",
+      "data",
+      "business",
+      "planning",
+      "network planning",
+      "revenue management",
+      "airport",
+      "flight operations",
+      "loyalty",
+      "commercial",
+      "marketing",
+      "procurement",
+      "supply chain"
+    ],
+    "titleExclude": [
+      "senior",
+      "sr.",
+      "staff",
+      "principal",
+      "director",
+      "manager",
+      "head of",
+      "vp",
+      "phd",
+      "mba",
+      "nurse",
+      "mechanic",
+      "pilot",
+      "technician",
+      "software engineer",
+      "software developer",
+      "firmware"
+    ],
+    "termExclude": [
+      "summer 2027",
+      "fall 2027",
+      "fall 2026",
+      "summer 2026",
+      "may 2027",
+      "september 2027"
+    ],
+    "termPrefer": [
+      "winter 2027",
+      "january 2027",
+      "jan 2027",
+      "jan-apr",
+      "january to april",
+      "4 month",
+      "4-month"
+    ],
+    "locations": [
+      "Toronto",
+      "Mississauga",
+      "Waterloo",
+      "Kitchener",
+      "Ottawa",
+      "Montreal",
+      "Montréal",
+      "Dorval",
+      "Vancouver",
+      "Burnaby",
+      "Richmond",
+      "Calgary",
+      "Edmonton",
+      "Canada",
+      "Remote",
+      "New York",
+      "San Francisco"
+    ],
+    "keywords": [
+      "python",
+      "sql",
+      "excel",
+      "power bi",
+      "tableau",
+      "analytics",
+      "forecast",
+      "automation",
+      "dashboard",
+      "finance",
+      "financial model",
+      "valuation",
+      "stakeholder",
+      "process",
+      "requirements",
+      "crm",
+      "salesforce",
+      "hubspot",
+      "pipeline",
+      "project management",
+      "jira",
+      "presentation",
+      "machine learning",
+      "operations research",
+      "optimization"
+    ],
+    "minScore": 45
+  },
+  "goals": {
+    "applicationsPerDay": 100,
+    "emailsPerDay": 40,
+    "linkedinPerDay": 20,
+    "linkedinPerWeek": 100
   },
   "outreach": {
-    "roles": ["Business Analyst", "Data Analyst", "Data Scientist", "Product Manager", "Strategy"],
+    "roles": [
+      "Business Analyst",
+      "Project Coordinator",
+      "Account Executive",
+      "Sales Development",
+      "Analyst",
+      "Recruiter",
+      "University Recruiter"
+    ],
     "schoolSlug": "uwaterloo",
-    "dailyLimit": 15
+    "dailyLimit": 20
   }
 }

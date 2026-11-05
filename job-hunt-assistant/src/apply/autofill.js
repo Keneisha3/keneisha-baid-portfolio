@@ -93,39 +93,142 @@ export async function autofill(page, job, profile, draft) {
     }
   }
 
-  // Generic label-driven pass for everything else (custom questions, Ashby, Workday-lite forms).
+  // Generic label-driven pass for everything else (custom questions, Ashby, other ATSs).
   const controls = page.locator("input:visible, textarea:visible");
   const count = await controls.count();
   for (let i = 0; i < count; i++) {
     const el = controls.nth(i);
-    const type = (await el.getAttribute("type")) || "text";
-    if (!["text", "email", "tel", "url", "search", null].includes(type) && (await el.evaluate((n) => n.tagName)) !== "TEXTAREA") continue;
+    const type = ((await el.getAttribute("type")) || "text").toLowerCase();
+    if (!["text", "email", "tel", "url", "search", "textarea"].includes(type)) continue;
     if (await el.inputValue().catch(() => "x")) continue;
+    if ((await el.getAttribute("role")) === "combobox") continue;
     const label = await describe(el);
     if (!label) continue;
-    let value;
-    for (const [re, get] of FIELD_MAP) if (re.test(label)) { value = get(profile); break; }
-    if (!value && draft) {
-      if (/why .*(role|position|team|fit|good candidate|qualified)|tell us about yourself|additional information/i.test(label)) value = draft.whyRole;
-      else if (/why .*(want to (work|join)|company|\bus\b|join|work (here|at|for)|interested|excited)/i.test(label)) value = draft.whyCompany;
-    }
+    const value = answerFor(label, profile, draft);
     if (value) {
       await el.fill(value);
       filled.push(label.slice(0, 60));
-      await pause(150, 400);
-    } else if (await el.evaluate((n) => n.required || n.getAttribute("aria-required") === "true")) {
-      unfilled.push(label.slice(0, 80));
+      await pause(120, 300);
     }
   }
 
-  return { filled, unfilled };
+  // Dropdowns and yes/no radios, answered from profile.screeningAnswers.
+  const selects = page.locator("select:visible");
+  for (let i = 0, n = await selects.count(); i < n; i++) {
+    const el = selects.nth(i);
+    if (await el.evaluate((s) => s.selectedIndex > 0 && s.value)) continue;
+    const label = await describe(el);
+    const want = screeningAnswer(label, profile);
+    if (!want) continue;
+    const options = await el.evaluate((s) => [...s.options].map((o) => ({ v: o.value, t: o.text.trim() })));
+    const hit = pickOption(options.map((o) => o.t), want);
+    if (hit >= 0) { await el.selectOption(options[hit].v); filled.push(label.slice(0, 60)); }
+  }
+  const radioGroups = await page.evaluate(() => [...new Set([...document.querySelectorAll('input[type="radio"]')].filter((r) => r.offsetParent).map((r) => r.name))]);
+  for (const name of radioGroups) {
+    const group = page.locator(`input[type="radio"][name="${name}"]`);
+    if (await group.evaluateAll((rs) => rs.some((r) => r.checked))) continue;
+    const label = await describe(group.first(), true);
+    const want = screeningAnswer(label, profile);
+    if (!want) continue;
+    const texts = [];
+    for (let i = 0, n = await group.count(); i < n; i++) texts.push(await describe(group.nth(i)));
+    const hit = pickOption(texts, want);
+    if (hit >= 0) { await group.nth(hit).check({ force: true }).catch(() => {}); filled.push(label.slice(0, 60)); }
+  }
+
+  unfilled.push(...(await requiredStillEmpty(page)));
+  return { filled, unfilled: [...new Set(unfilled)] };
+}
+
+// ---------- answering ----------
+
+const EEO = /gender|race|ethnic|hispanic|latino|disab|veteran|indigenous|aboriginal|visible minorit|sexual orientation|lgbt|transgender/i;
+
+/** Maps a form question to one of your saved answers. Returns "" when it shouldn't be answered automatically. */
+export function screeningAnswer(label = "", profile = {}) {
+  const a = profile.screeningAnswers || {};
+  const L = label.toLowerCase();
+  if (EEO.test(L)) return a.declineDemographicQuestions ? "__decline__" : "";
+  const us = /(u\.s\.|\bus\b|united states|america)/.test(L);
+  if (/sponsor/.test(L)) return us ? a.needsSponsorshipUS : a.needsSponsorshipCanada;
+  if (/(authori[sz]ed|eligible|legally (able|entitled)|right) to work/.test(L)) return us ? a.workAuthUS : a.workAuthCanada;
+  if (/relocat/.test(L)) return a.willingToRelocate;
+  if (/(co-?op|internship|work) term (length|duration)|how (many|long).*(months|term)|duration of (your )?(term|internship|co-?op)/.test(L)) return a.termLength;
+  if (/start date|available to start|when can you start|availability/.test(L)) return a.startDate;
+  if (/enrolled in (a )?co-?op|co-?op (program|student)/.test(L)) return a.coopProgram;
+  if (/currently (enrolled|a student)|returning to (school|studies)|full[- ]time student/.test(L)) return a.currentlyEnrolled;
+  if (/hear about|how did you find|referral source|source of application/.test(L)) return a.heardFrom;
+  if (/salary|compensation|pay expectation|desired (pay|wage)/.test(L)) return a.salaryExpectation;
+  return "";
+}
+
+function answerFor(label, profile, draft) {
+  for (const [re, get] of FIELD_MAP) if (re.test(label)) return get(profile);
+  const s = screeningAnswer(label, profile);
+  if (s && s !== "__decline__") return s;
+  if (!draft) return "";
+  if (/why .*(role|position|team|fit|good candidate|qualified)|tell us about yourself|additional information|anything else/i.test(label)) return draft.whyRole;
+  if (/why .*(want to (work|join)|company|\bus\b|join|work (here|at|for)|interested|excited)/i.test(label)) return draft.whyCompany;
+  return "";
+}
+
+/** Index of the option that matches the wanted answer ("Yes", "January 2027", or "__decline__"). */
+export function pickOption(texts, want) {
+  const norm = (t) => t.toLowerCase().replace(/\s+/g, " ").trim();
+  const opts = texts.map(norm);
+  if (want === "__decline__") return opts.findIndex((t) => /decline|prefer not|do not wish|don.t wish|choose not/.test(t));
+  const w = norm(want);
+  let i = opts.findIndex((t) => t === w);
+  if (i < 0 && /^(yes|no)$/.test(w)) i = opts.findIndex((t) => t.startsWith(w + " ") || t.startsWith(w + ",") || t.startsWith(w + "-") || t === w);
+  if (i < 0) i = opts.findIndex((t) => t && !/^(select|choose|--)/.test(t) && (t.includes(w) || w.includes(t)));
+  return i;
+}
+
+/** Labels of required fields that are still blank (text, selects, radios, files, checkboxes). */
+async function requiredStillEmpty(page) {
+  return page.evaluate(() => {
+    const txt = (n) => (n?.innerText || n?.textContent || "").replace(/\s+/g, " ").trim();
+    const labelOf = (el) => {
+      if (el.id) { const l = document.querySelector(`label[for="${CSS.escape(el.id)}"]`); if (l) return txt(l); }
+      const f = el.closest("label, fieldset, .field, .application-question, [class*=field], [class*=question]");
+      return (f && txt(f.querySelector("legend, label, .application-label, .text")) || txt(f)).slice(0, 90) || el.name || "(unnamed field)";
+    };
+    const req = (el) => el.required || el.getAttribute("aria-required") === "true";
+    const out = [];
+    const seenRadio = new Set();
+    for (const el of document.querySelectorAll("input, select, textarea")) {
+      if (!el.offsetParent || !req(el) || el.type === "hidden") continue;
+      if (el.type === "radio") {
+        if (seenRadio.has(el.name)) continue;
+        seenRadio.add(el.name);
+        if (![...document.getElementsByName(el.name)].some((r) => r.checked)) out.push(labelOf(el));
+      } else if (el.type === "checkbox") { if (!el.checked) out.push(labelOf(el)); }
+      else if (el.type === "file") { if (!el.files?.length) out.push(labelOf(el)); }
+      else if (!el.value) out.push(labelOf(el));
+    }
+    return out;
+  });
+}
+
+const CONFIRM = /thank(s| you) for (applying|your (application|interest))|application (has been |was )?(received|submitted|complete)|we('|’)ve received your application|successfully (applied|submitted)/i;
+/** True once the page shows an application confirmation. */
+export async function isConfirmed(page) {
+  if (/\/confirmation|\/thank-?you|application-?submitted/i.test(page.url())) return true;
+  const body = await page.locator("body").innerText({ timeout: 2000 }).catch(() => "");
+  return CONFIRM.test(body.slice(0, 5000));
 }
 
 /** The visible text that labels a control: <label for>, wrapping label, aria-label, or nearby question text. */
-async function describe(locator) {
+async function describe(locator, group = false) {
   return locator
-    .evaluate((el) => {
+    .evaluate((el, group) => {
       const txt = (n) => (n?.innerText || n?.textContent || "").replace(/\s+/g, " ").trim();
+      if (group) {
+        const fs = el.closest("fieldset, [role=radiogroup], .field, .application-question, [class*=question]");
+        const q = fs && (fs.querySelector("legend, .application-label, label:not(:has(input))") || fs);
+        if (q) return txt(q).slice(0, 200);
+      }
       if (el.id) {
         const l = document.querySelector(`label[for="${CSS.escape(el.id)}"]`);
         if (l) return txt(l);
@@ -138,7 +241,7 @@ async function describe(locator) {
       const field = el.closest(".field, .application-question, .form-field, fieldset, [class*=field]");
       if (field) return txt(field.querySelector("label, legend, .text, .application-label")) || "";
       return el.getAttribute("name") || el.getAttribute("placeholder") || "";
-    })
+    }, group)
     .catch(() => "");
 }
 

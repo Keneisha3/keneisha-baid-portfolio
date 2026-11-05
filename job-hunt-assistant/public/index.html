@@ -32,6 +32,12 @@
   .tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
   .tab { border: 0; background: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 12px; color: var(--muted); }
   .tab.on { color: var(--ink); border-color: var(--accent); }
+  .today { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 8px 0 10px; }
+  .goal { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  .goal .lbl { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .goal .lbl b { color: var(--ink); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .track { height: 6px; background: var(--chip); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .track i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
   .due { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; }
   .due ul { margin: 4px 0 0; padding-left: 18px; }
   .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
@@ -69,6 +75,7 @@
   </div>
 </header>
 <main>
+  <div class="today" id="today"></div>
   <div class="stats" id="stats"></div>
   <div id="due"></div>
   <div class="tabs">
@@ -92,11 +99,18 @@
       <h2>Add a contact</h2>
       <form id="contactForm">
         <label>LinkedIn profile URL</label><input name="linkedinUrl" placeholder="https://www.linkedin.com/in/…" />
+        <label>Email (for cold email: a person, or careers@ / hello@ for small startups)</label><input name="email" type="email" />
         <div class="row"><div style="flex:1"><label>Name</label><input name="name" required /></div><div style="flex:1"><label>Company</label><input name="company" /></div></div>
         <label>Title</label><input name="title" />
         <label>Why them? (shared school, team you want, something they posted)</label><input name="reason" />
         <div style="margin-top:10px"><button class="primary">Add</button></div>
       </form>
+    </div>
+    <div class="panel">
+      <h2>Paste job links</h2>
+      <p class="muted" style="font-size:12px;margin-top:0">Any career site (Workday, bank and airline sites, Greenhouse…). One per line, up to 200.</p>
+      <textarea id="links" placeholder="https://jobs.bombardier.com/job/...&#10;https://careers.aircanada.com/..."></textarea>
+      <div style="margin-top:10px"><button class="primary" id="importBtn">Import</button> <span id="importMsg" class="muted" style="font-size:12px"></span></div>
     </div>
     <div class="panel">
       <h2>Add a job manually</h2>
@@ -139,14 +153,20 @@ function render() {
   const active = js.applied + js.interviewing + js.offer;
   const sent = cs.sent + cs.accepted + cs.replied + cs.chat_booked + cs.chat_done + cs.no_response;
   const replied = cs.replied + cs.chat_booked + cs.chat_done;
+  const T = S.today, G = T.goals || {};
+  const goal = (label, n, g, sub) => `<div class="goal"><div class="lbl"><span>${label}</span><b>${n}${g ? ` / ${g}` : ""}</b></div>
+    <div class="track"><i style="width:${g ? Math.min(100, (n / g) * 100) : 0}%"></i></div><div class="lbl" style="margin-top:4px"><span>${sub}</span></div></div>`;
+  $("#today").innerHTML = goal("Applied today", T.applied, G.applicationsPerDay, `${T.queue.readyToApply} ready · ${T.queue.toDraft} to draft`)
+    + goal("Cold emails today", T.emails, G.emailsPerDay, `${T.queue.emailReady} ready to send`)
+    + goal("LinkedIn invites today", T.linkedin, G.linkedinPerDay, `${T.linkedinWeek}/${G.linkedinPerWeek ?? "–"} this week · ${T.queue.linkedinReady} ready`);
   $("#stats").innerHTML = [
     [js.applied + js.interviewing + js.offer + js.rejected, "applications sent"],
     [js.interviewing, "interviewing"],
     [js.offer, "offers"],
-    [sent, "LinkedIn invites sent"],
+    [sent, "people reached out to"],
     [sent ? Math.round((replied / sent) * 100) + "%" : "–", "reply rate"],
     [cs.chat_booked + cs.chat_done, "coffee chats booked"],
-    [S.stats.sentToday, "invites sent today"],
+    [S.stats.sentToday + S.stats.emailsToday, "reached out today"],
   ].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("");
 
   const dj = S.due.jobs, dc = S.due.contacts;
@@ -170,9 +190,9 @@ function render() {
   $("#log").innerHTML = S.log.map((l) => `<div>${l.at.slice(0, 16).replace("T", " ")} · ${esc(l.message)}</div>`).join("") || "No activity yet.";
 }
 
-const jobCard = (j) => `<div class="card" data-job="${j.id}"><div class="t">${esc(j.company)}</div><div class="s">${esc(j.title)}</div>
+const jobCard = (j) => `<div class="card" data-job="${j.id}"><div class="t">${esc(j.company)}</div><div class="s">${esc(j.title)}</div>${j.category ? `<span class="pill">${esc(j.category)}</span> ` : ""}
   ${j.matchScore != null ? `<span class="pill">match ${j.matchScore}</span> ` : ""}${j.followUpOn && j.followUpOn <= today && j.status === "applied" ? '<span class="pill warn">follow up</span>' : ""}</div>`;
-const contactCard = (c) => `<div class="card" data-contact="${c.id}"><div class="t">${esc(c.name)}</div><div class="s">${esc(c.title || "")}${c.company ? " @ " + esc(c.company) : ""}</div>
+const contactCard = (c) => `<div class="card" data-contact="${c.id}"><div class="t">${esc(c.name)}${c.channel === "email" || (c.email && !c.linkedinUrl) ? ' <span class="pill">email</span>' : ""}</div><div class="s">${esc(c.title || "")}${c.company ? " @ " + esc(c.company) : ""}</div>
   ${c.followUpOn && c.followUpOn <= today && ["sent", "accepted"].includes(c.status) ? '<span class="pill warn">nudge</span>' : ""}${c.chatAt ? `<span class="pill">chat ${esc(c.chatAt)}</span>` : ""}</div>`;
 
 document.addEventListener("click", (e) => {
@@ -226,10 +246,13 @@ function openContact(id) {
     <label>Why them</label><input id="f-reason" value="${esc(c.reason || "")}" />
     <label>Related application</label><select id="f-job">${jobsOpts}</select>
     <p style="margin:14px 0 0"><button id="draftBtn" class="primary" onclick="draft('contacts','${c.id}')">${c.draft ? "Re-draft" : "Draft"} with Claude</button>
-      <span class="muted" style="font-size:12px"> Paste into LinkedIn for you: <code>npm run jha -- connect ${c.id}</code></span></p>
+      <span class="muted" style="font-size:12px"> Send: <code>npm run jha -- ${c.email ? "email" : "connect"} ${c.id}</code></span></p>
     <label>Connection note <span id="cnt" class="muted"></span> ${copyBtn("f-note")}</label><textarea id="f-note" oninput="cnt()">${esc(d.connectionNote || "")}</textarea>
     <label>Coffee-chat ask (after they accept) ${copyBtn("f-fu")}</label><textarea id="f-fu">${esc(d.followUp || "")}</textarea>
     <label>Nudge ${copyBtn("f-nudge")}</label><textarea id="f-nudge" style="min-height:60px">${esc(d.nudge || "")}</textarea>
+    <label>Email ${c.email ? `to ${esc(c.email)}` : "(add an address below to use it)"} ${copyBtn("f-esub")}</label><input id="f-esub" value="${esc(d.emailSubject || "")}" placeholder="Subject" />
+    <textarea id="f-ebody" style="min-height:160px;margin-top:6px">${esc(d.emailBody || "")}</textarea>
+    <label>Email address</label><input id="f-email" type="email" value="${esc(c.email || "")}" />
     <label>Notes (what you talked about, who they referred you to…)</label><textarea id="f-notes">${esc(c.notes || "")}</textarea>
     <p><button class="primary" onclick="saveContact('${c.id}')">Save</button></p>`;
   cnt(); dlg.showModal();
@@ -238,9 +261,9 @@ function cnt() { const n = $("#f-note")?.value.length ?? 0; $("#cnt").textConten
 
 async function saveContact(id) {
   const c = S.contacts.find((x) => x.id === id);
-  const draft = { ...(c.draft || {}), connectionNote: $("#f-note").value, followUp: $("#f-fu").value, nudge: $("#f-nudge").value };
+  const draft = { ...(c.draft || {}), connectionNote: $("#f-note").value, followUp: $("#f-fu").value, nudge: $("#f-nudge").value, emailSubject: $("#f-esub").value, emailBody: $("#f-ebody").value };
   await api(`/api/contacts/${id}`, { status: $("#f-status").value, followUpOn: $("#f-follow").value || null, chatAt: $("#f-chat").value || null,
-    reason: $("#f-reason").value, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
+    reason: $("#f-reason").value, email: $("#f-email").value || undefined, jobId: $("#f-job").value || null, notes: $("#f-notes").value, draft });
   dlg.close(); toast("Saved"); load();
 }
 
@@ -265,6 +288,18 @@ $("#contactForm").addEventListener("submit", async (e) => {
 $("#jobForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   try { await api("/api/jobs", Object.fromEntries(new FormData(e.target))); e.target.reset(); toast("Job added"); load(); } catch (err) { toast(err.message); }
+});
+$("#importBtn").addEventListener("click", async (e) => {
+  const urls = $("#links").value.split(/\s+/).filter(Boolean);
+  if (!urls.length) return;
+  e.target.disabled = true; $("#importMsg").textContent = `Reading ${urls.length} link(s)…`;
+  try {
+    const r = await api("/api/import", { urls });
+    $("#importMsg").textContent = `${r.added} new · ${r.failed.length} couldn't be read`;
+    if (r.failed.length) $("#links").value = r.failed.map((f) => f.url).join("\n"); else $("#links").value = "";
+    load();
+  } catch (err) { $("#importMsg").textContent = err.message; }
+  e.target.disabled = false;
 });
 $("#discoverBtn").addEventListener("click", async (e) => {
   e.target.disabled = true; e.target.textContent = "Searching…";

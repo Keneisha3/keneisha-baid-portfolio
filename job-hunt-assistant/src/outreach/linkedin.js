@@ -46,7 +46,7 @@ export async function prepareConnect(page, profileUrl, note) {
   }
   const box = page.locator('textarea[name="message"], textarea#custom-message, [role="dialog"] textarea').first();
   if (!(await box.isVisible().catch(() => false))) {
-    return { ok: false, reason: "couldn't open the note box (you may be out of personalised invites this month); note copied below" };
+    return { ok: false, reason: "no note box: free LinkedIn accounts only get a few personalised notes a month. Click \"Send without a note\", and send the coffee-chat ask with `message` once they accept" };
   }
   await box.fill(note);
   return { ok: true };

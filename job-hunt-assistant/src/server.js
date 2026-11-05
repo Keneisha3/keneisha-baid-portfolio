@@ -5,11 +5,11 @@ import path from "node:path";
 import * as db from "./db.js";
 import { ROOT } from "./paths.js";
 import { loadProfile, loadTargets } from "./config.js";
-import { discover, draftJob, draftContact } from "./commands.js";
+import { discover, draftJob, draftContact, importLinks, todayPlan } from "./commands.js";
 import { searchLinks } from "./outreach/linkedin.js";
 
 const JOB_FIELDS = ["status", "notes", "followUpOn", "draft"];
-const CONTACT_FIELDS = ["status", "notes", "followUpOn", "draft", "name", "title", "company", "reason", "linkedinUrl", "jobId", "chatAt"];
+const CONTACT_FIELDS = ["status", "notes", "followUpOn", "draft", "name", "title", "company", "reason", "linkedinUrl", "email", "jobId", "chatAt"];
 const pick = (obj, keys) => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => keys.includes(k)));
 
 async function body(req) {
@@ -39,7 +39,7 @@ export function createServer() {
       }
       if (req.method === "GET" && p === "/api/state") {
         const state = db.read();
-        return send(200, { ...state, stats: db.stats(state), due: db.dueFollowUps(state), statuses: { jobs: db.APP_STATUSES, contacts: db.CONTACT_STATUSES } });
+        return send(200, { ...state, stats: db.stats(state), due: db.dueFollowUps(state), today: todayPlan(loadTargets(), state), statuses: { jobs: db.APP_STATUSES, contacts: db.CONTACT_STATUSES } });
       }
       if (req.method === "GET" && p === "/api/people") {
         const t = loadTargets(), prof = loadProfile();
@@ -51,6 +51,11 @@ export function createServer() {
       if (!String(req.headers["content-type"]).includes("application/json")) return send(415, { error: "JSON only" });
 
       if (p === "/api/discover") return send(200, await discover(loadProfile(), loadTargets(), { log: () => {} }));
+      if (p === "/api/import") {
+        const { urls = [] } = await body(req);
+        if (!Array.isArray(urls) || urls.length > 200) return send(400, { error: "send up to 200 urls" });
+        return send(200, await importLinks(urls, loadTargets(), { log: () => {} }));
+      }
       if ((r = m(/^\/api\/jobs\/(\w+)$/))) return send(200, db.updateJob(r[1], pick(await body(req), JOB_FIELDS)));
       if ((r = m(/^\/api\/jobs\/(\w+)\/draft$/))) return send(200, await draftJob(loadProfile(), r[1]));
       if (p === "/api/jobs") {
@@ -62,6 +67,8 @@ export function createServer() {
       if (p === "/api/contacts") {
         const b = pick(await body(req), CONTACT_FIELDS);
         if (!b.name) return send(400, { error: "name required" });
+        if (!b.linkedinUrl) delete b.linkedinUrl;
+        if (!b.email) delete b.email;
         return send(200, db.addContact(b));
       }
       if ((r = m(/^\/api\/contacts\/(\w+)$/))) return send(200, db.updateContact(r[1], pick(await body(req), CONTACT_FIELDS)));

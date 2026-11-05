@@ -105,24 +105,39 @@ export function updateContact(contactId, patch) {
   return c;
 }
 
-export function sentToday(db = read()) {
-  const today = new Date().toISOString().slice(0, 10);
-  return db.contacts.filter((c) => c.sentAt?.startsWith(today)).length;
+const localDay = (iso) => (iso ? new Date(iso).toLocaleDateString("en-CA") : "");
+export const today = () => new Date().toLocaleDateString("en-CA");
+
+/** LinkedIn invites sent today (email outreach is counted separately). */
+export function sentToday(db = read(), channel = "linkedin") {
+  return db.contacts.filter((c) => localDay(c.sentAt) === today() && (c.channel || "linkedin") === channel).length;
+}
+
+export function sentThisWeek(db = read(), channel = "linkedin") {
+  const weekAgo = Date.now() - 7 * 864e5;
+  return db.contacts.filter((c) => c.sentAt && Date.parse(c.sentAt) > weekAgo && (c.channel || "linkedin") === channel).length;
+}
+
+export function appliedToday(db = read()) {
+  return db.jobs.filter((j) => localDay(j.appliedAt) === today()).length;
 }
 
 /** Everything whose follow-up date is today or earlier and still waiting on something. */
 export function dueFollowUps(db = read()) {
-  const today = new Date().toISOString().slice(0, 10);
-  const jobs = db.jobs.filter((j) => j.followUpOn && j.followUpOn <= today && ["applied"].includes(j.status));
+  const t = today();
+  const jobs = db.jobs.filter((j) => j.followUpOn && j.followUpOn <= t && ["applied"].includes(j.status));
   const contacts = db.contacts.filter(
-    (c) => c.followUpOn && c.followUpOn <= today && ["sent", "accepted"].includes(c.status),
+    (c) => c.followUpOn && c.followUpOn <= t && ["sent", "accepted"].includes(c.status),
   );
   return { jobs, contacts };
 }
 
 export function stats(db = read()) {
   const count = (arr, statuses) => Object.fromEntries(statuses.map((s) => [s, arr.filter((x) => x.status === s).length]));
-  return { jobs: count(db.jobs, APP_STATUSES), contacts: count(db.contacts, CONTACT_STATUSES), sentToday: sentToday(db) };
+  return {
+    jobs: count(db.jobs, APP_STATUSES), contacts: count(db.contacts, CONTACT_STATUSES),
+    sentToday: sentToday(db), emailsToday: sentToday(db, "email"), appliedToday: appliedToday(db), linkedinThisWeek: sentThisWeek(db),
+  };
 }
 
 const normUrl = (u) => (u || "").toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");

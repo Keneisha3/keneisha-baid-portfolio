@@ -20,7 +20,7 @@ test("scoring keeps junior analyst roles and drops senior / wrong-location ones"
   assert.ok(scoreJob({ title: "Data Analyst Intern", location: "Toronto, ON", description: desc }, filters).score >= filters.minScore);
   assert.equal(scoreJob({ title: "Senior Data Analyst", location: "Toronto", description: desc }, filters).score, 0);
   assert.equal(scoreJob({ title: "Data Analyst Intern", location: "Berlin", description: desc }, filters).score, 0);
-  assert.equal(scoreJob({ title: "Account Executive", location: "Toronto", description: desc }, filters).score, 0);
+  assert.equal(scoreJob({ title: "Data Analyst", location: "Toronto", description: desc }, filters).score, 0);
 });
 
 test("job board responses are normalised", async () => {
@@ -35,7 +35,7 @@ test("job board responses are normalised", async () => {
           : { jobs: [{ id: "z", title: "Ops Analyst", location: "New York", jobUrl: "https://jobs.ashbyhq.com/x/z", descriptionPlain: "Excel" }] },
   });
   try {
-    const jobs = await sources.fetchAll([
+    const { jobs } = await sources.fetchAll([
       { name: "G", ats: "greenhouse", board: "g" },
       { name: "L", ats: "lever", board: "l" },
       { name: "A", ats: "ashby", board: "a" },

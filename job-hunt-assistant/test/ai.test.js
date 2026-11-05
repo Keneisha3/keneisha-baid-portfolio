@@ -8,7 +8,7 @@ const server = http.createServer(async (req, res) => {
   let raw = "";
   for await (const c of req) raw += c;
   lastReq = { headers: req.headers, body: JSON.parse(raw) };
-  const out = { connectionNote: "Hi Ada, fellow Waterloo engineer here. Would love to connect!", followUp: "Coffee?", nudge: "Bumping this!" };
+  const out = { connectionNote: "Hi Ada, fellow Waterloo engineer here. Would love to connect!", followUp: "Coffee?", nudge: "Bumping this!", emailSubject: "Winter 2027 co-op", emailBody: "Hi Ada" };
   res.writeHead(200, { "Content-Type": "application/json" });
   res.end(JSON.stringify({ id: "msg_1", type: "message", role: "assistant", model: "claude-opus-5-5", stop_reason: "end_turn", stop_sequence: null,
     content: [{ type: "text", text: JSON.stringify(out) }], usage: { input_tokens: 1, output_tokens: 1 } }));

@@ -24,8 +24,12 @@ const PAGES = {
     <div class="field"><label>Cover Letter</label><input type="file" id="cover_letter"></div>
     <div class="field"><label for="q1">LinkedIn Profile</label><input id="q1"></div>
     <div class="field"><label for="q2">Why do you want to work at Acme?</label><textarea id="q2"></textarea></div>
-    <div class="field"><label for="q3">Are you legally authorized to work in Canada? *</label><input id="q3" required></div>
+    <div class="field"><label for="q3">Are you legally authorized to work in Canada? *</label><select id="q3" required><option value="">Select...</option><option value="1">Yes</option><option value="0">No</option></select></div>
+    <fieldset><legend>Will you require sponsorship?</legend><label><input type="radio" name="sp" value="y" required>Yes</label><label><input type="radio" name="sp" value="n">No</label></fieldset>
+    <div class="field"><label for="q4">What is your gender?</label><select id="q4"><option value="">Select...</option><option>Woman</option><option>Decline to self-identify</option></select></div>
+    <div class="field"><label for="q5">What are your salary expectations? *</label><input id="q5" required></div>
     <button type="submit">Submit application</button></form>`,
+  "/done": `<h1>Thank you for applying!</h1>`,
   "/lever": `<form>
     <input name="name"><input name="email"><input name="phone"><input name="org">
     <input name="urls[LinkedIn]"><input name="urls[GitHub]"><input type="file" name="resume">
@@ -62,7 +66,15 @@ test("autofill + LinkedIn assisted send against look-alike pages", { skip: !chro
     assert.equal(await page.inputValue("#q2"), draft.whyCompany);
     assert.equal(await page.$eval("#resume", (e) => e.files[0]?.name), "resume.pdf");
     assert.match(await page.$eval("#cover_letter", (e) => e.files[0]?.name), /cover-letter\.txt$/);
-    assert.ok(gh.unfilled.some((u) => /authorized/.test(u)), "flags required questions it can't answer");
+    assert.equal(await page.inputValue("#q3"), "1");
+    assert.equal(await page.$eval('input[name="sp"]:checked', (e) => e.value), "n");
+    assert.equal(await page.$eval("#q4", (e) => e.selectedOptions[0].text), "Decline to self-identify");
+    assert.deepEqual(gh.unfilled.map((u) => u.slice(0, 15)), ["What are your s"], "only the salary question is left for her");
+
+    const { isConfirmed } = await import("../src/apply/autofill.js");
+    assert.equal(await isConfirmed(page), false);
+    await page.goto(base + "/done");
+    assert.equal(await isConfirmed(page), true);
 
     await page.goto(base + "/lever");
     await autofill(page, { company: "Acme" }, profile, draft);
