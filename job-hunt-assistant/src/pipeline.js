@@ -3,6 +3,7 @@
 import { parseCsv } from "./csv.js";
 import * as db from "./db.js";
 import { sourceFor } from "./jobs/import.js";
+import { applyPriorities } from "./jobs/score.js";
 
 const STATUS = { "to apply": "found", applied: "applied", emailed: "applied", replied: "applied", interview: "interviewing", rejected: "rejected", skip: "skipped" };
 const SIZE = (s = "") => (/startup/i.test(s) ? "startup" : /large|big|enterprise/i.test(s) ? "large" : /mid/i.test(s) ? "mid" : "");
@@ -29,7 +30,7 @@ function parseMarkdown(text) {
   return rows;
 }
 
-export function importPipeline(text, { isMarkdown } = {}) {
+export function importPipeline(text, { isMarkdown, priorities } = {}) {
   const rows = isMarkdown ?? /^\s*\|/m.test(text) ? parseMarkdown(text) : parseCsv(text);
   const before = db.read().jobs.length;
   const jobs = rows.filter((r) => r.company).map((r) => {
@@ -54,7 +55,7 @@ export function importPipeline(text, { isMarkdown } = {}) {
       _applied: r.dateapplied,
     };
   });
-  const added = db.upsertJobs(jobs.map(({ _status, _applied, ...j }) => j));
+  const added = db.upsertJobs(jobs.map(({ _status, _applied, ...j }) => applyPriorities(j, priorities)));
   // Apply statuses from the sheet (only moving forward, never undoing your later progress).
   const order = db.APP_STATUSES;
   const state = db.read();

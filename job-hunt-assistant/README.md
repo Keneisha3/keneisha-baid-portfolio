@@ -89,6 +89,18 @@ LinkedIn restricts accounts that go much past ~100 invites a week, and free acco
 - **`careers` sweeps** for companies without feeds (airlines, banks, Big 4), plus VC portfolio job boards (Portage, Inovia, Base10).
 - **Cold emails** to companies that often hire interns without posting.
 
+## Your priorities
+
+`targets.json` → `priorities` is set to **tech sales and finance roles, in London and SF/LA**.
+- Matching jobs get a ★ and a score boost, so they come first in `jobs`, `draft --top`, `apply --next` and the dashboard.
+- Add `--priority` to any command to see only those jobs.
+- Region comes from the job's own location, so a Toronto role at a US company counts as Canada.
+- `seed/priority-leads.md` holds the London and SF/LA leads found on Nov 5. `import-pipeline` loads it along with your tracker.
+
+Timing reality: January starts are rare outside Canada.
+- **UK:** search **off-cycle** (often 6 months).
+- **US:** search **Spring 2027** (Jan–May). You'll likely need a J-1 sponsor, so ask early whether a company will host one.
+
 ## LinkedIn jobs
 
 LinkedIn doesn't allow automated crawling, so this is assisted:

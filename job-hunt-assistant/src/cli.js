@@ -34,7 +34,7 @@ FIND JOBS
                                  Open career pages for companies with no feed, so you can grab links
   linkedin-jobs [--region uk]    Opens LinkedIn job searches (internships, past week) for you to browse
   add-job <url> [<url>...]       Import postings from any career site or LinkedIn job link
-  import-pipeline [file]         Load a tracker table (defaults to seed/winter-2027-pipeline.md)
+  import-pipeline [file]         Load tracker tables (defaults: seed/winter-2027-pipeline.md + seed/priority-leads.md)
   import-jobs <links.txt>        Same, one link per line
   check-links                    Re-check saved postings; closed/expired ones move to skipped
   jobs [--status drafted] [--category consulting]
@@ -62,7 +62,8 @@ OUTREACH
   connect <id> | --next N        Opens LinkedIn profiles with your note in the Connect box; you press Send
   message <id> [--nudge]         Paste the coffee-chat ask (or nudge) into a LinkedIn DM
 
-FILTERS (most commands): --category fintech|tech sales|consulting|airlines|...  --region canada|us|uk  --size startup|large
+FILTERS (most commands): --priority (tech sales, finance, London, SF/LA: set in targets.json "priorities")
+                         --category tech sales|finance|consulting|airlines|...  --region canada|us|uk  --size startup|large
 
 TRACK
   followups | contacts [--status sent] | stats
@@ -75,16 +76,16 @@ const { values: opt, positionals: pos } = parseArgs({
   args: rest, allowPositionals: true,
   options: {
     port: { type: "string" }, status: { type: "string" }, top: { type: "string" }, next: { type: "string" }, tabs: { type: "string" },
-    concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" },
+    concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" }, priority: { type: "boolean" },
     submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
     url: { type: "string" }, email: { type: "string" }, name: { type: "string" }, title: { type: "string" }, company: { type: "string" },
     reason: { type: "string" }, job: { type: "string" }, notes: { type: "string" },
   },
 });
 
-const fmtJob = (j) => `${j.id}  ${String(j.matchScore ?? "").padStart(3)}  ${j.status.padEnd(12)} ${j.company} · ${j.title} (${j.location || "?"})${j.manualApply ? "  [apply on site]" : ""}`;
+const fmtJob = (j) => `${j.id}  ${String(j.matchScore ?? "").padStart(3)}${j.priority ? "★" : " "} ${j.status.padEnd(12)} ${j.company} · ${j.title} (${j.location || "?"})${j.manualApply ? "  [apply on site]" : ""}`;
 const fmtContact = (c) => `${c.id}  ${c.status.padEnd(12)} ${c.name} · ${c.title || ""} @ ${c.company || ""}${c.email ? ` <${c.email}>` : ""}${c.followUpOn ? `  [follow up ${c.followUpOn}]` : ""}`;
-const F = () => ({ category: opt.category, region: opt.region, size: opt.size });
+const F = () => ({ category: opt.category, region: opt.region, size: opt.size, priority: opt.priority });
 const byScore = (a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0);
 const bar = (n, goal) => (goal ? `${String(n).padStart(3)}/${goal} ${"█".repeat(Math.min(20, Math.round((n / goal) * 20))).padEnd(20, "░")}` : String(n));
 
@@ -198,8 +199,9 @@ async function main() {
       return;
     }
     case "import-pipeline": {
-      const file = pos[0] || new URL("../seed/winter-2027-pipeline.md", import.meta.url).pathname;
-      const r = importPipeline(fs.readFileSync(file, "utf8"));
+      const files = pos.length ? pos : ["winter-2027-pipeline.md", "priority-leads.md"].map((f) => new URL(`../seed/${f}`, import.meta.url).pathname);
+      const r = files.map((f) => importPipeline(fs.readFileSync(f, "utf8"), { priorities: loadTargets().priorities }))
+        .reduce((a, b) => ({ rows: a.rows + b.rows, added: a.added + b.added, updated: a.updated + b.updated, pitches: a.pitches + b.pitches }));
       console.log(`Read ${r.rows} rows: ${r.added} new jobs, ${r.updated} statuses updated, ${r.pitches} cold-pitch targets.`);
       console.log("Cold-pitch targets have no posting: find a person with `people <company>`, then add-contact --email ... --job <id>.");
       return;

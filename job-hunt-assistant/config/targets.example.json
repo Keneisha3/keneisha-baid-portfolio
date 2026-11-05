@@ -15,7 +15,7 @@
       "ats": "greenhouse",
       "board": "stripe",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -23,7 +23,7 @@
       "ats": "lever",
       "board": "plaid",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -31,7 +31,7 @@
       "ats": "ashby",
       "board": "ramp",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -39,7 +39,7 @@
       "ats": "greenhouse",
       "board": "brex",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -47,7 +47,7 @@
       "ats": "greenhouse",
       "board": "robinhood",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -55,7 +55,7 @@
       "ats": "greenhouse",
       "board": "affirm",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -63,7 +63,7 @@
       "ats": "greenhouse",
       "board": "chime",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -71,7 +71,7 @@
       "ats": "greenhouse",
       "board": "coinbase",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -79,7 +79,7 @@
       "ats": "ashby",
       "board": "mercury",
       "category": "fintech",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -206,7 +206,7 @@
       "ats": "greenhouse",
       "board": "databricks",
       "category": "tech sales",
-      "region": "canada",
+      "region": "us",
       "size": "large"
     },
     {
@@ -1010,6 +1010,271 @@
       "category": "events",
       "region": "uk",
       "size": "large"
+    },
+    {
+      "name": "Figma",
+      "ats": "greenhouse",
+      "board": "figma",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Gusto",
+      "ats": "greenhouse",
+      "board": "gusto",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Scale AI",
+      "ats": "greenhouse",
+      "board": "scaleai",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Vanta",
+      "ats": "ashby",
+      "board": "vanta",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "Notion",
+      "ats": "ashby",
+      "board": "notion",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Retool",
+      "ats": "ashby",
+      "board": "retool",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "Deel",
+      "ats": "ashby",
+      "board": "deel",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Gong",
+      "ats": "greenhouse",
+      "board": "gong",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "PlanetScale",
+      "ats": "ashby",
+      "board": "planetscale",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "Cursor (Anysphere)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://cursor.com/careers"
+    },
+    {
+      "name": "Salesforce (SF)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "a16z speedrun startups (SDR/BD board)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://speedrun-talent-network.com/jobs/sales-development"
+    },
+    {
+      "name": "Y Combinator: Work at a Startup",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://www.workatastartup.com/jobs?role=sales"
+    },
+    {
+      "name": "Zipline",
+      "ats": "greenhouse",
+      "board": "flyzipline",
+      "category": "finance",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Carta",
+      "ats": "greenhouse",
+      "board": "carta",
+      "category": "fintech",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Rippling",
+      "ats": "ashby",
+      "board": "rippling",
+      "category": "fintech",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Uber (Strategic Finance)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Leadout Capital",
+      "ats": "careers",
+      "category": "finance",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "Disney (Finance, Spring 2027)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "us",
+      "size": "large",
+      "careersUrl": "https://www.builtinla.com/job/finance-intern-spring-2027/11781629"
+    },
+    {
+      "name": "BMW North America (Santa Monica)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "FOX Corporation",
+      "ats": "careers",
+      "category": "finance",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Citizens (LA payments sales)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "ServiceTitan",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Snap Inc.",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Tala (LA fintech)",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "Dave (LA fintech)",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "us",
+      "size": "startup"
+    },
+    {
+      "name": "ZipRecruiter",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "GoodRx",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "large"
+    },
+    {
+      "name": "Built In LA (startup board)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup",
+      "careersUrl": "https://www.builtinla.com/jobs/sales/internship"
+    },
+    {
+      "name": "Morgan Stanley (London off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://jobs.wallstreetfriends.org/companies/morgan-stanley/jobs/96816070-2027-investment-management-off-cycle-internship-liquidity-london"
+    },
+    {
+      "name": "Baird (London off-cycle IB)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://www.bairdcareers.com/internships/global-investment-banking-intern-programme-europe/"
+    },
+    {
+      "name": "Lazard (London)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "OffCycle.net (London off-cycle board)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://offcycle.net/internships/off-cycle/london/"
+    },
+    {
+      "name": "Lendable",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Gartner London (sales)",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
     }
   ],
   "filters": {
@@ -1026,7 +1291,8 @@
       "placement",
       "off-cycle",
       "off cycle",
-      "industrial placement"
+      "industrial placement",
+      "spring 2027"
     ],
     "titleInclude": [
       "analyst",
@@ -1108,7 +1374,8 @@
       "jan-apr",
       "january to april",
       "4 month",
-      "4-month"
+      "4-month",
+      "spring 2027"
     ],
     "locations": [
       "Toronto",
@@ -1131,7 +1398,21 @@
       "London",
       "United Kingdom",
       "UK",
-      "England"
+      "England",
+      "South San Francisco",
+      "Bay Area",
+      "Palo Alto",
+      "Menlo Park",
+      "Mountain View",
+      "San Mateo",
+      "Los Angeles",
+      "Santa Monica",
+      "Culver City",
+      "Burbank",
+      "Anaheim",
+      "Irvine",
+      "Playa Vista",
+      "California"
     ],
     "keywords": [
       "python",
@@ -1183,22 +1464,50 @@
   },
   "linkedinJobs": {
     "roles": [
-      "business analyst intern",
-      "project management co-op",
+      "sales intern",
       "sales development intern",
+      "business development intern",
       "finance intern",
-      "consulting intern",
-      "operations intern",
-      "airline intern",
+      "investment intern",
+      "strategic finance intern",
+      "fintech intern",
       "off-cycle internship"
     ],
     "locations": [
+      "London, England, United Kingdom",
+      "San Francisco Bay Area",
+      "Los Angeles Metropolitan Area",
       "Toronto, Ontario, Canada",
-      "Vancouver, British Columbia, Canada",
-      "Montreal, Quebec, Canada",
-      "Calgary, Alberta, Canada",
-      "Canada",
-      "London, England, United Kingdom"
+      "Vancouver, British Columbia, Canada"
     ]
+  },
+  "priorities": {
+    "_help": "Jobs in these lanes or places get +boost each, so they sort first everywhere (jobs, apply --next, draft --top). Add --priority to only see them.",
+    "lanes": [
+      "tech sales",
+      "finance"
+    ],
+    "regions": [
+      "uk",
+      "us"
+    ],
+    "locations": [
+      "London",
+      "San Francisco",
+      "Bay Area",
+      "South San Francisco",
+      "Palo Alto",
+      "Menlo Park",
+      "Mountain View",
+      "San Mateo",
+      "Los Angeles",
+      "Santa Monica",
+      "Culver City",
+      "Burbank",
+      "Anaheim",
+      "Irvine",
+      "Playa Vista"
+    ],
+    "boost": 15
   }
 }

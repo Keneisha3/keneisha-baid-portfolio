@@ -1,13 +1,14 @@
 // Shared operations used by both the CLI and the dashboard server.
 import * as db from "./db.js";
 import { fetchAll, mapLimit } from "./jobs/sources.js";
-import { scoreJob, titlePasses } from "./jobs/score.js";
+import { scoreJob, titlePasses, applyPriorities } from "./jobs/score.js";
 import { importJobUrl } from "./jobs/import.js";
 import { draftApplication, draftOutreach, researchContact, engineFor, runClaudeCode } from "./ai.js";
 import { buildPack, applyPack, packSchema } from "./manual.js";
 
-export const matches = (o, { category, region, size } = {}) =>
-  (!category || o.category === category) && (!region || o.region === region) && (!size || (o.size || o.companySize) === size);
+export const matches = (o, { category, region, size, priority } = {}) =>
+  (!category || o.category === category || o.lane === category) && (!region || o.region === region) &&
+  (!size || (o.size || o.companySize) === size) && (!priority || o.priority === true || (o.region && ["uk", "us"].includes(o.region)));
 
 export async function discover(profile, targets, { log = console.log, ...filter } = {}) {
   const companies = targets.companies.filter((c) => matches(c, filter));
@@ -15,11 +16,11 @@ export async function discover(profile, targets, { log = console.log, ...filter 
   log(`Checking ${feeds.length} job feeds…`);
   const filters = targets.filters || {};
   const { jobs, failures } = await fetchAll(companies, { onError: log, titleOk: (t) => titlePasses(t, filters) });
-  const matches = scoreAll(jobs, filters);
-  const added = db.upsertJobs(matches);
-  log(`Fetched ${jobs.length} postings, ${matches.length} match your filters, ${added} new.`);
+  const found = scoreAll(jobs, filters).map((j) => applyPriorities(j, targets.priorities));
+  const added = db.upsertJobs(found);
+  log(`Fetched ${jobs.length} postings, ${found.length} match your filters (${found.filter((j) => j.priority).length} in your priorities), ${added} new.`);
   if (failures.length) log(`${failures.length} feed(s) failed. Run check-targets to see which addresses to fix or disable.`);
-  return { fetched: jobs.length, matched: matches.length, added, failed: failures.length };
+  return { fetched: jobs.length, matched: found.length, added, failed: failures.length };
 }
 
 function scoreAll(jobs, filters) {
@@ -39,7 +40,7 @@ export async function importLinks(urls, targets, { log = console.log } = {}) {
     try {
       const job = await importJobUrl(url);
       const { score, reasons } = scoreJob(job, { ...targets.filters, titleRequire: [], titleInclude: [], locations: [] });
-      return { ok: true, job: { ...job, title: job.title || url, company: job.company || new URL(url).hostname, matchScore: score || null, matchReasons: reasons } };
+      return { ok: true, job: applyPriorities({ ...job, title: job.title || url, company: job.company || new URL(url).hostname, matchScore: score || null, matchReasons: reasons }, targets.priorities) };
     } catch (e) {
       return { ok: false, url, error: e.message };
     }
@@ -154,7 +155,7 @@ export async function importLinkedIn(urls, targets, { log = console.log } = {}) 
         notes: li.easyApply ? "Easy Apply on LinkedIn: apply there (takes a minute)." : li.externalUrl ? "" : "Couldn't find the company's apply link; apply from LinkedIn.",
       };
       const { score, reasons } = scoreJob(job, { ...targets.filters, titleRequire: [], titleInclude: [], locations: [] });
-      added += db.upsertJobs([{ ...job, matchScore: score || null, matchReasons: reasons }]);
+      added += db.upsertJobs([applyPriorities({ ...job, matchScore: score || null, matchReasons: reasons }, targets.priorities)]);
       log(`  [${k + 1}/${list.length}] ${job.company} · ${job.title}${li.easyApply ? "  (Easy Apply)" : li.externalUrl ? "  → company site" : ""}`);
     } catch (e) { failed.push({ url, error: e.message.split("\n")[0] }); log(`  ! ${url}: ${e.message.split("\n")[0]}`); }
     await new Promise((r) => setTimeout(r, 2000 + Math.random() * 2000)); // human pace

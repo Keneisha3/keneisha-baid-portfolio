@@ -35,3 +35,39 @@ export function scoreJob(job, filters = {}) {
   if (kwHits.length) reasons.push(`skills: ${kwHits.slice(0, 8).join(", ")}`);
   return { score: Math.min(score, 100), reasons };
 }
+
+const LANES = [
+  ["tech sales", /sales|sdr|bdr|business development|account (exec|manag)|partnerships?|gtm|go-to-market|revenue|customer success|commercial/i],
+  ["finance", /financ|fintech|invest|venture|valuation|fp&a|treasury|risk|credit|audit|bank|wealth|capital markets|equity|m&a|trading/i],
+  ["consulting", /consult|advisory|strategy/i],
+  ["project management", /project|program|pmo|coordinator/i],
+  ["airlines", /airline|airport|aviation|aerospace|flight/i],
+];
+/** Which kind of role this is, from its title first, then the company's category. */
+export function laneOf(job) {
+  for (const src of [job.title, job.category])
+    for (const [lane, re] of LANES) if (re.test(src || "")) return lane;
+  return job.category || "";
+}
+
+/** Region from the job's own location (a Toronto role at a US company is "canada"). */
+export function regionOf(location = "") {
+  if (/london|united kingdom|\buk\b|england|scotland|manchester|edinburgh/i.test(location)) return "uk";
+  if (/san francisco|bay area|palo alto|menlo park|mountain view|san mateo|los angeles|santa monica|culver city|burbank|anaheim|irvine|california|new york|seattle|boston|austin|united states|\busa?\b|, (ca|ny|wa|ma|tx)\b/i.test(location)) return "us";
+  if (/canada|toronto|vancouver|montr[eé]al|calgary|ottawa|waterloo|mississauga|, (on|bc|qc|ab)\b/i.test(location)) return "canada";
+  return "";
+}
+
+/** Adds lane, region and the priority boost from targets.priorities. Mutates and returns the job. */
+export function applyPriorities(job, priorities = {}) {
+  job.lane = laneOf(job);
+  job.region = regionOf(job.location) || job.region || "";
+  const { lanes = [], regions = [], locations = [], boost = 15 } = priorities;
+  const inLane = lanes.includes(job.lane) || (job.lane === "fintech" && lanes.includes("finance"));
+  const inPlace = locations.some((l) => has(job.location || "", l)) || (!job.location && regions.includes(job.region));
+  job.priority = Boolean(inLane || inPlace);
+  if (job.matchScore != null) job.matchScore = Math.min(100, job.matchScore + (inLane ? boost : 0) + (inPlace ? boost : 0));
+  else if (job.priority) job.matchScore = (inLane ? boost : 0) + (inPlace ? boost : 0);
+  if (job.priority) job.matchReasons = [...(job.matchReasons || []), `priority: ${[inLane && job.lane, inPlace && (job.region || "location")].filter(Boolean).join(" + ")}`];
+  return job;
+}

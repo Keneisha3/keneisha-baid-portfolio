@@ -67,3 +67,24 @@ test("research uses Claude web search; outreach drafts carry a 3-email sequence"
     assert.match(reqs[1].messages[0].content, /Company size: startup/);
   } finally { server.close(); }
 });
+
+test("priorities: tech sales, finance, London and SF/LA rank first; region comes from the job's location", async () => {
+  const { applyPriorities, regionOf, laneOf } = await import("../src/jobs/score.js");
+  const pr = loadTargets().priorities;
+  assert.equal(regionOf("Toronto, ON"), "canada");
+  assert.equal(regionOf("Santa Monica, CA"), "us");
+  assert.equal(regionOf("London, England, United Kingdom"), "uk");
+  assert.equal(laneOf({ title: "SDR Intern" }), "tech sales");
+  assert.equal(laneOf({ title: "Strategic Finance Intern (Spring 2027)" }), "finance");
+  const london = applyPriorities({ title: "Off-cycle Investment Intern", location: "London", matchScore: 60, region: "canada" }, pr);
+  const toronto = applyPriorities({ title: "Project Coordinator Co-op", location: "Toronto", matchScore: 60 }, pr);
+  assert.equal(london.region, "uk", "location beats the company's home region");
+  assert.ok(london.priority && !toronto.priority);
+  assert.ok(london.matchScore > toronto.matchScore);
+  const md = fs.readFileSync(new URL("../seed/priority-leads.md", import.meta.url), "utf8");
+  const r = importPipeline(md, { priorities: pr });
+  assert.equal(r.added, 6);
+  const zip = db.read().jobs.find((j) => j.company === "Zipline");
+  assert.equal(zip.region, "us");
+  assert.ok(zip.priority);
+});
