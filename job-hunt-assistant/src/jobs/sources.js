@@ -28,7 +28,7 @@ export async function mapLimit(items, n, fn) {
   return out;
 }
 
-const base = (t, j) => ({ company: t.name, category: t.category, ...j });
+const base = (t, j) => ({ company: t.name, category: t.category, region: t.region, companySize: t.size, ...j });
 
 export async function greenhouse(t) {
   const data = await get(`https://boards-api.greenhouse.io/v1/boards/${t.board}/jobs?content=true`);

@@ -5,7 +5,8 @@ import { parseArgs } from "node:util";
 import * as db from "./db.js";
 import { loadProfile, loadTargets } from "./config.js";
 import { CONFIG_DIR } from "./paths.js";
-import { discover, draftJob, draftContact, draftMany, importLinks, todayPlan } from "./commands.js";
+import { discover, draftJob, draftContact, draftMany, importLinks, todayPlan, researchMany, matches } from "./commands.js";
+import { importPipeline } from "./pipeline.js";
 import { FETCHERS } from "./jobs/sources.js";
 import { parseCsv } from "./csv.js";
 import { openBrowser, ask } from "./browser.js";
@@ -27,6 +28,7 @@ FIND JOBS
   careers [--category airlines] [--tabs 8]
                                  Open career pages for companies with no feed, so you can grab links
   add-job <url> [<url>...]       Import postings from any career site link
+  import-pipeline [file]         Load a tracker table (defaults to seed/winter-2027-pipeline.md)
   import-jobs <links.txt>        Same, one link per line
   jobs [--status drafted] [--category consulting]
 
@@ -42,10 +44,14 @@ OUTREACH
   people <company>               LinkedIn search links (alumni, roles, recruiters)
   add-contact --name ".." [--url <linkedin>] [--email ..] [--title ..] [--company ..] [--reason ..] [--job <id>]
   import-contacts <file.csv>     Columns: name,title,company,linkedinurl,email,reason,notes
-  draft-outreach <id> | --all    Connection note, coffee-chat ask, nudge, cold email (Claude)
+  research <id> | --all          Claude looks up recent news about each company/person for the hook
+  draft-outreach <id> | --all    LinkedIn note + coffee-chat ask, and a 3-email value-first sequence
   email --next N                 Opens N cold emails in Outlook/Gmail compose tabs; you press Send
+  email --followups              Opens the due follow-up emails (day 4-5, then day 10-12)
   connect <id> | --next N        Opens LinkedIn profiles with your note in the Connect box; you press Send
   message <id> [--nudge]         Paste the coffee-chat ask (or nudge) into a LinkedIn DM
+
+FILTERS (most commands): --category fintech|tech sales|consulting|airlines|...  --region canada|us|uk  --size startup|large
 
 TRACK
   followups | contacts [--status sent] | stats
@@ -58,7 +64,7 @@ const { values: opt, positionals: pos } = parseArgs({
   args: rest, allowPositionals: true,
   options: {
     port: { type: "string" }, status: { type: "string" }, top: { type: "string" }, next: { type: "string" }, tabs: { type: "string" },
-    concurrency: { type: "string" }, category: { type: "string" },
+    concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" },
     submit: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
     url: { type: "string" }, email: { type: "string" }, name: { type: "string" }, title: { type: "string" }, company: { type: "string" },
     reason: { type: "string" }, job: { type: "string" }, notes: { type: "string" },
@@ -67,6 +73,7 @@ const { values: opt, positionals: pos } = parseArgs({
 
 const fmtJob = (j) => `${j.id}  ${String(j.matchScore ?? "").padStart(3)}  ${j.status.padEnd(12)} ${j.company} · ${j.title} (${j.location || "?"})${j.manualApply ? "  [apply on site]" : ""}`;
 const fmtContact = (c) => `${c.id}  ${c.status.padEnd(12)} ${c.name} · ${c.title || ""} @ ${c.company || ""}${c.email ? ` <${c.email}>` : ""}${c.followUpOn ? `  [follow up ${c.followUpOn}]` : ""}`;
+const F = () => ({ category: opt.category, region: opt.region, size: opt.size });
 const byScore = (a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0);
 const bar = (n, goal) => (goal ? `${String(n).padStart(3)}/${goal} ${"█".repeat(Math.min(20, Math.round((n / goal) * 20))).padEnd(20, "░")}` : String(n));
 
@@ -98,11 +105,11 @@ async function main() {
     }
 
     case "discover":
-      await discover(loadProfile(), loadTargets(), { category: opt.category });
+      await discover(loadProfile(), loadTargets(), F());
       return;
     case "check-targets": {
       const t = loadTargets();
-      const feeds = t.companies.filter((c) => c.ats !== "careers" && (!opt.category || c.category === opt.category));
+      const feeds = t.companies.filter((c) => c.ats !== "careers" && matches(c, F()));
       const bad = [];
       await Promise.all(feeds.map(async (c) => {
         try {
@@ -123,7 +130,7 @@ async function main() {
     }
     case "careers": {
       const t = loadTargets();
-      const list = t.companies.filter((c) => (c.ats === "careers" || c.careersUrl) && (!opt.category || c.category === opt.category));
+      const list = t.companies.filter((c) => (c.ats === "careers" || c.careersUrl) && matches(c, F()));
       const n = Number(opt.tabs || 8);
       const browser = await openBrowser();
       for (let i = 0; i < list.length; i += n) {
@@ -148,15 +155,22 @@ async function main() {
       console.log(`Imported ${r.added} new job(s) (${r.read} read, ${r.failed.length} failed).`);
       return;
     }
+    case "import-pipeline": {
+      const file = pos[0] || new URL("../seed/winter-2027-pipeline.md", import.meta.url).pathname;
+      const r = importPipeline(fs.readFileSync(file, "utf8"));
+      console.log(`Read ${r.rows} rows: ${r.added} new jobs, ${r.updated} statuses updated, ${r.pitches} cold-pitch targets.`);
+      console.log("Cold-pitch targets have no posting: find a person with `people <company>`, then add-contact --email ... --job <id>.");
+      return;
+    }
     case "jobs": {
-      const jobs = db.read().jobs.filter((j) => (!opt.status || j.status === opt.status) && (!opt.category || j.category === opt.category)).sort(byScore);
+      const jobs = db.read().jobs.filter((j) => (!opt.status || j.status === opt.status) && matches(j, F())).sort(byScore);
       jobs.forEach((j) => console.log(fmtJob(j)));
       if (!jobs.length) console.log("No jobs yet. Run: discover");
       return;
     }
     case "draft": {
       const profile = loadProfile();
-      const found = db.read().jobs.filter((j) => j.status === "found" && (!opt.category || j.category === opt.category)).sort(byScore);
+      const found = db.read().jobs.filter((j) => j.status === "found" && !j.pitch && matches(j, F())).sort(byScore);
       const ids = opt.all ? found.map((j) => j.id) : opt.top ? found.slice(0, Number(opt.top)).map((j) => j.id) : pos;
       if (ids.length === 1) {
         const j = await draftJob(profile, ids[0]);
@@ -181,7 +195,9 @@ async function main() {
     }
     case "add-contact": {
       if (!opt.name || !(opt.url || opt.email)) throw new Error('Usage: add-contact --name "Full Name" (--url <linkedin> | --email <addr>) [--title] [--company] [--reason] [--job]');
-      const c = db.addContact({ linkedinUrl: opt.url, email: opt.email, name: opt.name, title: opt.title, company: opt.company, reason: opt.reason, jobId: opt.job, notes: opt.notes || "" });
+      const job = opt.job && db.read().jobs.find((j) => j.id === opt.job);
+      const c = db.addContact({ linkedinUrl: opt.url, email: opt.email, name: opt.name, title: opt.title, company: opt.company || job?.company, reason: opt.reason,
+        jobId: opt.job, notes: opt.notes || "", companySize: job?.companySize, region: job?.region, category: job?.category });
       console.log(`Added ${fmtContact(c)}`);
       return;
     }
@@ -211,8 +227,16 @@ async function main() {
       } else await draftMany(profile, "contacts", ids, { concurrency: Number(opt.concurrency || 4) });
       return;
     }
+    case "research": {
+      const state = db.read();
+      const ids = opt.all ? state.contacts.filter((c) => !c.research && ["to_contact", "drafted"].includes(c.status) && matches(c, F())).map((c) => c.id) : pos;
+      console.log(`Researching ${ids.length} contact(s) with web search…`);
+      await researchMany(ids);
+      console.log("Done. Re-draft them so the research is used: draft-outreach --all (or <id>)");
+      return;
+    }
     case "email":
-      return emailBatch();
+      return opt.followups ? emailFollowups() : emailBatch();
     case "connect":
       return connectBatch();
     case "message": {
@@ -262,7 +286,7 @@ async function applyBatch() {
   const profile = loadProfile();
   const state = db.read();
   const jobs = opt.next
-    ? state.jobs.filter((j) => ["drafted", "found"].includes(j.status) && (!opt.category || j.category === opt.category))
+    ? state.jobs.filter((j) => ["drafted", "found"].includes(j.status) && !j.pitch && matches(j, F()))
       .sort((a, b) => (b.status === "drafted") - (a.status === "drafted") || byScore(a, b)).slice(0, Number(opt.next))
     : pos.map((p) => state.jobs.find((j) => j.id === p)).filter(Boolean);
   if (!jobs.length) throw new Error("Nothing to apply to. Try: discover, then draft --top 20");
@@ -319,7 +343,7 @@ async function emailBatch() {
   const cap = targets.goals?.emailsPerDay ?? 40;
   const left = cap - db.sentToday(db.read(), "email");
   if (left <= 0) return console.log(`Daily email limit of ${cap} reached. Sending from your own inbox at higher volume gets you flagged as spam.`);
-  let list = db.read().contacts.filter((c) => c.email && ["to_contact", "drafted"].includes(c.status));
+  let list = db.read().contacts.filter((c) => c.email && ["to_contact", "drafted"].includes(c.status) && matches(c, F()));
   if (pos.length) list = list.filter((c) => pos.includes(c.id));
   list = list.slice(0, Math.min(Number(opt.next || 10), left));
   if (!list.length) return console.log("No contacts with an email address waiting. Add some with add-contact --email or import-contacts.");
@@ -342,6 +366,30 @@ async function emailBatch() {
     console.log(`  ✓ ${sent.length} tracked (nudge reminder in 5 days)`);
   }
   await browser.close();
+}
+
+async function emailFollowups() {
+  const profile = loadProfile();
+  const due = db.dueFollowUps().contacts.filter((c) => c.channel === "email" && (c.emailStep || 1) < 3 && c.draft?.emailFollowUp1);
+  if (!due.length) return console.log("No email follow-ups due today.");
+  const browser = await openBrowser();
+  const provider = profile.emailProvider || "outlook";
+  due.forEach((c, k) => console.log(`  ${k + 1}. ${c.name} <${c.email}> · follow-up ${(c.emailStep || 1)}`));
+  for (const c of due) {
+    const page = await browser.newPage();
+    const step = c.emailStep || 1;
+    const text = step === 1 ? c.draft.emailFollowUp1 : c.draft.emailFollowUp2;
+    await page.goto(composeUrl(provider, c.email, `Re: ${c.draft.emailSubject}`, text), { waitUntil: "domcontentloaded" }).catch(() => {});
+  }
+  console.log("Tip: replying inside the original thread is even better. Search your Sent folder for the subject and paste the text there.");
+  const ans = await ask("Which did you send? (Enter = all, e.g. 1 3, or 'none'): ");
+  const sent = ans.trim() === "" ? due.map((_, k) => k) : /^none$/i.test(ans) ? [] : pickList(ans, due.length);
+  for (const k of sent) {
+    const c = due[k], step = (c.emailStep || 1) + 1;
+    db.updateContact(c.id, { emailStep: step, lastMessagedAt: db.now(), followUpOn: step < 3 ? db.addDays(db.now(), 6) : null });
+  }
+  await browser.close();
+  console.log(`  ✓ ${sent.length} follow-up(s) tracked`);
 }
 
 async function connectBatch() {

@@ -3,10 +3,13 @@ import * as db from "./db.js";
 import { fetchAll, mapLimit } from "./jobs/sources.js";
 import { scoreJob, titlePasses } from "./jobs/score.js";
 import { importJobUrl } from "./jobs/import.js";
-import { draftApplication, draftOutreach } from "./ai.js";
+import { draftApplication, draftOutreach, researchContact } from "./ai.js";
 
-export async function discover(profile, targets, { log = console.log, category } = {}) {
-  const companies = targets.companies.filter((c) => !category || c.category === category);
+export const matches = (o, { category, region, size } = {}) =>
+  (!category || o.category === category) && (!region || o.region === region) && (!size || (o.size || o.companySize) === size);
+
+export async function discover(profile, targets, { log = console.log, ...filter } = {}) {
+  const companies = targets.companies.filter((c) => matches(c, filter));
   const feeds = companies.filter((c) => c.ats !== "careers" && !c.disabled);
   log(`Checking ${feeds.length} job feeds…`);
   const filters = targets.filters || {};
@@ -87,4 +90,16 @@ export function todayPlan(targets, state = db.read()) {
     },
     due: db.dueFollowUps(state),
   };
+}
+
+export async function researchMany(ids, { concurrency = 3, log = console.log } = {}) {
+  let done = 0;
+  return mapLimit(ids, concurrency, async (id) => {
+    const c = db.read().contacts.find((x) => x.id === id);
+    try {
+      const research = await researchContact(c);
+      db.updateContact(id, { research, researchedAt: db.now() });
+      log(`  [${++done}/${ids.length}] ${c.company || c.name}`);
+    } catch (e) { log(`  [${++done}/${ids.length}] ! ${c.company || c.name}: ${e.message}`); }
+  });
 }

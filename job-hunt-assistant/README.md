@@ -86,6 +86,54 @@ LinkedIn restricts accounts that go much past ~100 invites a week, and free acco
 - **`careers` sweeps** for companies without feeds (airlines, banks, Big 4), plus VC portfolio job boards (Portage, Inovia, Base10).
 - **Cold emails** to companies that often hire interns without posting.
 
+## Cold outreach that gets replies
+
+Most cold emails fail because they ask for something and offer nothing. Each draft follows this structure:
+
+1. **Hook:** one specific, recent thing about *them*. `research` uses Claude's web search to find these: launches, funding, new markets, something the person posted.
+2. **Bridge:** the one proof point of yours that maps to their likely problem, with a number. For example, the Power BI rollout for 40+ users, or the 4.3% forecast error.
+3. **Value:** a small, concrete idea you offer to send, such as "happy to send a one-page take on automating your onboarding reporting". Only offer what you'll actually do, then do it when they say yes. That's what sets you apart.
+4. **Ask:** easy and specific.
+   - **Startups:** pitch the Winter 2027 term as a project you'd own.
+   - **Big companies:** ask for 15 minutes or a pointer to the right team or recruiter, and apply to the posting too.
+5. **Logistics:** Waterloo co-op, 4 months from January, open to relocating.
+6. **Opt-out:** "a quick no is totally fine". It raises reply rates, and it's the polite norm under Canadian (CASL) and UK (PECR/GDPR) rules for one-to-one business email.
+
+**Who to email:**
+
+| Company size | Who to email |
+|---|---|
+| Startups under ~50 people | A founder, COO or Head of Ops |
+| Mid-size | The hiring manager for the team you want, then a recruiter |
+| Large | A university recruiter, plus a Waterloo alum on the team (`people <company>` finds them) |
+
+Use a real person's address from the company site or their LinkedIn profile, or `hello@`/`careers@` for tiny startups. Avoid guessed addresses: bounces hurt your sender reputation.
+
+**Cadence:** three emails, then stop.
+- Email 1.
+- Day 4–5: one new useful thing, never "just checking in".
+- Day 10–12: a short close-the-loop note.
+
+`email --followups` opens whichever are due. Send from your own inbox, and keep it under about 40 a day.
+
+```bash
+npm run jha -- import-pipeline              # loads seed/winter-2027-pipeline.md (your tracker)
+npm run jha -- people Bree                  # find the founder / ops lead
+npm run jha -- add-contact --name "…" --email … --job <Bree job id>
+npm run jha -- research --all               # recent news per company (Claude web search)
+npm run jha -- draft-outreach --all         # value-first email + 2 follow-ups + LinkedIn note
+npm run jha -- email --next 40              # review and send
+npm run jha -- email --followups            # each day after
+```
+
+## London / UK
+
+- `--region uk` works on `discover`, `careers`, `jobs`, `apply`, `email` and `research`, and `--size startup|large` works on all of them too.
+- Startups like Monzo, GoCardless, Cleo, Synthesia and ElevenLabs have job feeds. Banks, consulting firms and airlines (Barclays, HSBC, the Big 4, McKinsey/BCG/Bain, BA/IAG, Virgin Atlantic, easyJet, Heathrow) open through `careers --region uk`.
+- UK firms call January starts **off-cycle internships**, and many run **placements**. The filters include both terms.
+- **Work authorization:** you'd need a UK visa. Canadians can usually use the Youth Mobility Scheme, which needs no job offer. Check the current age limit, cost and processing time at gov.uk/youth-mobility before promising an employer a start date.
+- The UK screening answers in `profile.json` (`workAuthUK`, `needsSponsorshipUK`) are blank on purpose, so UK forms always stop and wait for you.
+
 ## Daily routine
 
 ```bash

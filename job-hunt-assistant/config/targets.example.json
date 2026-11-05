@@ -1,296 +1,394 @@
 {
-  "_help": "ats: greenhouse | lever | ashby | workable | recruitee | smartrecruiters (board = slug in their job-board URL), workday (host, tenant, site from https://HOST/SITE), successfactors (host of jobs.company.com), or careers (no feed: `careers` opens the page / a search for you). Run `check-targets` to see which feeds work and set \"disabled\": true on the ones that 404.",
+  "_help": "ats: greenhouse | lever | ashby | workable | recruitee | smartrecruiters (board = slug in their job-board URL), workday (host, tenant, site from https://HOST/SITE), successfactors (host of jobs.company.com), or careers (no feed: `careers` opens the page / a search for you). Run `check-targets` to see which feeds work and set \"disabled\": true on the ones that 404. Each company also has region (canada | us | uk) and size (startup | large); filter any command with --region / --size.",
   "_note": "Board slugs and SuccessFactors hosts are best guesses that couldn't be verified when this file was written. `check-targets` tells you which are wrong.",
   "companies": [
     {
       "name": "Wealthsimple",
       "ats": "ashby",
       "board": "wealthsimple",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Stripe",
       "ats": "greenhouse",
       "board": "stripe",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Plaid",
       "ats": "lever",
       "board": "plaid",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Ramp",
       "ats": "ashby",
       "board": "ramp",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Brex",
       "ats": "greenhouse",
       "board": "brex",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Robinhood",
       "ats": "greenhouse",
       "board": "robinhood",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Affirm",
       "ats": "greenhouse",
       "board": "affirm",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Chime",
       "ats": "greenhouse",
       "board": "chime",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Coinbase",
       "ats": "greenhouse",
       "board": "coinbase",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Mercury",
       "ats": "ashby",
       "board": "mercury",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "KOHO",
       "ats": "lever",
       "board": "koho",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Wave Financial",
       "ats": "greenhouse",
       "board": "wave",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Float",
       "ats": "ashby",
       "board": "float",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Neo Financial",
       "ats": "lever",
       "board": "neofinancial",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Questrade",
       "ats": "greenhouse",
       "board": "questrade",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Nesto",
       "ats": "ashby",
       "board": "nesto",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Borrowell",
       "ats": "greenhouse",
       "board": "borrowell",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Clearco",
       "ats": "greenhouse",
       "board": "clearco",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Mogo",
       "ats": "greenhouse",
       "board": "mogo",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Wealthica",
       "ats": "lever",
       "board": "wealthica",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Portage Ventures (fintech VC)",
       "ats": "careers",
       "category": "finance",
-      "careersUrl": "https://portageventures.com/jobs"
+      "careersUrl": "https://portageventures.com/jobs",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Loop Financial",
       "ats": "careers",
-      "category": "fintech"
+      "category": "fintech",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Inovia Capital (portfolio job board)",
       "ats": "careers",
       "category": "finance",
-      "careersUrl": "https://www.inovia.vc/jobs"
+      "careersUrl": "https://www.inovia.vc/jobs",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Base10 (portfolio job board)",
       "ats": "careers",
       "category": "fintech",
-      "careersUrl": "https://careers.base10.vc/jobs"
+      "careersUrl": "https://careers.base10.vc/jobs",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Cohere",
       "ats": "ashby",
       "board": "cohere",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Databricks",
       "ats": "greenhouse",
       "board": "databricks",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Faire",
       "ats": "greenhouse",
       "board": "faire",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Dialpad",
       "ats": "greenhouse",
       "board": "dialpad",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Top Hat",
       "ats": "greenhouse",
       "board": "tophat",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Jobber",
       "ats": "greenhouse",
       "board": "jobber",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Klue",
       "ats": "greenhouse",
       "board": "klue",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Thinkific",
       "ats": "greenhouse",
       "board": "thinkific",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Visier",
       "ats": "greenhouse",
       "board": "visier",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Benevity",
       "ats": "greenhouse",
       "board": "benevity",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "ApplyBoard",
       "ats": "greenhouse",
       "board": "applyboard",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "League",
       "ats": "greenhouse",
       "board": "league",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Ada",
       "ats": "greenhouse",
       "board": "ada18",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "1Password",
       "ats": "ashby",
       "board": "1password",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Vidyard",
       "ats": "greenhouse",
       "board": "vidyard",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Clio",
       "ats": "greenhouse",
       "board": "clio",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Unbounce",
       "ats": "greenhouse",
       "board": "unbounce",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Hootsuite",
       "ats": "greenhouse",
       "board": "hootsuite",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "MetaOptima",
       "ats": "lever",
       "board": "metaoptima",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Withe",
       "ats": "careers",
       "category": "tech sales",
-      "careersUrl": "https://withe.co/jobs/gtm-operations-intern"
+      "careersUrl": "https://withe.co/jobs/gtm-operations-intern",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Refold AI",
       "ats": "careers",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup"
     },
     {
       "name": "Trellis",
       "ats": "careers",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "us",
+      "size": "startup"
     },
     {
       "name": "Ontraccr",
       "ats": "careers",
-      "category": "tech sales"
+      "category": "tech sales",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Shopify",
       "ats": "careers",
       "category": "tech sales",
-      "careersUrl": "https://www.shopify.com/careers"
+      "careersUrl": "https://www.shopify.com/careers",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Alpha FMC",
       "ats": "greenhouse",
       "board": "alphaawmnaearlycareers",
-      "category": "consulting"
+      "category": "consulting",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Deloitte Canada",
@@ -298,7 +396,9 @@
       "host": "careers.deloitte.ca",
       "search": "intern",
       "category": "consulting",
-      "careersUrl": "https://careers.deloitte.ca"
+      "careersUrl": "https://careers.deloitte.ca",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Scotiabank",
@@ -306,157 +406,217 @@
       "host": "jobs.scotiabank.com",
       "search": "intern",
       "category": "finance",
-      "careersUrl": "https://jobs.scotiabank.com"
+      "careersUrl": "https://jobs.scotiabank.com",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "KPMG Canada",
       "ats": "careers",
       "category": "consulting",
-      "careersUrl": "https://kpmg.com/ca/en/careers/students.html"
+      "careersUrl": "https://kpmg.com/ca/en/careers/students.html",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "PwC Canada",
       "ats": "careers",
       "category": "consulting",
-      "careersUrl": "https://jobs-ca.pwc.com/campus/ca/search-results"
+      "careersUrl": "https://jobs-ca.pwc.com/campus/ca/search-results",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "EY Canada",
       "ats": "careers",
-      "category": "consulting"
+      "category": "consulting",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "MNP",
       "ats": "careers",
-      "category": "consulting"
+      "category": "consulting",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "CGI",
       "ats": "careers",
-      "category": "consulting"
+      "category": "consulting",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Accenture Canada",
       "ats": "careers",
-      "category": "consulting"
+      "category": "consulting",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "RBC",
       "ats": "careers",
       "category": "finance",
-      "careersUrl": "https://jobs.rbc.com"
+      "careersUrl": "https://jobs.rbc.com",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "TD",
       "ats": "careers",
-      "category": "finance"
+      "category": "finance",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "BMO",
       "ats": "careers",
       "category": "finance",
-      "careersUrl": "https://jobs.bmo.com/ca/en/campus"
+      "careersUrl": "https://jobs.bmo.com/ca/en/campus",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "CIBC",
       "ats": "careers",
-      "category": "finance"
+      "category": "finance",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Geotab",
       "ats": "careers",
-      "category": "project management"
+      "category": "project management",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Sanctuary AI",
       "ats": "careers",
-      "category": "project management"
+      "category": "project management",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "SAP Vancouver (iXp)",
       "ats": "careers",
-      "category": "project management"
+      "category": "project management",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Horizon Labs",
       "ats": "careers",
-      "category": "project management"
+      "category": "project management",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Air Canada",
       "ats": "careers",
       "category": "airlines",
-      "careersUrl": "https://careers.aircanada.com"
+      "careersUrl": "https://careers.aircanada.com",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "WestJet",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Porter Airlines",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Air Transat",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Flair Airlines",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Jazz Aviation",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Sunwing",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Harbour Air",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Air Canada Vacations",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Aeroplan",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "NAV CANADA",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Toronto Pearson (GTAA)",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Vancouver Airport (YVR)",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Montréal-Trudeau (ADM)",
       "ats": "careers",
-      "category": "airlines"
+      "category": "airlines",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "CAE",
       "ats": "careers",
-      "category": "aerospace"
+      "category": "aerospace",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Bombardier",
@@ -464,47 +624,392 @@
       "host": "jobs.bombardier.com",
       "search": "intern",
       "category": "aerospace",
-      "careersUrl": "https://jobs.bombardier.com"
+      "careersUrl": "https://jobs.bombardier.com",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "De Havilland Canada",
       "ats": "careers",
-      "category": "aerospace"
+      "category": "aerospace",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Pratt & Whitney Canada (RTX)",
       "ats": "careers",
-      "category": "aerospace"
+      "category": "aerospace",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Airbus Canada",
       "ats": "careers",
-      "category": "aerospace"
+      "category": "aerospace",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "Boeing Canada",
       "ats": "careers",
-      "category": "aerospace"
+      "category": "aerospace",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "MRG Group",
       "ats": "careers",
-      "category": "events"
+      "category": "events",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Live Nation Canada",
       "ats": "careers",
-      "category": "events"
+      "category": "events",
+      "region": "canada",
+      "size": "large"
     },
     {
       "name": "StageKeep",
       "ats": "careers",
-      "category": "events"
+      "category": "events",
+      "region": "canada",
+      "size": "startup"
     },
     {
       "name": "Open Music Networks",
       "ats": "careers",
-      "category": "events"
+      "category": "events",
+      "region": "canada",
+      "size": "startup"
+    },
+    {
+      "name": "Monzo",
+      "ats": "greenhouse",
+      "board": "monzo",
+      "category": "fintech",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "GoCardless",
+      "ats": "greenhouse",
+      "board": "gocardless",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Checkout.com",
+      "ats": "greenhouse",
+      "board": "checkoutcom",
+      "category": "fintech",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Cleo",
+      "ats": "ashby",
+      "board": "cleo",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Paddle",
+      "ats": "ashby",
+      "board": "paddle",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Zopa",
+      "ats": "greenhouse",
+      "board": "zopa",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Moneybox",
+      "ats": "greenhouse",
+      "board": "moneybox",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Marshmallow",
+      "ats": "greenhouse",
+      "board": "marshmallow",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Synthesia",
+      "ats": "ashby",
+      "board": "synthesia",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "ElevenLabs",
+      "ats": "ashby",
+      "board": "elevenlabs",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Wayve",
+      "ats": "greenhouse",
+      "board": "wayve",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Multiverse",
+      "ats": "greenhouse",
+      "board": "multiverse",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Datadog (London)",
+      "ats": "greenhouse",
+      "board": "datadog",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "MongoDB (London)",
+      "ats": "greenhouse",
+      "board": "mongodb",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Lovable",
+      "ats": "ashby",
+      "board": "lovable",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Granola",
+      "ats": "ashby",
+      "board": "granola",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Revolut",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://www.revolut.com/careers/"
+    },
+    {
+      "name": "Wise",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://wise.jobs"
+    },
+    {
+      "name": "Starling Bank",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Tide",
+      "ats": "careers",
+      "category": "fintech",
+      "region": "uk",
+      "size": "startup"
+    },
+    {
+      "name": "Barclays",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large",
+      "careersUrl": "https://search.jobs.barclays"
+    },
+    {
+      "name": "HSBC",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Lloyds Banking Group",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Goldman Sachs (London off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "J.P. Morgan (London off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Morgan Stanley (London off-cycle)",
+      "ats": "careers",
+      "category": "finance",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "McKinsey London",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "BCG London",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Bain London",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Oliver Wyman",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Deloitte UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "PwC UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "EY UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "KPMG UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Accenture UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Capgemini Invent UK",
+      "ats": "careers",
+      "category": "consulting",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Salesforce London",
+      "ats": "careers",
+      "category": "tech sales",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "British Airways / IAG",
+      "ats": "careers",
+      "category": "airlines",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Virgin Atlantic",
+      "ats": "careers",
+      "category": "airlines",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "easyJet",
+      "ats": "careers",
+      "category": "airlines",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Heathrow Airport",
+      "ats": "careers",
+      "category": "airlines",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Rolls-Royce (civil aerospace)",
+      "ats": "careers",
+      "category": "aerospace",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Live Nation UK",
+      "ats": "careers",
+      "category": "events",
+      "region": "uk",
+      "size": "large"
+    },
+    {
+      "name": "Ticketmaster UK",
+      "ats": "careers",
+      "category": "events",
+      "region": "uk",
+      "size": "large"
     }
   ],
   "filters": {
@@ -517,7 +1022,11 @@
       "student",
       "stagiaire",
       "stage",
-      "winter 2027"
+      "winter 2027",
+      "placement",
+      "off-cycle",
+      "off cycle",
+      "industrial placement"
     ],
     "titleInclude": [
       "analyst",
@@ -618,7 +1127,11 @@
       "Canada",
       "Remote",
       "New York",
-      "San Francisco"
+      "San Francisco",
+      "London",
+      "United Kingdom",
+      "UK",
+      "England"
     ],
     "keywords": [
       "python",

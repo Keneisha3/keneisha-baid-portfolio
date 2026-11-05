@@ -101,9 +101,20 @@ const OutreachDraft = z.object({
   connectionNote: z.string().describe(`LinkedIn connection note, STRICTLY under ${NOTE_LIMIT} characters including spaces`),
   followUp: z.string().describe("Message to send after they accept: asks for a 15-20 minute coffee chat, gives 2 concrete things to ask about, offers flexibility. Under 90 words."),
   nudge: z.string().describe("Polite one-line follow-up if no reply after a week. Under 40 words."),
-  emailSubject: z.string().describe("Cold email subject line, under 9 words, specific (e.g. names the term and the kind of role), no clickbait"),
-  emailBody: z.string().describe("Cold email, under 140 words, plain text: who she is in one line, 2 concrete proof points relevant to this company, the ask (a Winter 2027 internship/co-op, or a 15-minute chat if no role exists), portfolio link, sign-off with name. No attachments mentioned unless asked."),
+  emailSubject: z.string().describe("Under 8 words, specific to them (their product, team or news), never generic like 'Internship inquiry'"),
+  emailBody: z.string().describe("Email 1, under 130 words, plain text, following the VALUE-FIRST structure"),
+  emailFollowUp1: z.string().describe("Day 4-5 reply in the same thread, under 70 words: adds ONE new useful thing (a sharper version of the idea, a relevant portfolio link, a question about their roadmap). Never 'just checking in'."),
+  emailFollowUp2: z.string().describe("Day 10-12 reply, under 45 words: closes the loop gracefully, offers the easiest possible yes (e.g. a 10-minute call or forwarding to the right person), and says she won't follow up again."),
 });
+
+const OUTREACH_GUIDE = `VALUE-FIRST cold outreach rules:
+1. Hook (1 sentence): something specific and recent about THEM from the research (a launch, hire, expansion, post, metric). If research is empty, use what's genuinely known (product, stage, market). Never fake familiarity or flatter.
+2. Bridge (1-2 sentences): the ONE proof point from her background that maps to their likely problem, with a number.
+3. Value (1-2 sentences): a concrete, small idea or offer for them: e.g. "I sketched how I'd automate X" ONLY if offering to do it, phrased as an offer ("happy to send a one-page take on..."). Never claim she already made something she didn't.
+4. Ask (1 sentence): specific and easy. Startups: a Winter 2027 (Jan-Apr) internship pitched as a project she'd own. Large companies: a 15-minute chat or a referral/pointer to the right team or recruiter, plus the posting if one exists.
+5. Logistics line: Waterloo co-op, 4 months from January 2027, open to relocating (and for UK roles: she'd sort her own UK work authorization; never state a visa she doesn't hold).
+6. Close with her name, portfolio link, and an easy opt-out ("if this isn't on your radar, a quick no is totally fine").
+Tone: peer-to-peer, short sentences, no "I hope this email finds you well", no "passionate", no wall of credentials, no attachments.`;
 
 export async function draftOutreach(profile, contact, job) {
   const prompt = `Sender:\n${profileBlurb(profile)}\n\n---\nRecipient: ${contact.name}, ${contact.title || "?"} at ${contact.company || "?"}
@@ -116,7 +127,12 @@ Sender's portfolio: ${profile.website || profile.linkedin}
 If the recipient is a company inbox or team rather than a named person, greet the team and skip personal references.
 
 ---
-Draft the LinkedIn messages. Reference something specific to the recipient when the notes allow, and a genuine shared link (school, field, role) when one exists.`;
+${contact.companySize ? `Company size: ${contact.companySize}` : ""}${contact.region === "uk" ? "\nThis is a London/UK company." : ""}
+Research on them (may be empty):\n${contact.research || "(none)"}
+
+${OUTREACH_GUIDE}
+
+Draft the LinkedIn messages and the 3-email sequence. Reference something specific to the recipient when the research or notes allow, and a genuine shared link (school, field, role) when one exists.`;
   try {
     const out = await structured(OutreachDraft, prompt, 2000);
     if (out) {
@@ -138,14 +154,16 @@ function templateOutreach(profile, contact) {
     ),
     followUp: `Thanks for connecting, ${first}! I'm exploring ${profile.targetArea || "roles like yours"} and would really value 15-20 minutes to hear about your path to ${contact.company} and what you'd tell someone starting out. Happy to work around your schedule. Would a quick virtual coffee sometime in the next couple of weeks work?`,
     nudge: `Hi ${first}, just floating this back up in case it got buried. No pressure at all if now's busy!`,
-    emailSubject: `${profile.jobAsk ? "Winter 2027 co-op" : "Internship"} inquiry: ${profile.shortIntro || profile.name}`,
+    emailSubject: `Winter 2027 intern for ${contact.company || "your team"}?`,
+    emailFollowUp1: `Hi ${first}, one more thought: ${(profile.highlights || [])[2] || (profile.highlights || [])[0] || ""}. Happy to share a short take on how I'd apply that at ${contact.company || "your team"} if useful.`,
+    emailFollowUp2: `Hi ${first}, I'll close the loop here so I'm not cluttering your inbox. If a 10-minute call or a pointer to the right person is easy, I'd be grateful. Either way, thanks!`,
     emailBody: `Hi ${first},
 
 I'm ${profile.name}, a ${profile.shortIntro || profile.headline}. I'm looking for ${profile.jobAsk || "a Winter 2027 (January to April) internship or co-op"} and ${contact.company || "your team"} is high on my list.
 
 A couple of things I've done: ${(profile.highlights || []).slice(0, 2).join("; ")}.
 
-If there's room for an intern this winter, I'd love to be considered. If not, I'd still value 15 minutes to learn how the team works.
+If there's room for an intern this winter, I'd love to be considered. If not, I'd still value 15 minutes to learn how the team works. If this isn't on your radar, a quick no is totally fine.
 
 Portfolio: ${profile.website || profile.linkedin}
 
@@ -160,4 +178,22 @@ function trimTo(s, n) {
   if (s.length <= n) return s;
   const cut = s.slice(0, n - 1);
   return cut.slice(0, cut.lastIndexOf(" ")).replace(/[,.;:]?$/, "") + "…";
+}
+
+// ---------- research ----------
+
+/** Looks up recent, specific facts about the company (and person) with Claude's web search, for the hook. */
+export async function researchContact(contact) {
+  const c = getClient();
+  if (!c) throw new Error("Research needs ANTHROPIC_API_KEY");
+  const who = [contact.name && !/team$/i.test(contact.name) ? `${contact.name} (${contact.title || "role unknown"})` : "", contact.company].filter(Boolean).join(" at ");
+  const msg = await c.messages.create({
+    model: MODEL,
+    max_tokens: 4000,
+    output_config: { effort: "low" },
+    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
+    messages: [{ role: "user", content: `I'm a student about to cold-email ${who} about a Winter 2027 internship. Find 3-5 SPECIFIC, recent (last 12 months) facts I could reference: product launches, funding, expansion (e.g. new offices or markets), notable hires, things the person posted or spoke about, problems the business is likely facing. Also say roughly how many employees they have, and who would decide on an intern (founder, ops lead, recruiter). Reply as short bullet points, each ending with the source domain. No preamble.` }],
+  });
+  if (msg.stop_reason === "refusal") throw new Error("Claude declined this request");
+  return msg.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim();
 }

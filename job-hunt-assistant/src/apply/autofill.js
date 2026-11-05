@@ -151,8 +151,10 @@ export function screeningAnswer(label = "", profile = {}) {
   const L = label.toLowerCase();
   if (EEO.test(L)) return a.declineDemographicQuestions ? "__decline__" : "";
   const us = /(u\.s\.|\bus\b|united states|america)/.test(L);
-  if (/sponsor/.test(L)) return us ? a.needsSponsorshipUS : a.needsSponsorshipCanada;
-  if (/(authori[sz]ed|eligible|legally (able|entitled)|right) to work/.test(L)) return us ? a.workAuthUS : a.workAuthCanada;
+  const uk = /(\buk\b|united kingdom|britain|england)/.test(L);
+  const pick = (ca, usv, ukv) => (uk ? ukv : us ? usv : ca) || "";
+  if (/sponsor|visa/.test(L)) return pick(a.needsSponsorshipCanada, a.needsSponsorshipUS, a.needsSponsorshipUK);
+  if (/(authori[sz]ed|eligible|legally (able|entitled)|right) to work/.test(L)) return pick(a.workAuthCanada, a.workAuthUS, a.workAuthUK);
   if (/relocat/.test(L)) return a.willingToRelocate;
   if (/(co-?op|internship|work) term (length|duration)|how (many|long).*(months|term)|duration of (your )?(term|internship|co-?op)/.test(L)) return a.termLength;
   if (/start date|available to start|when can you start|availability/.test(L)) return a.startDate;
