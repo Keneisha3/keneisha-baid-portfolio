@@ -49,11 +49,13 @@ test("HN Who is hiring: founder posts become jobs, and their emails become outre
   } finally { globalThis.fetch = real; }
 });
 
-test("founding pitch: angle + email that offers a small build and a trial-to-full-time ask", async () => {
+test("founding pitch: angle + small-build offer, and never a full-time ask", async () => {
   const p = loadProfile();
   assert.match(ai.angleFor(p, "Founding GTM"), /build the thing and help sell it/);
   assert.match(ai.angleFor(p, "Founding Engineer"), /build the thing/);
   assert.match(ai.OUTREACH_GUIDE, /FOUNDING roles/);
+  assert.match(ai.OUTREACH_GUIDE, /Never ask for or mention a full-time role/);
+  assert.ok(!/open to a full-time/i.test(ai.OUTREACH_GUIDE + JSON.stringify(p)));
 });
 
 test("defence: US/UK roles needing citizenship or clearance are dropped; Canadian aerospace/defence is a backup lane", async () => {

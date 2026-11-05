@@ -35,6 +35,8 @@ fs.writeFileSync(${JSON.stringify(log)},JSON.stringify({args:process.argv.slice(
 console.log(JSON.stringify({type:"result",is_error:false,result:"",structured_output:${JSON.stringify(IDEA)}}));});`);
   fs.chmodSync(fake, 0o755);
   process.env.JHA_CLAUDE_BIN = fake;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: false, status: 404, headers: { get: () => "" }, text: async () => "" });
   try {
     const c = db.addContact({ name: "Acme team", company: "Acme", email: "hi@acme.com", companySize: "startup" });
     const idea = await ideas.generateIdea({ ...profile, ai: "claude-code" }, c);
@@ -49,7 +51,7 @@ console.log(JSON.stringify({type:"result",is_error:false,result:"",structured_ou
     const t = await ai.draftOutreach(profile, saved, null, { engine: "template" });
     assert.match(t.emailBody, /I scored 200 chains on fit/);
     assert.match(t.emailBody, /one-page idea for Acme: Chain fit-score target list\. Happy to send it over/);
-  } finally { delete process.env.JHA_CLAUDE_BIN; }
+  } finally { delete process.env.JHA_CLAUDE_BIN; globalThis.fetch = realFetch; }
 });
 
 test("publishing writes an unlisted page into the portfolio and the email links it", async () => {

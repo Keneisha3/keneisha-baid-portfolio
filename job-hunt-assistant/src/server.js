@@ -65,7 +65,7 @@ export function createServer() {
         const kind = st.contacts.some((c) => c.id === r[1]) ? "contacts" : "jobs";
         const rec = st[kind].find((x) => x.id === r[1]);
         if (!rec) return send(404, { error: "not found" });
-        if (r[2] === "/generate") return send(200, saveIdea(kind, rec.id, await generateIdea(loadProfile(), { ...rec, company: rec.company || rec.name })));
+        if (r[2] === "/generate") return send(200, saveIdea(kind, rec.id, await generateIdea(loadProfile(), { ...rec, company: rec.company || rec.name }, { rules: url.searchParams.get("rules") === "1" })));
         if (r[2] === "/publish") return send(200, publishIdea(loadProfile(), kind, rec.id));
         const { onePager } = await body(req);
         if (!rec.idea || typeof onePager !== "string") return send(400, { error: "nothing to save" });

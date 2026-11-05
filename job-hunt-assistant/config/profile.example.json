@@ -55,7 +55,7 @@
   "resumePdfPath": "config/resume.pdf",
   "resumeTextPath": "config/resume.tex",
   "_phone": "Add your phone number in config/profile.json (git-ignored), not here: this example file is committed.",
-  "jobAsk": "a Winter 2027 internship or co-op starting January (4 months in Canada and the US; up to 6 months for a London off-cycle), and I'm open to a full-time founding role after I graduate in 2027",
+  "jobAsk": "a Winter 2027 internship or co-op starting January (4 months in Canada and the US; up to 6 months for a London off-cycle)",
   "emailProvider": "outlook",
   "screeningAnswers": {
     "_help": "Used to answer common form questions. Empty = always answer it yourself. UK: Youth Mobility Scheme, no employer sponsor needed. US: TN needs a finished degree, so as a student you'd likely need a J-1 sponsor; answer honestly.",
@@ -90,5 +90,7 @@
     "data": "I turn messy data into tools people use: Power BI dashboards for 40+ users, Python reporting automation, and ML models like WealthLens (0.67 ROC-AUC).",
     "general": "Across six co-op terms I've learned to pick up a new domain fast and leave behind tools and processes that keep working after I'm gone.",
     "defense": "I've spent two terms inside RTX at Pratt & Whitney Canada, so I'm used to regulated, controlled-goods environments, program reviews with executives, and the schedule, cost and risk tracking defence programs run on."
-  }
+  },
+  "portfolioDir": "../keneisha-baid-portfolio",
+  "_portfolioDir": "Path to your portfolio site's folder (relative to this project). idea publish writes one-pagers into its public/pitches/."
 }

@@ -9,6 +9,7 @@ import * as z from "zod/v4";
 import * as db from "./db.js";
 import { DATA_DIR, ROOT } from "./paths.js";
 import { engineFor, runClaudeCode, getClient, profileBlurb, jsonSchemaOf } from "./ai.js";
+import { collectSignals, ruleIdeas, signalsBlock } from "./research.js";
 
 export const IdeaDraft = z.object({
   oneLiner: z.string().describe("What the company does, in one plain sentence"),
@@ -53,17 +54,35 @@ ${target.company}${target.title ? ` (she's interested in: ${target.title})` : ""
 ${target.notes ? `Notes: ${target.notes}` : ""}
 ${target.research ? `Earlier research:\n${target.research}` : ""}
 ${target.description ? `Job posting excerpt:\n${String(target.description).slice(0, 2500)}` : ""}
+${signalsBlock(target.collected || [])}
 
 ## Task
-${LOOK_AT}`;
+${LOOK_AT}${(target.collected || []).length >= 5 ? "\nStart from the gathered signals above. Only search or fetch to fill clear gaps (reviews, founder posts), at most 4 lookups." : ""}`;
 }
 
-/** Runs the research + ideation for one company. Needs claude-code (your Claude Pro) or an API key. */
-export async function generateIdea(profile, target) {
-  const engine = engineFor(profile);
-  const prompt = ideaPrompt(profile, target);
+/**
+ * Research + ideation for one company.
+ * 1. Code gathers public signals (free, ~10s).
+ * 2. engine "template" (or --rules): rules turn signals into ideas. No AI.
+ *    engine "claude-code"/"api": Claude reasons over the signals, browsing only to fill gaps.
+ *    --fast: Claude gets the signals but no browsing at all (one quick turn).
+ */
+export async function generateIdea(profile, target, { rules = false, fast = false, log = () => {} } = {}) {
+  const { signals } = await collectSignals(target, { log });
+  const engine = rules ? "template" : engineFor(profile);
+  if (!["claude-code", "api"].includes(engine)) return ruleIdeas(profile, target, signals);
+  const prompt = ideaPrompt(profile, { ...target, collected: signals });
+  try {
+    return await claudeIdea(engine, prompt, fast);
+  } catch (e) {
+    log(`  (Claude unavailable: ${e.message.slice(0, 120)}. Using rules instead.)`);
+    return ruleIdeas(profile, target, signals);
+  }
+}
+
+async function claudeIdea(engine, prompt, fast) {
   if (engine === "claude-code") {
-    const out = await runClaudeCode(prompt, { schema: jsonSchemaOf(IdeaDraft), tools: "WebSearch,WebFetch" });
+    const out = await runClaudeCode(prompt, { schema: jsonSchemaOf(IdeaDraft), tools: fast ? "" : "WebSearch,WebFetch" });
     return { ...IdeaDraft.parse(out.structured_output ?? JSON.parse(out.result)), by: "claude-code", at: db.now() };
   }
   if (engine === "api") {
@@ -71,14 +90,14 @@ export async function generateIdea(profile, target) {
       model: process.env.JHA_MODEL || "claude-opus-5-5",
       max_tokens: 16000,
       output_config: { effort: "medium" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }, { type: "web_fetch_20260209", name: "web_fetch", max_uses: 6 }],
+      ...(fast ? {} : { tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }, { type: "web_fetch_20260209", name: "web_fetch", max_uses: 4 }] }),
       messages: [{ role: "user", content: `${prompt}\n\nReply with ONLY one JSON object with these fields:\n${JSON.stringify(jsonSchemaOf(IdeaDraft).properties)}` }],
     });
     if (msg.stop_reason === "refusal") throw new Error("Claude declined this request");
     const text = msg.content.filter((b) => b.type === "text").map((b) => b.text).join("");
     return { ...parseIdea(text), by: "api", at: db.now() };
   }
-  throw new Error('idea research needs "ai": "claude-code" (your Claude Pro) or an API key. Free option: idea --pack');
+  throw new Error(`unknown engine ${engine}`);
 }
 
 export function parseIdea(text) {
@@ -88,6 +107,10 @@ export function parseIdea(text) {
 }
 
 /** Copy-paste version for claude.ai (turn on web search in the chat). */
+export async function ideaPackPromptWithSignals(profile, target) {
+  const { signals } = await collectSignals(target);
+  return ideaPackPrompt(profile, { ...target, collected: signals });
+}
 export function ideaPackPrompt(profile, target) {
   return `${ideaPrompt(profile, target)}\n\nUse web search. Reply with ONLY one JSON object (no markdown) with exactly these fields:\n${JSON.stringify(jsonSchemaOf(IdeaDraft).properties, null, 1)}`;
 }
@@ -152,7 +175,15 @@ ${mdToHtml(onePager)}
 }
 
 /** Writes the approved one-pager into the portfolio's public/pitches/ (deploys with the site). Returns the URL. */
-export function publishIdea(profile, kind, id, { portfolioDir = path.resolve(ROOT, "..") } = {}) {
+/** Where your portfolio site's code lives: profile.portfolioDir, or the folder next to this project. */
+export function portfolioDirFor(profile) {
+  const candidates = [profile.portfolioDir, "../keneisha-baid-portfolio", ".."].filter(Boolean).map((d) => path.resolve(ROOT, d));
+  const found = candidates.find((d) => fs.existsSync(path.join(d, "public")) && fs.existsSync(path.join(d, "package.json")));
+  if (!found) throw new Error(`Couldn't find your portfolio folder. Set "portfolioDir" in config/profile.json (tried: ${candidates.join(", ")})`);
+  return found;
+}
+
+export function publishIdea(profile, kind, id, { portfolioDir = portfolioDirFor(profile) } = {}) {
   const rec = db.read()[kind].find((x) => x.id === id);
   if (!rec?.idea) throw new Error("No idea saved for that id yet. Run: idea <id>");
   const md = fs.existsSync(rec.idea.file) ? fs.readFileSync(rec.idea.file, "utf8").split("\n---\n")[0] : rec.idea.onePager;

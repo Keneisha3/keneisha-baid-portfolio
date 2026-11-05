@@ -113,7 +113,7 @@ The third priority lane, **founding**, covers founding engineer, founding GTM/AE
 - **Filters:** these roles pass even without "intern" in the title. Senior ones (senior, staff, lead…) are still filtered out.
 - **Hacker News "Who is hiring?":** read every `discover`. Founders post there directly. Matching posts become jobs, and any founder email in the post becomes an outreach contact linked to that job, ready for `research` → `draft-outreach` → `email`.
 - **Boards opened by `careers --category founding`:** YC Work at a Startup, Wellfound, a16z speedrun, startup.jobs, TrueUp, theInterna, Entrepreneur First.
-- **Pitch:** drafts lead with things you've shipped (code *and* business tools). They offer one small, concrete thing you'd do for them, and ask for a **Winter 2027 trial internship that can turn into a full-time founding role** after you graduate in 2027. Most founding roles are full-time, so that's the honest bridge.
+- **Pitch:** drafts lead with things you've shipped (code *and* business tools). They offer one small, concrete thing you'd do for them, and ask for a **Winter 2027 internship working directly with the founders** (never a full-time role).
 
 ## LinkedIn jobs
 
@@ -126,13 +126,16 @@ LinkedIn doesn't allow automated crawling, so this is assisted:
 ## Pitch them a real idea
 
 The strongest cold outreach shows you've already thought about their problems. `idea` does the homework:
-1. Claude reads the company's **blog, changelog, docs, open roles, customer reviews (G2, Reddit, app stores) and founder posts**, and lists 4–8 concrete signals with links.
+1. **Plain code (no AI) gathers the evidence first:** the company's site description, blog/news/changelog feeds or headings, careers-page roles, roles you're already tracking there, and Hacker News mentions. It's free and takes about 10 seconds.
+   - `--rules`, or no Claude set up: rules turn those signals into 3 ideas and a one-page proposal. For example, hiring sales reps leads to a fit-scored target list, and a fintech leads to a cohort and unit-economics model. Free, instant, decent.
+   - With Claude Pro (default): Claude starts from those signals and browses only to fill gaps (reviews, founder posts), so it's faster and uses less of your plan. If Claude is unavailable, it falls back to rules. `--fast` = Claude with no browsing at all.
 2. It names 2–4 likely **problems** (as hypotheses, with evidence) and proposes **3 builds** that use your skills. Each comes with a one-week plan, a success metric, and impact and feasibility scores.
 3. It writes a **one-page proposal** for the best idea. Edit it, then `idea publish <id>`, which makes it an unlisted, non-indexed page on your portfolio (`/pitches/...`). Deploy the site, and the cold email links it instead of attaching anything.
 4. `draft-outreach` builds on it: the problem becomes the hook, the proposal is the value, and the other ideas feed follow-up 1.
 
 ```bash
 npm run jha -- idea --all --priority --next 10   # 10 priority companies, ~1.5 min each with Claude Pro
+npm run jha -- idea --all --rules --next 50       # free, no AI, seconds each
 npm run jha -- idea show <id>                     # read and edit data/pitches/<company>.md
 npm run jha -- idea publish <id>                  # then deploy the portfolio
 npm run jha -- draft-outreach <id>

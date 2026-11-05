@@ -19,7 +19,7 @@ import { importJobUrl } from "./jobs/import.js";
 import { scoreJob } from "./jobs/score.js";
 import { composeUrl } from "./outreach/email.js";
 import { startServer } from "./server.js";
-import { generateIdea, saveIdea, publishIdea, ideaPackPrompt, parseIdea } from "./ideas.js";
+import { generateIdea, saveIdea, publishIdea, ideaPackPromptWithSignals, parseIdea } from "./ideas.js";
 import { mapLimit } from "./jobs/sources.js";
 
 const HELP = `
@@ -53,8 +53,10 @@ OUTREACH
   people <company>               LinkedIn search links (alumni, roles, recruiters)
   add-contact --name ".." [--url <linkedin>] [--email ..] [--title ..] [--company ..] [--reason ..] [--job <id>]
   import-contacts <file.csv>     Columns: name,title,company,linkedinurl,email,reason,notes
-  idea <id> | --all [--priority] Research a company's blog, changelog, jobs and reviews, then pitch a build:
-                                 problems with sources, 3 ideas, and a one-page proposal (Claude Pro/API)
+  idea <id> | --all [--priority] [--rules | --fast]
+                                 Code gathers the company's feeds, changelog, careers page, open roles and
+                                 HN mentions; then Claude (or --rules: free, no AI) writes problems, 3 build
+                                 ideas and a one-page proposal. --fast = Claude without browsing
   idea --pack <id> / paste-idea <id>   Same, free, via claude.ai (turn on web search)
   idea show <id> | idea publish <id>   Read it; publish as an unlisted page on your portfolio site
   research <id> | --all [--open] Recent news per company for the hook (automatic with claude-code/api;
@@ -83,7 +85,7 @@ const { values: opt, positionals: pos } = parseArgs({
   options: {
     port: { type: "string" }, status: { type: "string" }, top: { type: "string" }, next: { type: "string" }, tabs: { type: "string" },
     concurrency: { type: "string" }, category: { type: "string" }, region: { type: "string" }, size: { type: "string" }, followups: { type: "boolean" }, priority: { type: "boolean" },
-    submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, pack: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
+    submit: { type: "boolean" }, ai: { type: "boolean" }, jobs: { type: "string" }, contacts: { type: "string" }, open: { type: "boolean" }, pack: { type: "boolean" }, rules: { type: "boolean" }, fast: { type: "boolean" }, "auto-submit": { type: "boolean" }, all: { type: "boolean" }, nudge: { type: "boolean" }, "disable-failed": { type: "boolean" },
     url: { type: "string" }, email: { type: "string" }, name: { type: "string" }, title: { type: "string" }, company: { type: "string" },
     reason: { type: "string" }, job: { type: "string" }, notes: { type: "string" },
   },
@@ -315,7 +317,7 @@ async function main() {
       if (pos[0] === "show") { const { rec } = find(pos[1]); console.log(rec.idea ? `${rec.idea.onePager}\n\n(edit: ${rec.idea.file})` : "No idea yet."); return; }
       if (opt.pack) {
         const { rec } = find(pos[0]);
-        const text = ideaPackPrompt(profile, { ...rec, company: rec.company || rec.name });
+        const text = await ideaPackPromptWithSignals(profile, { ...rec, company: rec.company || rec.name });
         try { execFileSync("pbcopy", { input: text }); console.log("Prompt copied. Paste into claude.ai with web search on, then: npm run jha -- paste-idea " + rec.id); }
         catch { console.log(text); }
         return;
@@ -325,10 +327,11 @@ async function main() {
         : [...s.contacts.filter((c) => !c.idea && ["to_contact", "drafted"].includes(c.status) && matches(c, F())).map((rec) => ({ kind: "contacts", rec })),
            ...s.jobs.filter((j) => !j.idea && j.pitch && j.status === "found" && matches(j, F())).map((rec) => ({ kind: "jobs", rec }))]
           .slice(0, Number(opt.next || 10));
-      console.log(`Researching and pitching ${targets.length} compan${targets.length === 1 ? "y" : "ies"} (2-4 min each, 2 at a time)…`);
-      await mapLimit(targets, 2, async ({ kind, rec }) => {
+      const mode = opt.rules || !["claude-code", "api"].includes(engineFor(profile)) ? "rules (free, no AI)" : opt.fast ? "Claude, no browsing" : "Claude + gathered signals";
+      console.log(`Researching ${targets.length} compan${targets.length === 1 ? "y" : "ies"} · ${mode}…`);
+      await mapLimit(targets, mode.startsWith("rules") ? 4 : 2, async ({ kind, rec }) => {
         try {
-          const idea = await generateIdea(profile, { ...rec, company: rec.company || rec.name });
+          const idea = await generateIdea(profile, { ...rec, company: rec.company || rec.name }, { rules: opt.rules, fast: opt.fast, log: console.log });
           const saved = saveIdea(kind, rec.id, idea);
           console.log(`  ✓ ${rec.company || rec.name}: ${idea.bestIdea}\n    ${saved.idea.file}`);
         } catch (e) { console.log(`  ! ${rec.company || rec.name}: ${e.message}`); }
